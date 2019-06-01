@@ -12,7 +12,7 @@ int main() {
   Optifuser::GLFWRenderContext context(w, h);
   auto scene = std::make_shared<Optifuser::Scene>();
 
-  auto objects = Optifuser::LoadObj("/home/fx/Scenes/sponza/sponza.obj");
+  auto objects = Optifuser::LoadObj("../scenes/sponza/sponza.obj");
   for (auto obj : objects) {
     obj->scale = glm::vec3(0.003f);
     obj->position *= 0.003f;
