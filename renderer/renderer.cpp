@@ -12,11 +12,6 @@ void Renderer::setDeferredShader(const std::string &vs, const std::string &fs) {
   deferredFragShaderFile = fs;
   deferredShader = std::make_shared<Shader>(vs.c_str(), fs.c_str());
 }
-void Renderer::setSkyboxShader(const std::string &vs, const std::string &fs) {
-  skyboxVertShaderFile = vs;
-  skyboxFragShaderFile = fs;
-  skyboxShader = std::make_shared<Shader>(vs.c_str(), fs.c_str());
-}
 
 void Renderer::init() {
   glViewport(0, 0, width, height);
@@ -41,7 +36,6 @@ void Renderer::exit() {
   deleteGbufferFramebuffer();
   gbufferShader = nullptr;
   deferredShader = nullptr;
-  skyboxShader = nullptr;
 }
 
 void Renderer::resize(GLuint w, GLuint h) {
@@ -57,9 +51,6 @@ void Renderer::reloadShaders() {
   }
   if (deferredShader) {
     setDeferredShader(deferredVertShaderFile, deferredFragShaderFile);
-  }
-  if (skyboxShader) {
-    setSkyboxShader(skyboxVertShaderFile, skyboxFragShaderFile);
   }
 }
 
@@ -159,25 +150,12 @@ void Renderer::gbufferPass(std::shared_ptr<Scene> scene) {
 }
 
 void Renderer::gbufferPass(std::shared_ptr<Scene> scene, GLuint fbo) {
-  static const auto envCube = NewEnvironmentCube();
-
   glBindFramebuffer(GL_FRAMEBUFFER, fbo);
   glEnable(GL_DEPTH_TEST);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glm::mat4 viewMat = scene->getMainCamera()->getViewMat();
   glm::mat4 projMat = scene->getMainCamera()->getProjectionMat();
-
-  // TODO: debug environment map
-  if (auto envmap = scene->getEnvironmentMap()) {
-    glDepthMask(GL_FALSE);
-    skyboxShader->use();
-    skyboxShader->setMatrix("gbufferViewMatrix", viewMat);
-    skyboxShader->setMatrix("gbufferProjectionMatrix", projMat);
-    skyboxShader->setTexture("skybox", envmap->getId(), 0);
-    envCube->getMesh()->draw();
-    glDepthMask(GL_TRUE);
-  }
 
   gbufferShader->use();
   gbufferShader->setMatrix("gbufferViewMatrix", viewMat);
@@ -233,7 +211,6 @@ void Renderer::deferredPass(std::shared_ptr<Scene> scene) {
 
 void Renderer::deferredPass(std::shared_ptr<Scene> scene, GLuint fbo) {
   glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-  // glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDisable(GL_DEPTH_TEST);
 
   auto mainCam = scene->getMainCamera();
@@ -247,9 +224,6 @@ void Renderer::deferredPass(std::shared_ptr<Scene> scene, GLuint fbo) {
   deferredShader->setMatrix("gbufferProjectionMatrixInverse",
                             glm::inverse(projMat));
   deferredShader->setVec3("cameraPosition", mainCam->position);
-
-  // debug code
-  deferredShader->setInt("debug", debug);
 
   const auto &pointLights = scene->getPointLights();
   for (size_t i = 0; i < pointLights.size(); i++) {
@@ -274,13 +248,17 @@ void Renderer::deferredPass(std::shared_ptr<Scene> scene, GLuint fbo) {
     deferredShader->setTexture("colortex" + std::to_string(n), colortex[n], n);
   }
   deferredShader->setTexture("depthtex0", depthtex, N_COLOR_ATTACHMENTS);
+  if (auto envmap = scene->getEnvironmentMap()) {
+    deferredShader->setCubemap("skybox", scene->getEnvironmentMap()->getId(),
+                               N_COLOR_ATTACHMENTS + 1);
+  }
 
   // render quad
   glBindVertexArray(quadVAO);
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void Renderer::renderScene(std::shared_ptr<Scene> scene) {
+void Renderer::renderScene(std::shared_ptr<Scene> scene, GLuint fbo) {
   if (!initialized) {
     fprintf(stderr, "Renderer is not initialized\n");
     return;
@@ -295,27 +273,28 @@ void Renderer::renderScene(std::shared_ptr<Scene> scene) {
   }
 
   gbufferPass(scene);
-  deferredPass(scene);
+  deferredPass(scene, fbo);
 }
 
-void Renderer::renderSceneToFile(std::shared_ptr<Scene> scene,
-                                 std::string filename) {
-  if (!initialized) {
-    fprintf(stderr, "Renderer is not initialized\n");
-    return;
-  }
-  if (!scene->getMainCamera()) {
-    fprintf(stderr, "Scene does not have a main camera\n");
-    return;
-  }
-  if (!gbufferShader || !deferredShader) {
-    fprintf(stderr, "Shaders not initialized\n");
-    return;
-  }
+// void Renderer::renderSceneToFile(std::shared_ptr<Scene> scene,
+//                                  std::string filename) {
+//   if (!initialized) {
+//     fprintf(stderr, "Renderer is not initialized\n");
+//     return;
+//   }
+//   if (!scene->getMainCamera()) {
+//     fprintf(stderr, "Scene does not have a main camera\n");
+//     return;
+//   }
+//   if (!gbufferShader || !deferredShader) {
+//     fprintf(stderr, "Shaders not initialized\n");
+//     return;
+//   }
 
-  gbufferPass(scene);
-  deferredPass(scene, composite_fbo);
+//   gbufferPass(scene);
+//   deferredPass(scene, composite_fbo);
 
-  writeToFile(compositeTex, width, height, filename);
-}
+//   writeToFile(compositeTex, width, height, filename);
+// }
+
 } // namespace Optifuser

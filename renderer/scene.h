@@ -17,6 +17,7 @@ private:
   std::vector<DirectionalLight> directionalLights;
   std::vector<ParallelogramLight> parallelogramLights;
   std::shared_ptr<CubeMapTexture> environmentMap;
+  std::shared_ptr<Object> environmentCube;
 
 public:
   bool contains(const std::shared_ptr<Object> obj) const;
@@ -37,6 +38,7 @@ public:
                          const std::string &left, const std::string &right,
                          int wrapping = GL_CLAMP_TO_EDGE,
                          int filtering = GL_LINEAR);
+  std::shared_ptr<Object> getEnvironmentCube() const { return environmentCube; }
 
   inline const std::shared_ptr<CubeMapTexture> &getEnvironmentMap() const {
     return environmentMap;

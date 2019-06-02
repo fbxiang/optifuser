@@ -6,7 +6,6 @@ uniform sampler2D colortex0;  // albedo
 uniform sampler2D colortex1;  // 
 uniform sampler2D colortex2;  // normal
 uniform sampler2D depthtex0;  // depth
-uniform samplerCube skybox;
 
 uniform mat4 gbufferViewMatrix;
 uniform mat4 gbufferViewMatrixInverse;
@@ -73,13 +72,7 @@ void main() {
     color += albedo * directionalLights[i].emission * max(0, dot(lightDir, normal));
   }
 
-  // FragColor = vec4(albedo, 1.f);
+  FragColor = vec4(albedo, 1.f);
   // FragColor = vec4(normal, 1.f);
-
-  float depth = texture(depthtex0, texcoord).x;
-  if (depth == 1) {
-    FragColor = texture(skybox, (gbufferViewMatrixInverse * csPosition).xyz);
-  } else {
-    FragColor = vec4(color, 1.f);
-  }
+  // FragColor = vec4(-csPosition.zzz / 10.f, 1.f);
 }

@@ -7,9 +7,11 @@ using std::cout;
 using std::endl;
 
 int main() {
-  int w = 640;
-  int h = 480;
-  Optifuser::GLFWRenderContext context(w, h);
+  int w = 1080;
+  int h = 720;
+  Optifuser::GLFWRenderContext &context =
+      Optifuser::GLFWRenderContext::Get(w, h);
+  Optifuser::OffScreenRenderContext contextOffscreen(1080, 720);
   auto scene = std::make_shared<Optifuser::Scene>();
 
   auto objects = Optifuser::LoadObj("../scenes/sponza/sponza.obj");
@@ -31,16 +33,52 @@ int main() {
   scene->setMainCamera(cam);
   scene->addPointLight({glm::vec3(0, 1, 0), glm::vec3(0.5, 0.5, 0.5)});
 
+  scene->setEnvironmentMap("../assets/ame_desert/desertsky_ft.tga",
+                           "../assets/ame_desert/desertsky_bk.tga",
+                           "../assets/ame_desert/desertsky_up.tga",
+                           "../assets/ame_desert/desertsky_dn.tga",
+                           "../assets/ame_desert/desertsky_lf.tga",
+                           "../assets/ame_desert/desertsky_rt.tga");
+
+  context.renderer.setSkyboxShader("../glsl_shader/skybox.vsh",
+                                   "../glsl_shader/skybox.fsh");
   context.renderer.setGBufferShader("../glsl_shader/gbuffer.vsh",
                                     "../glsl_shader/gbuffer.fsh");
   context.renderer.setDeferredShader("../glsl_shader/deferred.vsh",
                                      "../glsl_shader/deferred.fsh");
-  int frame = 0;
-  while (1) {
+
+  contextOffscreen.renderer.setSkyboxShader("../glsl_shader/skybox.vsh",
+                                            "../glsl_shader/skybox.fsh");
+  contextOffscreen.renderer.setGBufferShader("../glsl_shader/gbuffer.vsh",
+                                             "../glsl_shader/gbuffer.fsh");
+  contextOffscreen.renderer.setDeferredShader("../glsl_shader/deferred.vsh",
+                                              "../glsl_shader/deferred.fsh");
+  contextOffscreen.render(scene);
+  contextOffscreen.save("/tmp/test.png");
+
+  while (!context.shouldExit()) {
+    context.processEvents();
+
+    float dt = 0.05f;
+    if (scene->getMainCamera()) {
+      if (Optifuser::input.getKeyState(GLFW_KEY_W)) {
+        scene->getMainCamera()->move(0, 0, 2 * dt);
+      } else if (Optifuser::input.getKeyState(GLFW_KEY_S)) {
+        scene->getMainCamera()->move(0, 0, -dt);
+      } else if (Optifuser::input.getKeyState(GLFW_KEY_A)) {
+        scene->getMainCamera()->move(0, -dt, 0);
+      } else if (Optifuser::input.getKeyState(GLFW_KEY_D)) {
+        scene->getMainCamera()->move(0, dt, 0);
+      }
+
+      if (Optifuser::input.getMouseButton(GLFW_MOUSE_BUTTON_RIGHT) ==
+          GLFW_PRESS) {
+        double dx, dy;
+        Optifuser::input.getCursor(dx, dy);
+        scene->getMainCamera()->rotateYaw(-dx / 1000.f);
+        scene->getMainCamera()->rotatePitch(-dy / 1000.f);
+      }
+    }
     context.render(scene);
-    ++frame;
-    // if (frame % 60 == 0) {
-    //   context.renderer.reloadShaders();
-    // }
   }
 }

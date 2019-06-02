@@ -63,5 +63,6 @@ void Scene::setEnvironmentMap(const std::string &front, const std::string &back,
                               int wrapping, int filtering) {
   environmentMap = LoadCubeMapTexture(front, back, top, bottom, left, right,
                                       wrapping, filtering);
+  environmentCube = NewEnvironmentCube();
 }
 } // namespace Optifuser

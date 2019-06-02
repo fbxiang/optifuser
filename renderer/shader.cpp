@@ -141,4 +141,14 @@ void Shader::setTexture(const std::string &name, GLuint textureId,
     glBindTexture(GL_TEXTURE_2D, textureId);
   }
 }
+
+void Shader::setCubemap(const std::string &name, GLuint textureId, GLint n) const {
+  GLint variableId = glGetUniformLocation(Id, name.c_str());
+  if (variableId != -1) {
+    glUniform1i(variableId, n);
+    glActiveTexture(GL_TEXTURE0 + n);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
+  }
+}
+
 } // namespace Optifuser

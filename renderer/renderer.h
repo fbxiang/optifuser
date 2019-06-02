@@ -29,14 +29,9 @@ private:
   std::string deferredFragShaderFile;
   std::shared_ptr<Shader> deferredShader;
 
-  std::string skyboxVertShaderFile;
-  std::string skyboxFragShaderFile;
-  std::shared_ptr<Shader> skyboxShader;
-
 public:
   void setGBufferShader(const std::string &vs, const std::string &fs);
   void setDeferredShader(const std::string &vs, const std::string &fs);
-  void setSkyboxShader(const std::string &vs, const std::string &fs);
 
 protected:
   GLuint width, height;
@@ -79,8 +74,8 @@ private:
   void deferredPass(std::shared_ptr<Scene> scene, GLuint fbo);
 
 public:
-  void renderScene(std::shared_ptr<Scene> scene);
-  void renderSceneToFile(std::shared_ptr<Scene> scene, std::string filename);
+  void renderScene(std::shared_ptr<Scene> scene, GLuint fbo = 0);
+  // void renderSceneToFile(std::shared_ptr<Scene> scene, std::string filename);
   void reloadShaders();
 };
 
