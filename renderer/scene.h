@@ -16,8 +16,8 @@ private:
   std::vector<PointLight> pointLights;
   std::vector<DirectionalLight> directionalLights;
   std::vector<ParallelogramLight> parallelogramLights;
+  glm::vec3 ambientLight;
   std::shared_ptr<CubeMapTexture> environmentMap;
-  std::shared_ptr<Object> environmentCube;
 
 public:
   bool contains(const std::shared_ptr<Object> obj) const;
@@ -29,6 +29,7 @@ public:
   void setMainCamera(const std::shared_ptr<Camera> cam);
   std::shared_ptr<Camera> getMainCamera() const;
 
+  void setAmbientLight(glm::vec3 light);
   void addPointLight(PointLight light);
   void addDirectionalLight(DirectionalLight light);
   void addParalleloGramLight(ParallelogramLight light);
@@ -38,12 +39,12 @@ public:
                          const std::string &left, const std::string &right,
                          int wrapping = GL_CLAMP_TO_EDGE,
                          int filtering = GL_LINEAR);
-  std::shared_ptr<Object> getEnvironmentCube() const { return environmentCube; }
 
   inline const std::shared_ptr<CubeMapTexture> &getEnvironmentMap() const {
     return environmentMap;
   }
 
+  glm::vec3 getAmbientLight() const { return ambientLight; }
   const std::vector<PointLight> &getPointLights() const { return pointLights; }
   const std::vector<DirectionalLight> &getDirectionalLights() const {
     return directionalLights;

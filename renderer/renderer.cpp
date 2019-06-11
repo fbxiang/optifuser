@@ -224,6 +224,7 @@ void Renderer::deferredPass(std::shared_ptr<Scene> scene, GLuint fbo) {
   deferredShader->setMatrix("gbufferProjectionMatrixInverse",
                             glm::inverse(projMat));
   deferredShader->setVec3("cameraPosition", mainCam->position);
+  deferredShader->setVec3("ambientLight", scene->getAmbientLight());
 
   const auto &pointLights = scene->getPointLights();
   for (size_t i = 0; i < pointLights.size(); i++) {

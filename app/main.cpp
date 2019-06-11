@@ -32,6 +32,7 @@ int main() {
   scene->addObject(cam);
   scene->setMainCamera(cam);
   scene->addPointLight({glm::vec3(0, 1, 0), glm::vec3(0.5, 0.5, 0.5)});
+  scene->setAmbientLight(glm::vec3(0.1, 0.1, 0.1));
 
   scene->setEnvironmentMap("../assets/ame_desert/desertsky_ft.tga",
                            "../assets/ame_desert/desertsky_bk.tga",
@@ -40,15 +41,11 @@ int main() {
                            "../assets/ame_desert/desertsky_lf.tga",
                            "../assets/ame_desert/desertsky_rt.tga");
 
-  context.renderer.setSkyboxShader("../glsl_shader/skybox.vsh",
-                                   "../glsl_shader/skybox.fsh");
   context.renderer.setGBufferShader("../glsl_shader/gbuffer.vsh",
                                     "../glsl_shader/gbuffer.fsh");
   context.renderer.setDeferredShader("../glsl_shader/deferred.vsh",
                                      "../glsl_shader/deferred.fsh");
 
-  contextOffscreen.renderer.setSkyboxShader("../glsl_shader/skybox.vsh",
-                                            "../glsl_shader/skybox.fsh");
   contextOffscreen.renderer.setGBufferShader("../glsl_shader/gbuffer.vsh",
                                              "../glsl_shader/gbuffer.fsh");
   contextOffscreen.renderer.setDeferredShader("../glsl_shader/deferred.vsh",

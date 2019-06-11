@@ -14,6 +14,7 @@ uniform mat4 gbufferProjectionMatrix;
 uniform mat4 gbufferProjectionMatrixInverse;
 
 uniform int debug;
+uniform vec3 ambientLight;
 
 out vec4 FragColor;
 
@@ -73,8 +74,7 @@ void main() {
     color += albedo * directionalLights[i].emission * max(0, dot(lightDir, normal));
   }
 
-  // FragColor = vec4(albedo, 1.f);
-  // FragColor = vec4(normal, 1.f);
+  color += ambientLight * albedo;
 
   float depth = texture(depthtex0, texcoord).x;
   if (depth == 1) {

@@ -17,7 +17,6 @@ void Scene::addObject(std::shared_ptr<Object> obj) {
   objects.push_back(obj);
 }
 
-// TODO: implement this function
 void Scene::removeObject(std::shared_ptr<Object> obj) {
   auto s = obj->getScene();
   if (s != shared_from_this()) {
@@ -49,6 +48,9 @@ const std::vector<std::shared_ptr<Object>> &Scene::getObjects() const {
   return objects;
 }
 
+void Scene::setAmbientLight(glm::vec3 light) {
+  ambientLight = light;
+}
 void Scene::addPointLight(PointLight light) { pointLights.push_back(light); }
 void Scene::addDirectionalLight(DirectionalLight light) {
   directionalLights.push_back(light);
@@ -63,6 +65,5 @@ void Scene::setEnvironmentMap(const std::string &front, const std::string &back,
                               int wrapping, int filtering) {
   environmentMap = LoadCubeMapTexture(front, back, top, bottom, left, right,
                                       wrapping, filtering);
-  environmentCube = NewEnvironmentCube();
 }
 } // namespace Optifuser
