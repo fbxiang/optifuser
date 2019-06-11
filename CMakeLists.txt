@@ -31,27 +31,3 @@ target_link_libraries(optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLEW_
 
 add_executable(run ${APP_SRC})
 target_link_libraries(run optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY} assimp pthread optix)
-
-
-# add_executable(render_test main_test.cpp ${RENDER_SRC})
-
-# add_executable(run_test test/entry.cpp test/cuda.cpp sph_common.h sph_cpu.h
-#   sph_cpu.cpp sph.cuh sph.cu marching_cube_table.h)
-
-# target_link_libraries(render_test ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLEW_LIBRARY} assimp pthread optix)
-# target_link_libraries(run ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLEW_LIBRARY} assimp pthread optix)
-# target_link_libraries(run_test ${CUDA_LIBRARIES} ${Boost_LIBRARIES})
-
-
-
-# file(GLOB_RECURSE PTX_SRC "cuda/*.cu")
-# cuda_compile_ptx(
-#   cuda_ptx_files
-#   ${PTX_SRC}
-# )
-# add_custom_target(ptx ALL
-#     DEPENDS ${cuda_ptx_files} ${PTX_SRC}
-#     SOURCES ${PTX_SRC})
-
-# add_dependencies(run ptx)
-# add_dependencies(render_test ptx)
