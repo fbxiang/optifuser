@@ -33,4 +33,4 @@ Please note that currently, working OptiX shader files exist but they are not
 compiled. So only OpenGL/GLSL renderer works at the moment. See `app/main.cpp`
 for a use case. OptiX will be supported based on feature requests or our needs.
 
-![](blob/master/assets/demo.png)
+![demo](https://github.com/fbxiang/optifuser/blob/master/assets/demo.png)
