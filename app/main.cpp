@@ -32,7 +32,7 @@ int main() {
   scene->addObject(cam);
   scene->setMainCamera(cam);
   scene->addPointLight({glm::vec3(0, 1, 0), glm::vec3(0.5, 0.5, 0.5)});
-  scene->setAmbientLight(glm::vec3(0.1, 0.1, 0.1));
+  scene->setAmbientLight(glm::vec3(0.05, 0.05, 0.05));
 
   scene->setEnvironmentMap("../assets/ame_desert/desertsky_ft.tga",
                            "../assets/ame_desert/desertsky_bk.tga",
