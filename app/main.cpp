@@ -1,7 +1,7 @@
-#include "../renderer/objectLoader.h"
-#include "../renderer/optifuser.h"
-#include "../renderer/renderer.h"
-#include "../renderer/scene.h"
+#include "objectLoader.h"
+#include "optifuser.h"
+#include "renderer.h"
+#include "scene.h"
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -53,25 +53,28 @@ int main() {
   contextOffscreen.render(scene);
   contextOffscreen.save("/tmp/test.png");
 
-  while (!context.shouldExit()) {
+  while (true) {
     context.processEvents();
+    if (Optifuser::getInput().getKeyState(GLFW_KEY_Q)) {
+      break;
+    }
 
     float dt = 0.05f;
     if (scene->getMainCamera()) {
-      if (Optifuser::input.getKeyState(GLFW_KEY_W)) {
+      if (Optifuser::getInput().getKeyState(GLFW_KEY_W)) {
         scene->getMainCamera()->move(0, 0, 2 * dt);
-      } else if (Optifuser::input.getKeyState(GLFW_KEY_S)) {
+      } else if (Optifuser::getInput().getKeyState(GLFW_KEY_S)) {
         scene->getMainCamera()->move(0, 0, -dt);
-      } else if (Optifuser::input.getKeyState(GLFW_KEY_A)) {
+      } else if (Optifuser::getInput().getKeyState(GLFW_KEY_A)) {
         scene->getMainCamera()->move(0, -dt, 0);
-      } else if (Optifuser::input.getKeyState(GLFW_KEY_D)) {
+      } else if (Optifuser::getInput().getKeyState(GLFW_KEY_D)) {
         scene->getMainCamera()->move(0, dt, 0);
       }
 
-      if (Optifuser::input.getMouseButton(GLFW_MOUSE_BUTTON_RIGHT) ==
+      if (Optifuser::getInput().getMouseButton(GLFW_MOUSE_BUTTON_RIGHT) ==
           GLFW_PRESS) {
         double dx, dy;
-        Optifuser::input.getCursor(dx, dy);
+        Optifuser::getInput().getCursor(dx, dy);
         scene->getMainCamera()->rotateYaw(-dx / 1000.f);
         scene->getMainCamera()->rotatePitch(-dy / 1000.f);
       }

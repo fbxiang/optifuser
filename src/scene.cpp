@@ -48,9 +48,7 @@ const std::vector<std::shared_ptr<Object>> &Scene::getObjects() const {
   return objects;
 }
 
-void Scene::setAmbientLight(glm::vec3 light) {
-  ambientLight = light;
-}
+void Scene::setAmbientLight(glm::vec3 light) { ambientLight = light; }
 void Scene::addPointLight(PointLight light) { pointLights.push_back(light); }
 void Scene::addDirectionalLight(DirectionalLight light) {
   directionalLights.push_back(light);

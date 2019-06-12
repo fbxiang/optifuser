@@ -102,8 +102,39 @@ std::shared_ptr<Object> NewPlane() {
   return obj;
 }
 
+std::shared_ptr<Object> NewYZPlane() {
+  std::vector<Vertex> vertices;
+  vertices.push_back(Vertex(glm::vec3(0, 1, 1), glm::vec3(1, 0, 0),
+                            glm::vec2(0, 1), glm::vec3(0, 0, -1),
+                            glm::vec3(0, 1, 0)));
+  vertices.push_back(Vertex(glm::vec3(0, -1, 1), glm::vec3(1, 0, 0),
+                            glm::vec2(0, 0), glm::vec3(0, 0, -1),
+                            glm::vec3(0, 1, 0)));
+  vertices.push_back(Vertex(glm::vec3(0, -1, -1), glm::vec3(1, 0, 0),
+                            glm::vec2(1, 0), glm::vec3(0, 0, -1),
+                            glm::vec3(0, 1, 0)));
+  vertices.push_back(Vertex(glm::vec3(0, 1, -1), glm::vec3(1, 0, 0),
+                            glm::vec2(1, 1), glm::vec3(0, 0, -1),
+                            glm::vec3(0, 1, 0)));
+  std::vector<uint32_t> indices = {0, 1, 2, 0, 2, 3};
+  static auto mesh = std::make_shared<TriangleMesh>(vertices, indices);
+  auto obj = NewObject<Object>(mesh);
+  obj->name = "YZPlane";
+  return obj;
+}
+
 std::shared_ptr<Object> NewCube() {
-  auto obj = NewObject<Object>(NewCubeMesh());
+  std::vector<Vertex> vertices = {
+      Vertex(glm::vec3(-1.0, -1.0, 1.0)),  Vertex(glm::vec3(1.0, -1.0, 1.0)),
+      Vertex(glm::vec3(1.0, 1.0, 1.0)),    Vertex(glm::vec3(-1.0, 1.0, 1.0)),
+      Vertex(glm::vec3(-1.0, -1.0, -1.0)), Vertex(glm::vec3(1.0, -1.0, -1.0)),
+      Vertex(glm::vec3(1.0, 1.0, -1.0)),   Vertex(glm::vec3(-1.0, 1.0, -1.0))};
+  std::vector<GLuint> indices = {0, 1, 2, 2, 3, 0, 1, 5, 6, 6, 2, 1,
+                                 7, 6, 5, 5, 4, 7, 4, 0, 3, 3, 7, 4,
+                                 4, 5, 1, 1, 0, 4, 3, 2, 6, 6, 7, 3};
+  static auto cubeMesh =
+      std::make_shared<TriangleMesh>(vertices, indices, true);
+  auto obj = NewObject<Object>(cubeMesh);
   obj->name = "cube";
   return obj;
 }

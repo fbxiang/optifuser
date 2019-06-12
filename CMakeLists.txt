@@ -20,9 +20,10 @@ find_package(GLEW)
 find_package(glfw3)
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 
-file(GLOB_RECURSE RENDER_SRC "renderer/*.h" "renderer/*.cpp")
+file(GLOB_RECURSE RENDER_SRC "include/*.h" "src/*.cpp")
 file(GLOB_RECURSE APP_SRC "app/*.h" "app/*.cpp")
 
+include_directories("include")
 include_directories("/home/fx/NVIDIA-OptiX-SDK-6.0.0-linux64/include")
 link_directories("/home/fx/NVIDIA-OptiX-SDK-6.0.0-linux64/lib64")
 
@@ -31,3 +32,10 @@ target_link_libraries(optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLEW_
 
 add_executable(run ${APP_SRC})
 target_link_libraries(run optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY} assimp pthread optix)
+
+set_target_properties(optifuser
+    PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)

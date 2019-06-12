@@ -146,9 +146,6 @@ std::shared_ptr<TriangleMesh> NewCubeMesh() {
                                  7, 6, 5, 5, 4, 7, 4, 0, 3, 3, 7, 4,
                                  4, 5, 1, 1, 0, 4, 3, 2, 6, 6, 7, 3};
 
-  // std::vector<GLuint> indices = {4, 5, 1, 1, 0, 4,
-  //                                3, 2, 6, 6, 7, 3};
-
   return std::make_shared<TriangleMesh>(vertices, indices, true);
 }
 

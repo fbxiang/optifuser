@@ -1,4 +1,4 @@
-#include "perlin.h"
+#include "noise/perlin.h"
 #include <cmath>
 #include <glm/gtc/matrix_transform.hpp>
 
