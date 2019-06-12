@@ -24,8 +24,8 @@ file(GLOB_RECURSE RENDER_SRC "include/*.h" "src/*.cpp")
 file(GLOB_RECURSE APP_SRC "app/*.h" "app/*.cpp")
 
 include_directories("include")
-include_directories("/home/fx/NVIDIA-OptiX-SDK-6.0.0-linux64/include")
-link_directories("/home/fx/NVIDIA-OptiX-SDK-6.0.0-linux64/lib64")
+include_directories("3rd_party/NVIDIA-OptiX-SDK-6.0.0-linux64/include")
+link_directories("3rd_party/NVIDIA-OptiX-SDK-6.0.0-linux64/lib64")
 
 add_library(optifuser SHARED ${RENDER_SRC})
 target_link_libraries(optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLEW_LIBRARY} assimp pthread optix)
