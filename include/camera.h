@@ -9,9 +9,9 @@ public:
   float aspect;
   float near = 0.1f;
   float far = 1000.f;
+  bool zup = false;
 
-private:
-  float yaw = 0;
+ private : float yaw = 0;
   float pitch = 0;
 
 public:

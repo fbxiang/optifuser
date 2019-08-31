@@ -2,49 +2,33 @@
 #include "texture.h"
 #include <algorithm>
 namespace Optifuser {
-bool Scene::contains(const std::shared_ptr<Object> obj) const {
-  return obj->getScene() == shared_from_this();
+
+void Scene::addObject(std::unique_ptr<Object> obj) {
+  obj->setScene(this);
+  objects.push_back(std::move(obj));
 }
 
-void Scene::addObject(std::shared_ptr<Object> obj) {
+void Scene::removeObject(std::unique_ptr<Object> &obj) {
   auto s = obj->getScene();
-  if (s == shared_from_this())
-    return;
-  if (s) {
-    s->removeObject(obj);
-  }
-  obj->setScene(shared_from_this());
-  objects.push_back(obj);
-}
-
-void Scene::removeObject(std::shared_ptr<Object> obj) {
-  auto s = obj->getScene();
-  if (s != shared_from_this()) {
+  if (s != this) {
     return;
   }
   obj->setScene(nullptr);
   objects.erase(
       std::remove_if(objects.begin(), objects.end(),
-                     [&](std::shared_ptr<Object> o) { return obj == o; }),
+                     [&](std::unique_ptr<Object> &o) { return obj == o; }),
       objects.end());
 }
 
 void Scene::removeObjectsByName(std::string name) {
-  objects.erase(std::remove_if(
-                    objects.begin(), objects.end(),
-                    [&](std::shared_ptr<Object> o) { return o->name == name; }),
+  objects.erase(std::remove_if(objects.begin(), objects.end(),
+                               [&](std::unique_ptr<Object> &o) {
+                                 return o->name == name;
+                               }),
                 objects.end());
 }
 
-void Scene::setMainCamera(const std::shared_ptr<Camera> cam) {
-  if (contains(cam)) {
-    mainCamera = cam;
-  }
-}
-
-std::shared_ptr<Camera> Scene::getMainCamera() const { return mainCamera; }
-
-const std::vector<std::shared_ptr<Object>> &Scene::getObjects() const {
+const std::vector<std::unique_ptr<Object>> &Scene::getObjects() const {
   return objects;
 }
 

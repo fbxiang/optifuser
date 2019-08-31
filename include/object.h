@@ -31,6 +31,8 @@ struct Material {
 class Object : public std::enable_shared_from_this<Object> {
 protected:
   std::shared_ptr<AbstractMeshBase> mesh;
+  Object *parent;
+  std::vector<std::unique_ptr<Object>> children;
 
 public:
   std::shared_ptr<Shader> shader;
@@ -42,45 +44,51 @@ public:
   bool visible;
 
 protected:
-  std::weak_ptr<Scene> scene;
+  Scene *scene;
 
 public:
   Object(std::shared_ptr<AbstractMeshBase> m = nullptr)
-      : mesh(m), shader(nullptr), name(""), position(0.f), scale(1.f),
-        rotation(), visible(true) {}
+      : mesh(m), parent(nullptr), shader(nullptr), name(""), position(0.f),
+        scale(1.f), rotation(), visible(true), scene(nullptr) {}
 
   virtual ~Object() {}
 
   glm::mat4 getModelMat() const;
-  void setScene(const std::shared_ptr<Scene> inScene);
-  std::shared_ptr<Scene> getScene() const;
+  void setScene(Scene *inScene);
+  Scene *getScene() const;
 
   std::shared_ptr<AbstractMeshBase> getMesh() const;
+
+  void addChild(std::unique_ptr<Object> child);
+  inline const std::vector<std::unique_ptr<Object>> &getChildren() const {
+    return children;
+  }
 };
 
 template <typename T>
-std::shared_ptr<T> NewObject(std::shared_ptr<AbstractMeshBase> mesh) {
+std::unique_ptr<T> NewObject(std::shared_ptr<AbstractMeshBase> mesh) {
   static_assert(std::is_base_of<Object, T>::value,
                 "T must inherit from Obejct.");
-  auto obj = std::make_shared<T>(mesh);
+  auto obj = std::make_unique<T>(mesh);
   return obj;
 }
 
-template <typename T> std::shared_ptr<T> NewObject() {
+template <typename T> std::unique_ptr<T> NewObject() {
   static_assert(std::is_base_of<Object, T>::value,
                 "T must inherit from Obejct.");
-  auto obj = std::make_shared<T>();
+  auto obj = std::make_unique<T>();
   return obj;
 }
 
-std::shared_ptr<Object> NewNoisePlane(unsigned int res);
-std::shared_ptr<Object> NewDebugObject();
-std::shared_ptr<Object> NewPlane();
-std::shared_ptr<Object> NewYZPlane();
-std::shared_ptr<Object> NewCube();
-std::shared_ptr<Object> NewSphere();
-std::shared_ptr<Object> NewLine();
-std::shared_ptr<Object> NewLineCube();
-std::shared_ptr<Object> NewEnvironmentCube();
+std::unique_ptr<Object> NewNoisePlane(unsigned int res);
+std::unique_ptr<Object> NewDebugObject();
+std::unique_ptr<Object> NewPlane();
+std::unique_ptr<Object> NewYZPlane();
+std::unique_ptr<Object> NewCube();
+std::unique_ptr<Object> NewSphere();
+std::unique_ptr<Object> NewLine();
+std::unique_ptr<Object> NewLineCube();
+std::unique_ptr<Object> NewMeshGrid();
+std::unique_ptr<Object> NewAxes();
 
 } // namespace Optifuser

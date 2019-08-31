@@ -9,9 +9,10 @@
 
 namespace Optifuser {
 
-void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
+void keyCallback(GLFWwindow *window, int key, int scancode, int action,
+                 int mods);
 void ensureGlobalContext();
-Input& getInput();
+Input &getInput();
 
 class RenderContext {
 protected:
@@ -25,28 +26,7 @@ public:
   inline int getHeight() { return height; }
   inline GLuint getFbo() { return fbo; }
   inline GLuint getTex() { return tex; }
-  virtual void render(std::shared_ptr<Scene> scene) = 0;
-};
-
-class OffScreenRenderContext : public RenderContext {
-  GLuint fbo;
-  GLuint tex;
-
-public:
-  Optifuser::Renderer renderer;
-
-public:
-  OffScreenRenderContext(int w, int h);
-
-  ~OffScreenRenderContext();
-
-  OffScreenRenderContext(const OffScreenRenderContext &) = delete;
-  const OffScreenRenderContext &
-  operator=(const OffScreenRenderContext &) = delete;
-
-  virtual void render(std::shared_ptr<Scene> scene) override;
-
-  void save(const std::string &filename);
+  virtual void render(const Scene &scene, const CameraSpec &camera) = 0;
 };
 
 class GLFWRenderContext : public RenderContext {
@@ -54,7 +34,7 @@ class GLFWRenderContext : public RenderContext {
 public:
   Optifuser::Renderer renderer;
 
-  static GLFWRenderContext &Get(int w = 640, int h = 480); 
+  static GLFWRenderContext &Get(int w = 640, int h = 480);
 
 protected:
   GLFWRenderContext(int w = 640, int h = 480);
@@ -65,9 +45,11 @@ public:
   GLFWRenderContext(const GLFWRenderContext &) = delete;
   const GLFWRenderContext &operator=(const GLFWRenderContext &) = delete;
 
-  void init(uint32_t width, uint32_t height); 
+  void init(uint32_t width, uint32_t height);
   void processEvents();
-  virtual void render(std::shared_ptr<Scene> scene) override;
+  virtual void render(const Scene &scene, const CameraSpec &camera) override;
+
+  void destroy();
 };
 
 } // namespace Optifuser

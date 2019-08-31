@@ -3,16 +3,37 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <iostream>
 #include <string>
 namespace Optifuser {
-std::vector<std::shared_ptr<Object>> LoadObj(const std::string file) {
-  auto objects = std::vector<std::shared_ptr<Object>>();
+std::vector<std::unique_ptr<Object>>
+
+LoadObj(const std::string file, bool ignoreSpecification, glm::vec3 upAxis,
+        glm::vec3 forwardAxis) {
+  printf("Loading texture %s\n", file.c_str());
+  glm::mat3 formatTransform =
+      glm::mat3(glm::cross(forwardAxis, upAxis), upAxis, -forwardAxis);
+
+  auto objects = std::vector<std::unique_ptr<Object>>();
 
   Assimp::Importer importer;
-  const aiScene *scene = importer.ReadFile(
-      file, aiProcess_CalcTangentSpace | aiProcess_Triangulate |
-                aiProcess_GenNormals | aiProcess_PreTransformVertices |
-                aiProcess_FlipUVs);
+  uint32_t flags = aiProcess_CalcTangentSpace | aiProcess_Triangulate |
+                   aiProcess_GenNormals | aiProcess_FlipUVs;
+  if (!ignoreSpecification) {
+    flags |= aiProcess_PreTransformVertices;
+  }
+
+  const aiScene *scene = importer.ReadFile(file, flags);
+
+  // auto tt = scene->mRootNode->mTransformation;
+  // printf("%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n", tt.a1, tt.a2,
+  //        tt.a3, tt.a4, tt.b1, tt.b2, tt.b3, tt.b4, tt.c1, tt.c2, tt.c3, tt.c4,
+  //        tt.d1, tt.d2, tt.d3, tt.d4);
+
+  if (scene->mRootNode->mMetaData) {
+    std::cerr << "HAS META" << std::endl;
+    exit(1);
+  }
 
   if (!scene) {
     fprintf(stderr, "%s\n", importer.GetErrorString());
@@ -87,22 +108,26 @@ std::vector<std::shared_ptr<Object>> LoadObj(const std::string file) {
     for (uint32_t v = 0; v < mesh->mNumVertices; v++) {
       glm::vec3 normal = glm::vec3(0);
       glm::vec2 texcoord = glm::vec2(0);
-      glm::vec3 position = {mesh->mVertices[v].x, mesh->mVertices[v].y,
-                            mesh->mVertices[v].z};
+      glm::vec3 position = formatTransform * glm::vec3(mesh->mVertices[v].x,
+                                                       mesh->mVertices[v].y,
+                                                       mesh->mVertices[v].z);
       glm::vec3 tangent = glm::vec3(0);
       glm::vec3 bitangent = glm::vec3(0);
       if (mesh->HasNormals()) {
-        normal = {mesh->mNormals[v].x, mesh->mNormals[v].y,
-                  mesh->mNormals[v].z};
+        normal = formatTransform * glm::vec3(mesh->mNormals[v].x,
+                                             mesh->mNormals[v].y,
+                                             mesh->mNormals[v].z);
       }
       if (mesh->HasTextureCoords(0)) {
         texcoord = {mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y};
       }
       if (mesh->HasTangentsAndBitangents()) {
-        tangent = {mesh->mTangents[v].x, mesh->mTangents[v].y,
-                   mesh->mTangents[v].z};
-        bitangent = {mesh->mBitangents[v].x, mesh->mBitangents[v].y,
-                     mesh->mBitangents[v].z};
+        tangent = formatTransform * glm::vec3(mesh->mTangents[v].x,
+                                              mesh->mTangents[v].y,
+                                              mesh->mTangents[v].z);
+        bitangent = formatTransform * glm::vec3(mesh->mBitangents[v].x,
+                                                mesh->mBitangents[v].y,
+                                                mesh->mBitangents[v].z);
       }
       vertices.push_back(
           Vertex(position, normal, texcoord, tangent, bitangent));
@@ -119,10 +144,8 @@ std::vector<std::shared_ptr<Object>> LoadObj(const std::string file) {
       indices.push_back(face.mIndices[2]);
     }
     auto m = std::make_shared<TriangleMesh>(vertices, indices);
-    auto obj = NewObject<Object>(m);
-    objects.push_back(obj);
-
-    obj->material = mats[mesh->mMaterialIndex];
+    objects.push_back(NewObject<Object>(m));
+    objects.back()->material = mats[mesh->mMaterialIndex];
   }
   return objects;
 }

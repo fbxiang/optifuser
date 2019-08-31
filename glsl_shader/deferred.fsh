@@ -12,6 +12,8 @@ uniform mat4 gbufferViewMatrix;
 uniform mat4 gbufferViewMatrixInverse;
 uniform mat4 gbufferProjectionMatrix;
 uniform mat4 gbufferProjectionMatrixInverse;
+uniform mat4 environmentViewMatrix;
+uniform mat4 environmentViewMatrixInverse;
 
 uniform int debug;
 uniform vec3 ambientLight;
@@ -69,7 +71,6 @@ void main() {
   }
 
   for (int i = 0; i < N_DIRECTION_LIGHTS; i++) {
-    // TODO: need use inverse transpose?
     vec3 lightDir = -normalize((gbufferViewMatrix * vec4(directionalLights[i].direction, 0)).xyz);
     color += albedo * directionalLights[i].emission * max(0, dot(lightDir, normal));
   }
@@ -77,9 +78,12 @@ void main() {
   color += ambientLight * albedo;
 
   float depth = texture(depthtex0, texcoord).x;
-  if (depth == 1) {
-    FragColor = texture(skybox, (gbufferViewMatrixInverse * csPosition).xyz);
+  if (depth >= 0.99) {
+    FragColor = texture(skybox, (environmentViewMatrixInverse * csPosition).xyz);
   } else {
     FragColor = vec4(color, 1.f);
   }
+  FragColor.r = pow(FragColor.r, 1.f / 2.2f);
+  FragColor.g = pow(FragColor.g, 1.f / 2.2f);
+  FragColor.b = pow(FragColor.b, 1.f / 2.2f);
 }

@@ -1,4 +1,5 @@
 #include "texture.h"
+#include "debug.h"
 #include <iostream>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -34,6 +35,7 @@ void Texture::load(const std::string &filename, int mipmap, int wrapping,
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
 
   stbi_image_free(data);
+  LABEL_TEXTURE(id, filename);
 }
 
 void Texture::destroy() {

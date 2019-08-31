@@ -10,8 +10,7 @@ public:
   ~Scene(){};
 
 private:
-  std::vector<std::shared_ptr<Object>> objects;
-  std::shared_ptr<Camera> mainCamera;
+  std::vector<std::unique_ptr<Object>> objects;
 
   std::vector<PointLight> pointLights;
   std::vector<DirectionalLight> directionalLights;
@@ -20,14 +19,10 @@ private:
   std::shared_ptr<CubeMapTexture> environmentMap;
 
 public:
-  bool contains(const std::shared_ptr<Object> obj) const;
-  void addObject(std::shared_ptr<Object> obj);
-  void removeObject(std::shared_ptr<Object> obj);
+  void addObject(std::unique_ptr<Object> obj);
+  void removeObject(std::unique_ptr<Object> &obj);
   void removeObjectsByName(std::string name);
-  const std::vector<std::shared_ptr<Object>> &getObjects() const;
-
-  void setMainCamera(const std::shared_ptr<Camera> cam);
-  std::shared_ptr<Camera> getMainCamera() const;
+  const std::vector<std::unique_ptr<Object>> &getObjects() const;
 
   void setAmbientLight(glm::vec3 light);
   void addPointLight(PointLight light);

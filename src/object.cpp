@@ -12,17 +12,13 @@ glm::mat4 Object::getModelMat() const {
   return t;
 }
 
-void Object::setScene(const std::shared_ptr<Scene> inScene) { scene = inScene; }
+void Object::setScene(Scene *inScene) { scene = inScene; }
 
-std::shared_ptr<Scene> Object::getScene() const {
-  if (!scene.expired())
-    return scene.lock();
-  return std::shared_ptr<Scene>();
-}
+Scene *Object::getScene() const { return scene; }
 
 std::shared_ptr<AbstractMeshBase> Object::getMesh() const { return mesh; }
 
-std::shared_ptr<Object> NewNoisePlane(unsigned int res) {
+std::unique_ptr<Object> NewNoisePlane(unsigned int res) {
 
   PerlinNoise noise;
   noise.addNoise(0.1, glm::vec2(0), 2, 0);
@@ -61,7 +57,7 @@ std::shared_ptr<Object> NewNoisePlane(unsigned int res) {
   return obj;
 }
 
-std::shared_ptr<Object> NewDebugObject() {
+std::unique_ptr<Object> NewDebugObject() {
   std::vector<Vertex> vertices;
   vertices.push_back(
       Vertex(glm::vec3(-1, 1, 0), glm::vec3(0, 0, 1), glm::vec2(0, 1)));
@@ -80,7 +76,7 @@ std::shared_ptr<Object> NewDebugObject() {
   return obj;
 }
 
-std::shared_ptr<Object> NewPlane() {
+std::unique_ptr<Object> NewPlane() {
   std::vector<Vertex> vertices;
   vertices.push_back(Vertex(glm::vec3(-1, 1, 0), glm::vec3(0, 0, 1),
                             glm::vec2(0, 1), glm::vec3(1, 0, 0),
@@ -102,7 +98,7 @@ std::shared_ptr<Object> NewPlane() {
   return obj;
 }
 
-std::shared_ptr<Object> NewYZPlane() {
+std::unique_ptr<Object> NewYZPlane() {
   std::vector<Vertex> vertices;
   vertices.push_back(Vertex(glm::vec3(0, 1, 1), glm::vec3(1, 0, 0),
                             glm::vec2(0, 1), glm::vec3(0, 0, -1),
@@ -123,7 +119,7 @@ std::shared_ptr<Object> NewYZPlane() {
   return obj;
 }
 
-std::shared_ptr<Object> NewCube() {
+std::unique_ptr<Object> NewCube() {
   std::vector<Vertex> vertices = {
       Vertex(glm::vec3(-1.0, -1.0, 1.0)),  Vertex(glm::vec3(1.0, -1.0, 1.0)),
       Vertex(glm::vec3(1.0, 1.0, 1.0)),    Vertex(glm::vec3(-1.0, 1.0, 1.0)),
@@ -139,7 +135,7 @@ std::shared_ptr<Object> NewCube() {
   return obj;
 }
 
-std::shared_ptr<Object> NewSphere() {
+std::unique_ptr<Object> NewSphere() {
   std::vector<Vertex> vertices;
   std::vector<GLuint> indices;
 
@@ -185,7 +181,7 @@ std::shared_ptr<Object> NewSphere() {
   return obj;
 }
 
-std::shared_ptr<Object> NewLine() {
+std::unique_ptr<Object> NewLine() {
   std::vector<Vertex> vertices;
   std::vector<GLuint> indices;
 
@@ -199,7 +195,7 @@ std::shared_ptr<Object> NewLine() {
   return obj;
 }
 
-std::shared_ptr<Object> NewLineCube() {
+std::unique_ptr<Object> NewLineCube() {
   std::vector<Vertex> vertices = {
       Vertex(glm::vec3(-1.0, -1.0, 1.0)),  Vertex(glm::vec3(1.0, -1.0, 1.0)),
       Vertex(glm::vec3(1.0, 1.0, 1.0)),    Vertex(glm::vec3(-1.0, 1.0, 1.0)),
@@ -213,27 +209,56 @@ std::shared_ptr<Object> NewLineCube() {
   return obj;
 }
 
-std::shared_ptr<Object> NewEnvironmentCube() {
-  std::vector<Vertex> vertices(8);
-  vertices[0].position = {1.f, 1.f, 1.f};
-  vertices[1].position = {-1.f, 1.f, 1.f};
-  vertices[2].position = {1.f, -1.f, 1.f};
-  vertices[3].position = {-1.f, -1.f, 1.f};
-  vertices[4].position = {1.f, 1.f, -1.f};
-  vertices[5].position = {-1.f, 1.f, -1.f};
-  vertices[6].position = {1.f, -1.f, -1.f};
-  vertices[7].position = {-1.f, -1.f, -1.f};
-
-  for (auto &v : vertices) {
-    v.position.x *= 500;
-    v.position.y *= 500;
-    v.position.z *= 500;
+std::unique_ptr<Object> NewMeshGrid() {
+  std::vector<Vertex> vertices;
+  std::vector<GLuint> indices;
+  int c = 0;
+  for (int i = -5; i <= 5; ++i) {
+    vertices.push_back(glm::vec3(i, 0, -5));
+    indices.push_back(c++);
+    vertices.push_back(glm::vec3(i, 0, 5));
+    indices.push_back(c++);
   }
-
-  std::vector<unsigned int> indices = {0, 1, 2, 1, 3, 2, 4, 0, 6, 0, 2, 6,
-                                       5, 4, 7, 4, 6, 7, 1, 5, 3, 5, 7, 3,
-                                       4, 5, 0, 5, 1, 0, 3, 7, 6, 2, 3, 6};
-
-  return NewObject<Object>(std::make_shared<TriangleMesh>(vertices, indices));
+  for (int i = -5; i <= 5; ++i) {
+    vertices.push_back(glm::vec3(-5, 0, i));
+    indices.push_back(c++);
+    vertices.push_back(glm::vec3(5, 0, i));
+    indices.push_back(c++);
+  }
+  auto obj = NewObject<Object>(std::make_shared<LineMesh>(vertices, indices));
+  return obj;
 }
+
+std::unique_ptr<Object> NewAxes() {
+  auto x = NewCube();
+  x->scale = {1, 0.01, 0.01};
+  x->position = {1, 0, 0};
+  x->material.kd = {1, 0, 0};
+
+  auto y = NewCube();
+  y->scale = {0.01, 1, 0.01};
+  y->position = {0, 1, 0};
+  y->material.kd = {0, 1, 0};
+
+  auto z = NewCube();
+  z->scale = {0.01, 0.01, 1};
+  z->position = {0, 0, 1};
+  z->material.kd = {0, 0, 1};
+
+  auto axes = NewObject<Object>();
+  axes->addChild(std::move(x));
+  axes->addChild(std::move(y));
+  axes->addChild(std::move(z));
+
+  // auto obj = NewObject<Object>(std::make_shared<LineMesh>(vertices,
+  // indices)); obj->name = "Axes"; obj->material.kd = {1, 0, 0};
+  return axes;
+}
+
+void Object::addChild(std::unique_ptr<Object> child) {
+  assert(child->getScene() == nullptr);
+  child->parent = this;
+  children.push_back(std::move(child));
+}
+
 } // namespace Optifuser

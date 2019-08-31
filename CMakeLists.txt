@@ -11,8 +11,11 @@ find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(assimp REQUIRED)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GTKMM3 REQUIRED gtkmm-3.0)
+include_directories(${GTKMM3_INCLUDE_DIRS})
+
 file(GLOB_RECURSE RENDER_SRC "include/*.h" "src/*.cpp")
-file(GLOB_RECURSE APP_SRC "app/*.h" "app/*.cpp")
 
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_RELEASE})
 
@@ -37,8 +40,16 @@ add_library(optifuser SHARED ${RENDER_SRC})
 target_link_libraries(optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLEW_LIBRARY}
   ${ASSIMP_LIBRARIES} pthread ${OPTIXLIBRARY})
 
-add_executable(run ${APP_SRC})
+add_executable(gtk "app/gtk.cpp")
+target_link_libraries(gtk optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY}
+  ${ASSIMP_LIBRARIES} pthread ${OPTIX_LIBRARY} stdc++fs ${GTKMM3_LIBRARIES})
+
+add_executable(run app/main.cpp)
 target_link_libraries(run optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY}
+  ${ASSIMP_LIBRARIES} pthread ${OPTIX_LIBRARY} stdc++fs)
+
+add_executable(zup app/zup.cpp)
+target_link_libraries(zup optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY}
   ${ASSIMP_LIBRARIES} pthread ${OPTIX_LIBRARY})
 
 set_target_properties(optifuser run

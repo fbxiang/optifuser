@@ -1,4 +1,7 @@
 #pragma once
+#include "camera_spec.h"
+#include "passes/gbuffer_pass.h"
+#include "passes/lighting_pass.h"
 #include "scene.h"
 #include "shader.h"
 #include <GL/glew.h>
@@ -6,76 +9,53 @@
 #include <stdint.h>
 
 #define N_COLOR_ATTACHMENTS 3
+#define N_FBO 2
 namespace Optifuser {
 class Renderer {
+private:
+  GBufferPass gbuffer_pass;
+  LightingPass lighting_pass;
+
+  GLuint colortex[N_COLOR_ATTACHMENTS];
+  GLuint depthtex;
+  GLuint outputtex;
+
+  GLuint m_fbo[N_FBO];
+
+  void deleteTextures();
+  void initTextures(int width, int height);
+
 public:
   int debug = 0;
 
+  float worldAxesScale = 0;
+  float objectAxesScale = 0;
+
 public:
-  Renderer(GLuint w, GLuint h);
+  Renderer();
   void init();
   void exit();
   void resize(GLuint w, GLuint h);
 
-private:
+public:
   bool initialized;
 
-private:
-  std::string gbufferVertShaderFile;
-  std::string gbufferFragShaderFile;
-  std::shared_ptr<Shader> gbufferShader;
-
-  std::string deferredVertShaderFile;
-  std::string deferredFragShaderFile;
-  std::shared_ptr<Shader> deferredShader;
+public:
 
 public:
   void setGBufferShader(const std::string &vs, const std::string &fs);
   void setDeferredShader(const std::string &vs, const std::string &fs);
 
 protected:
-  GLuint width, height;
+  GLuint m_width, m_height;
 
 public:
-  inline GLuint getWidth() const { return width; }
-  inline GLuint getHeight() const { return height; }
-
-private:
-  GLuint g_fbo;
-  GLuint colortex[N_COLOR_ATTACHMENTS];
-  GLuint depthtex;
-
-  void initGbufferFramebuffer();
-  void initColortex();
-  void initDepthtex();
-  void bindAttachments();
-
-  void deleteGbufferFramebuffer();
-  void deleteColortex();
-  void deleteDepthtex();
-
-private:
-  GLuint quadVAO, quadVBO;
-  void initDeferredQuad();
-  void deleteDeferredQuad();
-
-private:
-  GLuint composite_fbo;
-  GLuint compositeTex;
-  void initCompositeFramebuffer();
-  void initCompositeTex();
-  void deleteCompositeFramebuffer();
-  void deleteCompositeTex();
-
-private:
-  void gbufferPass(std::shared_ptr<Scene> scene);
-  void gbufferPass(std::shared_ptr<Scene> scene, GLuint fbo);
-  void deferredPass(std::shared_ptr<Scene> scene);
-  void deferredPass(std::shared_ptr<Scene> scene, GLuint fbo);
+  inline GLuint getWidth() const { return m_width; }
+  inline GLuint getHeight() const { return m_height; }
 
 public:
-  void renderScene(std::shared_ptr<Scene> scene, GLuint fbo = 0);
-  // void renderSceneToFile(std::shared_ptr<Scene> scene, std::string filename);
+  void renderScene(const Scene &scene, const CameraSpec &camera,
+                   GLuint fbo = 0);
   void reloadShaders();
 };
 
