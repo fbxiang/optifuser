@@ -8,22 +8,26 @@
 #include <map>
 #include <stdint.h>
 
-#define N_COLOR_ATTACHMENTS 3
-#define N_FBO 2
+#define N_COLORTEX  3
+#define N_FBO 3
 namespace Optifuser {
 class Renderer {
 private:
   GBufferPass gbuffer_pass;
   LightingPass lighting_pass;
 
-  GLuint colortex[N_COLOR_ATTACHMENTS];
-  GLuint depthtex;
-  GLuint outputtex;
+  GLuint colortex[N_COLORTEX];
+  GLuint depthtex = 0;
+  GLuint outputtex = 0;
+  GLuint segtex[2];
 
   GLuint m_fbo[N_FBO];
 
   void deleteTextures();
-  void initTextures(int width, int height);
+  void initTextures();
+  void rebindTextures();
+
+  bool m_renderSegmentation = false;
 
 public:
   int debug = 0;
@@ -37,11 +41,12 @@ public:
   void exit();
   void resize(GLuint w, GLuint h);
 
+  void renderSegmentation(bool enabled = true);
+
 public:
   bool initialized;
 
 public:
-
 public:
   void setGBufferShader(const std::string &vs, const std::string &fs);
   void setDeferredShader(const std::string &vs, const std::string &fs);
@@ -54,8 +59,10 @@ public:
   inline GLuint getHeight() const { return m_height; }
 
 public:
-  void renderScene(const Scene &scene, const CameraSpec &camera,
-                   GLuint fbo = 0);
+  void renderScene(const Scene &scene, const CameraSpec &camera);
+  void displayLighting(GLuint fbo = 0) const;
+  void displaySegmentation(GLuint fbo = 0) const;
+  void displayDepth(GLuint fbo = 0) const;
   void reloadShaders();
 };
 

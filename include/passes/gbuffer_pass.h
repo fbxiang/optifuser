@@ -22,6 +22,7 @@ private:
   int m_width, m_height;
 
   bool m_initialized;
+
 public:
   void init();
   void setFbo(GLuint fbo);
@@ -29,9 +30,11 @@ public:
   void setColorAttachments(int num, GLuint *tex, int width, int height);
   void setDepthAttachment(GLuint depthtex);
   void bindAttachments() const;
-  void render(const Scene &scene, const CameraSpec &camera) const;
+  void render(const Scene &scene, const CameraSpec &camera,
+              bool renderSegmentation = false) const;
 
   int numColorAttachments() const;
+
 private:
 };
 

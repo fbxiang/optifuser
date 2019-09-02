@@ -43,7 +43,6 @@ void ensureGlobalContext() {
 GLFWRenderContext &GLFWRenderContext::Get(int w, int h) {
   static GLFWRenderContext Instance;
   Instance.init(w, h);
-  Instance.renderer.resize(w, h);
   return Instance;
 }
 
@@ -82,8 +81,7 @@ void GLFWRenderContext::processEvents() {
   }
 }
 
-void GLFWRenderContext::render(const Scene &scene, const CameraSpec &camera) {
-  renderer.renderScene(scene, camera);
+void GLFWRenderContext::swapBuffers() const {
   glfwSwapBuffers(mainWindow);
 }
 

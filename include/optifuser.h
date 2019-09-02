@@ -26,7 +26,6 @@ public:
   inline int getHeight() { return height; }
   inline GLuint getFbo() { return fbo; }
   inline GLuint getTex() { return tex; }
-  virtual void render(const Scene &scene, const CameraSpec &camera) = 0;
 };
 
 class GLFWRenderContext : public RenderContext {
@@ -47,7 +46,7 @@ public:
 
   void init(uint32_t width, uint32_t height);
   void processEvents();
-  virtual void render(const Scene &scene, const CameraSpec &camera) override;
+  void swapBuffers() const;
 
   void destroy();
 };

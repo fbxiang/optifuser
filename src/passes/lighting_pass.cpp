@@ -50,6 +50,7 @@ void LightingPass::setAttachment(GLuint texture, int width, int height) {
 
 void LightingPass::setInputTextures(int count, GLuint *colortex,
                                     GLuint depthtex) {
+  printf("input textures: %d\n", count);
   m_numColorTextures = count;
   m_colorTextures = colortex;
   m_depthTexture = depthtex;

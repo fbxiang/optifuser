@@ -4,7 +4,7 @@
 #include "object.h"
 #include <vector>
 namespace Optifuser {
-class Scene : public std::enable_shared_from_this<Scene> {
+class Scene {
 public:
   Scene(){};
   ~Scene(){};
@@ -15,7 +15,7 @@ private:
   std::vector<PointLight> pointLights;
   std::vector<DirectionalLight> directionalLights;
   std::vector<ParallelogramLight> parallelogramLights;
-  glm::vec3 ambientLight;
+  glm::vec3 ambientLight = {0, 0, 0};
   std::shared_ptr<CubeMapTexture> environmentMap;
 
 public:

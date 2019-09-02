@@ -18,7 +18,7 @@ struct Vertex {
       : position(p), normal(n), texCoord(t), tangent(tan), bitangent(bitan) {}
 };
 
-class AbstractMeshBase : public std::enable_shared_from_this<AbstractMeshBase> {
+class AbstractMeshBase {
 public:
   virtual void draw() const = 0;
 };

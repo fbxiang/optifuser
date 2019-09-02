@@ -23,10 +23,12 @@ int main() {
       Optifuser::GLFWRenderContext::Get(w, h);
   Optifuser::Scene scene;
 
+  uint32_t id = 0;
   auto objects = Optifuser::LoadObj(
       "/home/fx/source/physx-project/assets/robot/movo_description/meshes/"
       "manipulation/jaco/visual/base.dae");
   for (auto &obj : objects) {
+    obj->setSegmentId(++id);
     scene.addObject(std::move(obj));
   }
 
@@ -34,6 +36,7 @@ int main() {
       "/home/fx/source/physx-project/assets/robot/movo_description/meshes/"
       "manipulation/jaco/visual/shoulder_7dof.dae");
   for (auto &obj : objects) {
+    obj->setSegmentId(++id);
     scene.addObject(std::move(obj));
   }
 
@@ -62,9 +65,10 @@ int main() {
                            "../assets/ame_desert/desertsky_rt.tga");
 
   context.renderer.setGBufferShader("../glsl_shader/gbuffer.vsh",
-                                    "../glsl_shader/gbuffer.fsh");
+                                    "../glsl_shader/gbuffer_segmentation.fsh");
   context.renderer.setDeferredShader("../glsl_shader/deferred.vsh",
                                      "../glsl_shader/deferred.fsh");
+  context.renderer.renderSegmentation();
 
   while (true) {
     context.processEvents();
@@ -95,6 +99,8 @@ int main() {
       Optifuser::getInput().getCursor(dx, dy);
       cam.rotateYawPitch(-dx / 1000.f, -dy / 1000.f);
     }
-    context.render(scene, cam);
+    context.renderer.renderScene(scene, cam);
+    context.renderer.displayLighting();
+    context.swapBuffers();
   }
 }

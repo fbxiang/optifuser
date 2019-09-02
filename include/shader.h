@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 namespace Optifuser {
-class Shader : public std::enable_shared_from_this<Shader> {
+class Shader {
 public:
   GLuint Id;
 

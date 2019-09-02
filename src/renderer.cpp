@@ -3,9 +3,13 @@
 #include <iostream>
 namespace Optifuser {
 
-Renderer::Renderer() : depthtex(0), outputtex(0) {
-  for (int n = 0; n < N_COLOR_ATTACHMENTS; ++n) {
+Renderer::Renderer() {
+  for (int n = 0; n < N_COLORTEX; ++n) {
     colortex[n] = 0;
+  }
+  segtex[0] = segtex[1] = 0;
+  for (int n = 0; n < N_FBO; ++n) {
+    m_fbo[n] = 0;
   }
 }
 
@@ -13,33 +17,52 @@ void Renderer::deleteTextures() {
   glDeleteTextures(1, &depthtex);
   depthtex = 0;
 
-  glDeleteTextures(N_COLOR_ATTACHMENTS, colortex);
-  for (int n = 0; n < N_COLOR_ATTACHMENTS; ++n) {
+  glDeleteTextures(N_COLORTEX, colortex);
+  for (int n = 0; n < N_COLORTEX; ++n) {
     colortex[n] = 0;
   }
 
   glDeleteTextures(1, &outputtex);
   outputtex = 0;
+
+  glDeleteTextures(2, segtex);
+  segtex[0] = segtex[1] = 0;
 }
 
-void Renderer::initTextures(int width, int height) {
+void Renderer::initTextures() {
   deleteTextures();
 
   // colortex
-  glGenTextures(N_COLOR_ATTACHMENTS, colortex);
-  for (int n = 0; n < N_COLOR_ATTACHMENTS; n++) {
+  glGenTextures(N_COLORTEX, colortex);
+  for (int n = 0; n < N_COLORTEX; n++) {
     glBindTexture(GL_TEXTURE_2D, colortex[n]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA,
                  GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     LABEL_TEXTURE(colortex[n], "colortex" + std::to_string(n));
   }
 
+  if (m_renderSegmentation) {
+    glGenTextures(2, segtex);
+    glBindTexture(GL_TEXTURE_2D, segtex[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32I, m_width, m_height, 0,
+                 GL_RED_INTEGER, GL_INT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    LABEL_TEXTURE(segtex[0], "segmentation tex");
+
+    glBindTexture(GL_TEXTURE_2D, segtex[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA,
+                 GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    LABEL_TEXTURE(segtex[1], "segmentation color tex");
+  }
   // outputtex
   glGenTextures(1, &outputtex);
   glBindTexture(GL_TEXTURE_2D, outputtex);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA,
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA,
                GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -52,9 +75,15 @@ void Renderer::initTextures(int width, int height) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0,
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, m_width, m_height, 0,
                GL_DEPTH_COMPONENT, GL_FLOAT, 0);
   LABEL_TEXTURE(depthtex, "gbuffer depth");
+}
+
+void Renderer::renderSegmentation(bool enabled) {
+  m_renderSegmentation = enabled;
+  initTextures();
+  rebindTextures();
 }
 
 void Renderer::setGBufferShader(const std::string &vs, const std::string &fs) {
@@ -83,16 +112,31 @@ void Renderer::exit() {
   glDeleteFramebuffers(N_FBO, m_fbo);
 }
 
-void Renderer::resize(GLuint w, GLuint h) {
-  m_width = w;
-  m_height = h;
-  initTextures(w, h);
-  gbuffer_pass.setColorAttachments(N_COLOR_ATTACHMENTS, colortex, w, h);
+void Renderer::rebindTextures() {
+  GLuint tex[N_COLORTEX + 2];
+  int n_tex = N_COLORTEX;
+  for (int n = 0; n < N_COLORTEX; ++n) {
+    tex[n] = colortex[n];
+  }
+  if (m_renderSegmentation) {
+    tex[N_COLORTEX] = segtex[0];
+    tex[N_COLORTEX + 1] = segtex[1];
+    n_tex = N_COLORTEX + 2;
+  }
+
+  gbuffer_pass.setColorAttachments(n_tex, tex, m_width, m_height);
   gbuffer_pass.setDepthAttachment(depthtex);
   gbuffer_pass.bindAttachments();
 
-  lighting_pass.setAttachment(outputtex, w, h);
-  lighting_pass.setInputTextures(N_COLOR_ATTACHMENTS, colortex, depthtex);
+  lighting_pass.setAttachment(outputtex, m_width, m_height);
+  lighting_pass.setInputTextures(N_COLORTEX, colortex, depthtex);
+}
+
+void Renderer::resize(GLuint w, GLuint h) {
+  m_width = w;
+  m_height = h;
+  initTextures();
+  rebindTextures();
 }
 
 void Renderer::reloadShaders() { std::cerr << "Not implemented" << std::endl; }
@@ -130,18 +174,57 @@ void Renderer::reloadShaders() { std::cerr << "Not implemented" << std::endl; }
 //   renderObjectTree(axes, modelMat * scaling);
 // }
 
-void Renderer::renderScene(const Scene &scene, const CameraSpec &camera,
-                           GLuint fbo) {
+void Renderer::renderScene(const Scene &scene, const CameraSpec &camera) {
   if (!initialized) {
     fprintf(stderr, "Renderer is not initialized\n");
     return;
   }
 
-  gbuffer_pass.render(scene, camera);
+  gbuffer_pass.render(scene, camera, m_renderSegmentation);
   lighting_pass.render(scene, camera);
 
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+}
+
+void Renderer::displayLighting(GLuint fbo) const {
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo[1]);
+  glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height,
+                    GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+}
+
+void Renderer::displaySegmentation(GLuint fbo) const {
+  // read from segmentation color
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo[2]);
+  glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                         GL_TEXTURE_2D, segtex[1], 0);
+
+  // draw to given fbo
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+
+  glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height,
+                    GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+}
+
+void Renderer::displayDepth(GLuint fbo) const {
+  // bind depth to color
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo[2]);
+  glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                         GL_TEXTURE_2D, depthtex, 0);
+
+  // draw to given fbo
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+
   glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height,
                     GL_COLOR_BUFFER_BIT, GL_NEAREST);
 

@@ -28,11 +28,13 @@ struct Material {
   float exp = 1.f;
 };
 
-class Object : public std::enable_shared_from_this<Object> {
+class Object {
 protected:
   std::shared_ptr<AbstractMeshBase> mesh;
   Object *parent;
   std::vector<std::unique_ptr<Object>> children;
+
+  uint32_t segmentId = 0; // used for rendering segmentation
 
 public:
   std::shared_ptr<Shader> shader;
@@ -62,6 +64,13 @@ public:
   void addChild(std::unique_ptr<Object> child);
   inline const std::vector<std::unique_ptr<Object>> &getChildren() const {
     return children;
+  }
+
+  inline void setSegmentId(uint32_t id) {
+    segmentId = id;
+  }
+  inline uint32_t getSegmentId() const {
+    return segmentId;
   }
 };
 

@@ -5,6 +5,24 @@
 
 namespace Optifuser {
 
+constexpr int COLOR_TABLE_SIZE = 60;
+static glm::vec3 colortable[COLOR_TABLE_SIZE] = {
+    {0.8, 0.4, 0.4},   {0.8, 0.32, 0.32}, {0.8, 0.24, 0.24}, {0.8, 0.52, 0.4},
+    {0.8, 0.46, 0.32}, {0.8, 0.41, 0.24}, {0.8, 0.64, 0.4},  {0.8, 0.61, 0.32},
+    {0.8, 0.58, 0.24}, {0.8, 0.76, 0.4},  {0.8, 0.75, 0.32}, {0.8, 0.74, 0.24},
+    {0.72, 0.8, 0.4},  {0.7, 0.8, 0.32},  {0.69, 0.8, 0.24}, {0.6, 0.8, 0.4},
+    {0.56, 0.8, 0.32}, {0.52, 0.8, 0.24}, {0.48, 0.8, 0.4},  {0.42, 0.8, 0.32},
+    {0.35, 0.8, 0.24}, {0.4, 0.8, 0.44},  {0.32, 0.8, 0.37}, {0.24, 0.8, 0.3},
+    {0.4, 0.8, 0.56},  {0.32, 0.8, 0.51}, {0.24, 0.8, 0.46}, {0.4, 0.8, 0.68},
+    {0.32, 0.8, 0.66}, {0.24, 0.8, 0.63}, {0.4, 0.8, 0.8},   {0.32, 0.8, 0.8},
+    {0.24, 0.8, 0.8},  {0.4, 0.68, 0.8},  {0.32, 0.66, 0.8}, {0.24, 0.63, 0.8},
+    {0.4, 0.56, 0.8},  {0.32, 0.51, 0.8}, {0.24, 0.46, 0.8}, {0.4, 0.44, 0.8},
+    {0.32, 0.37, 0.8}, {0.24, 0.3, 0.8},  {0.48, 0.4, 0.8},  {0.42, 0.32, 0.8},
+    {0.35, 0.24, 0.8}, {0.6, 0.4, 0.8},   {0.56, 0.32, 0.8}, {0.52, 0.24, 0.8},
+    {0.72, 0.4, 0.8},  {0.7, 0.32, 0.8},  {0.69, 0.24, 0.8}, {0.8, 0.4, 0.76},
+    {0.8, 0.32, 0.75}, {0.8, 0.24, 0.74}, {0.8, 0.4, 0.64},  {0.8, 0.32, 0.61},
+    {0.8, 0.24, 0.58}, {0.8, 0.4, 0.52},  {0.8, 0.32, 0.46}, {0.8, 0.24, 0.41}};
+
 GBufferPass::GBufferPass()
     : m_fbo(0), m_depthtex(0), m_width(0), m_height(0), m_initialized(false) {}
 
@@ -38,7 +56,7 @@ void GBufferPass::setDepthAttachment(GLuint depthtex) { m_depthtex = depthtex; }
 void renderObjectTree(const Object &obj, const glm::mat4 &parentModelMat,
                       const glm::mat4 &viewMat, const glm::mat4 &viewMatInv,
                       const glm::mat4 &projMat, const glm::mat4 &projMatInv,
-                      Shader *defaultShader) {
+                      Shader *defaultShader, bool renderSegmentation) {
 
   glm::mat4 modelMat = parentModelMat * obj.getModelMat();
   auto mesh = obj.getMesh();
@@ -50,6 +68,12 @@ void renderObjectTree(const Object &obj, const glm::mat4 &parentModelMat,
       shader = defaultShader;
       shader->use();
     }
+    if (renderSegmentation) {
+      shader->setInt("segmentation", obj.getSegmentId());
+      shader->setVec3("segmentation_color",
+                      colortable[obj.getSegmentId() % COLOR_TABLE_SIZE]);
+    }
+
     shader->setMatrix("gbufferViewMatrix", viewMat);
     shader->setMatrix("gbufferViewMatrixInverse", glm::inverse(viewMat));
     shader->setMatrix("gbufferProjectionMatrix", projMat);
@@ -77,11 +101,12 @@ void renderObjectTree(const Object &obj, const glm::mat4 &parentModelMat,
   }
   for (auto &child : obj.getChildren()) {
     renderObjectTree(*child, modelMat, viewMat, viewMatInv, projMat, projMatInv,
-                     defaultShader);
+                     defaultShader, renderSegmentation);
   }
 }
 
-void GBufferPass::render(const Scene &scene, const CameraSpec &camera) const {
+void GBufferPass::render(const Scene &scene, const CameraSpec &camera,
+                         bool renderSegmentation) const {
   glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
   glViewport(0, 0, m_width, m_height);
 
@@ -99,7 +124,7 @@ void GBufferPass::render(const Scene &scene, const CameraSpec &camera) const {
   // TODO: render axes
   for (const auto &obj : scene.getObjects()) {
     renderObjectTree(*obj, glm::mat4(1.f), viewMat, viewMatInv, projMat,
-                     projMatInv, m_shader.get());
+                     projMatInv, m_shader.get(), renderSegmentation);
   }
 }
 
@@ -115,6 +140,7 @@ void GBufferPass::bindAttachments() const {
                            GL_TEXTURE_2D, m_colortex[n], 0);
     attachments[n] = GL_COLOR_ATTACHMENT0 + n;
   }
+  printf("Draw buffer count %d\n", count);
   glDrawBuffers(count, attachments);
 
   glBindTexture(GL_TEXTURE_2D, m_depthtex);
