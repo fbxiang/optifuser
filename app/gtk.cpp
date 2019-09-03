@@ -1,12 +1,12 @@
 #include "objectLoader.h"
 #include "optifuser.h"
+#include "safe_queue.h"
 #include <GL/glew.h>
 #include <gdkmm-3.0/gdkmm.h>
 #include <gtkmm-3.0/gtkmm.h>
 #include <iostream>
 #include <memory>
 #include <thread>
-#include "safe_queue.h"
 
 #define CHECK(exp, msg)                                                        \
   {                                                                            \
@@ -17,6 +17,23 @@
   }
 
 void loadSponza(Optifuser::Scene &scene) {
+  // uint32_t id = 0;
+  // auto objects = Optifuser::LoadObj(
+  //     "/home/fx/source/physx-project/assets/robot/movo_description/meshes/"
+  //     "manipulation/jaco/visual/base.dae");
+  // for (auto &obj : objects) {
+  //   obj->setSegmentId(++id);
+  //   scene.addObject(std::move(obj));
+  // }
+
+  // objects = Optifuser::LoadObj(
+  //     "/home/fx/source/physx-project/assets/robot/movo_description/meshes/"
+  //     "manipulation/jaco/visual/shoulder_7dof.dae");
+  // for (auto &obj : objects) {
+  //   obj->setSegmentId(++id);
+  //   scene.addObject(std::move(obj));
+  // }
+
   int id = 0;
   auto objects = Optifuser::LoadObj("../scenes/sponza/sponza.obj");
   for (auto &obj : objects) {
@@ -25,6 +42,7 @@ void loadSponza(Optifuser::Scene &scene) {
     obj->setSegmentId(++id);
     scene.addObject(std::move(obj));
   }
+
 }
 
 class MainWindow;
@@ -91,7 +109,6 @@ public:
   virtual ~MainWindow() = default;
 };
 
-
 int main(int argc, char **argv) {
 
   std::thread gtkThread([&] {
@@ -136,6 +153,8 @@ int main(int argc, char **argv) {
                           "../assets/ame_desert/desertsky_lf.tga",
                           "../assets/ame_desert/desertsky_rt.tga");
 
+  context.renderer.setShadowShader("../glsl_shader/shadow.vsh",
+                                   "../glsl_shader/shadow.fsh");
   context.renderer.setGBufferShader("../glsl_shader/gbuffer.vsh",
                                     "../glsl_shader/gbuffer_segmentation.fsh");
   context.renderer.setDeferredShader("../glsl_shader/deferred.vsh",
@@ -157,8 +176,9 @@ int main(int argc, char **argv) {
                                            "../glsl_shader/deferred_depth.fsh");
       } else if (msg == "texture") {
         mode = "texture";
-        context.renderer.setDeferredShader("../glsl_shader/deferred.vsh",
-                                           "../glsl_shader/deferred_albedo.fsh");
+        context.renderer.setDeferredShader(
+            "../glsl_shader/deferred.vsh",
+            "../glsl_shader/deferred_albedo.fsh");
       } else if (msg == "segmentation") {
         mode = "segmentation";
       }

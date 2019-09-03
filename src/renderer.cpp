@@ -8,7 +8,7 @@ Renderer::Renderer() {
     colortex[n] = 0;
   }
   segtex[0] = segtex[1] = 0;
-  for (int n = 0; n < N_FBO; ++n) {
+  for (int n = 0; n < FBO_TYPE::COUNT; ++n) {
     m_fbo[n] = 0;
   }
 }
@@ -27,6 +27,8 @@ void Renderer::deleteTextures() {
 
   glDeleteTextures(2, segtex);
   segtex[0] = segtex[1] = 0;
+
+  glDeleteTextures(1, &shadowtex);
 }
 
 void Renderer::initTextures() {
@@ -75,9 +77,22 @@ void Renderer::initTextures() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+  glTextureParameterf(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, 1);
+  
   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, m_width, m_height, 0,
                GL_DEPTH_COMPONENT, GL_FLOAT, 0);
   LABEL_TEXTURE(depthtex, "gbuffer depth");
+
+  // shadowtex
+  glGenTextures(1, &shadowtex);
+  glBindTexture(GL_TEXTURE_2D, shadowtex);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, shadowWidth,
+               shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+  LABEL_TEXTURE(shadowtex, "shadow map");
 }
 
 void Renderer::renderSegmentation(bool enabled) {
@@ -92,24 +107,29 @@ void Renderer::setGBufferShader(const std::string &vs, const std::string &fs) {
 void Renderer::setDeferredShader(const std::string &vs, const std::string &fs) {
   lighting_pass.setShader(vs, fs);
 }
+void Renderer::setShadowShader(const std::string &vs, const std::string &fs) {
+  shadow_pass.setShader(vs, fs);
+}
 
 void Renderer::init() {
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
 
-  glGenFramebuffers(N_FBO, m_fbo);
+  glGenFramebuffers(FBO_TYPE::COUNT, m_fbo);
   gbuffer_pass.init();
   lighting_pass.init();
+  shadow_pass.init();
 
-  gbuffer_pass.setFbo(m_fbo[0]);
-  lighting_pass.setFbo(m_fbo[1]);
+  gbuffer_pass.setFbo(m_fbo[FBO_TYPE::GBUFFER]);
+  lighting_pass.setFbo(m_fbo[FBO_TYPE::LIGHTING]);
+  shadow_pass.setFbo(m_fbo[FBO_TYPE::SHADOW]);
   initialized = true;
 }
 
 void Renderer::exit() {
   initialized = false;
   deleteTextures();
-  glDeleteFramebuffers(N_FBO, m_fbo);
+  glDeleteFramebuffers(FBO_TYPE::COUNT, m_fbo);
 }
 
 void Renderer::rebindTextures() {
@@ -123,6 +143,7 @@ void Renderer::rebindTextures() {
     tex[N_COLORTEX + 1] = segtex[1];
     n_tex = N_COLORTEX + 2;
   }
+  shadow_pass.setDepthAttachment(shadowtex, shadowWidth, shadowHeight);
 
   gbuffer_pass.setColorAttachments(n_tex, tex, m_width, m_height);
   gbuffer_pass.setDepthAttachment(depthtex);
@@ -179,6 +200,11 @@ void Renderer::renderScene(const Scene &scene, const CameraSpec &camera) {
     fprintf(stderr, "Renderer is not initialized\n");
     return;
   }
+  auto &lights = scene.getDirectionalLights();
+  if (lights.size()) {
+    shadow_pass.render(scene, camera);
+    lighting_pass.setShadowTexture(shadowtex);
+  }
 
   gbuffer_pass.render(scene, camera, m_renderSegmentation);
   lighting_pass.render(scene, camera);
@@ -190,7 +216,7 @@ void Renderer::renderScene(const Scene &scene, const CameraSpec &camera) {
 
 void Renderer::displayLighting(GLuint fbo) const {
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo[1]);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo[FBO_TYPE::LIGHTING]);
   glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height,
                     GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
@@ -201,26 +227,9 @@ void Renderer::displayLighting(GLuint fbo) const {
 
 void Renderer::displaySegmentation(GLuint fbo) const {
   // read from segmentation color
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo[2]);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo[FBO_TYPE::COPY]);
   glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                          GL_TEXTURE_2D, segtex[1], 0);
-
-  // draw to given fbo
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-
-  glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height,
-                    GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-}
-
-void Renderer::displayDepth(GLuint fbo) const {
-  // bind depth to color
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo[2]);
-  glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                         GL_TEXTURE_2D, depthtex, 0);
 
   // draw to given fbo
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);

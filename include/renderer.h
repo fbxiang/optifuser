@@ -2,17 +2,28 @@
 #include "camera_spec.h"
 #include "passes/gbuffer_pass.h"
 #include "passes/lighting_pass.h"
+#include "passes/shadow_pass.h"
 #include "scene.h"
 #include "shader.h"
 #include <GL/glew.h>
 #include <map>
 #include <stdint.h>
 
-#define N_COLORTEX  3
-#define N_FBO 3
+#define N_COLORTEX 3
 namespace Optifuser {
+
+enum FBO_TYPE {
+  SHADOW,
+  GBUFFER,
+  LIGHTING,
+  COPY,
+
+  COUNT
+};
+
 class Renderer {
 private:
+  ShadowPass shadow_pass;
   GBufferPass gbuffer_pass;
   LightingPass lighting_pass;
 
@@ -20,8 +31,9 @@ private:
   GLuint depthtex = 0;
   GLuint outputtex = 0;
   GLuint segtex[2];
+  GLuint shadowtex = 0;
 
-  GLuint m_fbo[N_FBO];
+  GLuint m_fbo[FBO_TYPE::COUNT];
 
   void deleteTextures();
   void initTextures();
@@ -50,9 +62,13 @@ public:
 public:
   void setGBufferShader(const std::string &vs, const std::string &fs);
   void setDeferredShader(const std::string &vs, const std::string &fs);
+  void setShadowShader(const std::string &vs, const std::string &fs);
 
 protected:
   GLuint m_width, m_height;
+
+  GLuint shadowWidth = 4096;
+  GLuint shadowHeight = 4096;
 
 public:
   inline GLuint getWidth() const { return m_width; }
@@ -62,7 +78,6 @@ public:
   void renderScene(const Scene &scene, const CameraSpec &camera);
   void displayLighting(GLuint fbo = 0) const;
   void displaySegmentation(GLuint fbo = 0) const;
-  void displayDepth(GLuint fbo = 0) const;
   void reloadShaders();
 };
 

@@ -3,9 +3,7 @@
 
 namespace Optifuser {
 
-LightingPass::LightingPass()
-    : m_initialized(false), m_fbo(0), m_quadVao(0), m_quadVbo(0), m_numColorTextures(0),
-      m_colorTextures(nullptr), m_depthTexture(0), m_width(0), m_height(0) {}
+LightingPass::LightingPass() {}
 
 LightingPass::~LightingPass() {
   glDeleteBuffers(1, &m_quadVbo);
@@ -51,9 +49,13 @@ void LightingPass::setAttachment(GLuint texture, int width, int height) {
 void LightingPass::setInputTextures(int count, GLuint *colortex,
                                     GLuint depthtex) {
   printf("input textures: %d\n", count);
-  m_numColorTextures = count;
-  m_colorTextures = colortex;
+  m_colorTextures.resize(0);
+  m_colorTextures.insert(m_colorTextures.begin(), colortex, colortex + count);
   m_depthTexture = depthtex;
+}
+
+void LightingPass::setShadowTexture(GLuint shadowtex) {
+  m_shadowtex = shadowtex;
 }
 
 void LightingPass::render(const Scene &scene, const CameraSpec &camera) const {
@@ -97,13 +99,32 @@ void LightingPass::render(const Scene &scene, const CameraSpec &camera) const {
     m_shader->setVec3(e, directionalLights[i].emission);
   }
 
-  for (int n = 0; n < m_numColorTextures; n++) {
+  for (int n = 0; n < m_colorTextures.size(); n++) {
     m_shader->setTexture("colortex" + std::to_string(n), m_colorTextures[n], n);
   }
-  m_shader->setTexture("depthtex0", m_depthTexture, m_numColorTextures);
+  m_shader->setTexture("depthtex0", m_depthTexture, m_colorTextures.size());
   if (auto envmap = scene.getEnvironmentMap()) {
     m_shader->setCubemap("skybox", scene.getEnvironmentMap()->getId(),
-                         m_numColorTextures + 1);
+                         m_colorTextures.size() + 1);
+  }
+
+  if (m_shadowtex && directionalLights.size()) {
+    glm::vec3 dir = directionalLights[0].direction;
+    glm::vec3 em = directionalLights[0].emission;
+
+    glm::mat4 w2c = camera.getViewMat();
+    glm::vec3 csLightDir = w2c * glm::vec4(dir, 0);
+    glm::mat4 c2l =
+        glm::lookAt(glm::vec3(0, 0, 0), csLightDir, glm::vec3(0, 1, 0));
+
+    float v = 10.f;
+    glm::mat4 lsProj = glm::ortho(-v, v, -v, v, -v, v);
+
+    m_shader->setTexture("shadowtex", m_shadowtex, m_colorTextures.size() + 2);
+    m_shader->setMatrix("cameraToShadowMatrix", c2l);
+    m_shader->setMatrix("shadowProjectionMatrix", lsProj);
+    m_shader->setVec3("shadowLightDirection", dir);
+    m_shader->setVec3("shadowLightEmission", em);
   }
 
   // render quad

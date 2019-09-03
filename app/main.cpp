@@ -71,6 +71,8 @@ int main() {
       Optifuser::getInput().getCursor(dx, dy);
       cam.rotateYawPitch(-dx / 1000.f, -dy / 1000.f);
     }
-    context.render(scene, cam);
+    context.renderer.renderScene(scene, cam);
+    context.renderer.displayLighting(0);
+    context.swapBuffers();
   }
 }

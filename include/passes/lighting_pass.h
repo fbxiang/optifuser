@@ -7,20 +7,21 @@ namespace Optifuser {
 
 class LightingPass {
 
- public:
+public:
   LightingPass();
   ~LightingPass();
 
 private:
-  bool m_initialized;
+  bool m_initialized = false;
+  ;
 
-  GLuint m_fbo;
-  GLuint m_quadVao;
-  GLuint m_quadVbo;
+  GLuint m_fbo = 0;
+  GLuint m_quadVao = 0;
+  GLuint m_quadVbo = 0;
 
-  int m_numColorTextures;
-  GLuint *m_colorTextures;
-  GLuint m_depthTexture;
+  std::vector<GLuint> m_colorTextures;
+  GLuint m_depthTexture = 0;
+  GLuint m_shadowtex = 0;
 
   int m_width, m_height;
 
@@ -35,6 +36,7 @@ public:
 
   void setFbo(GLuint fbo);
   void setInputTextures(int count, GLuint *colortex, GLuint depthtex);
+  void setShadowTexture(GLuint shadowtex);
   void render(const Scene &scene, const CameraSpec &camera) const;
 };
 
