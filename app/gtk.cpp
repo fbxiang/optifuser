@@ -7,6 +7,10 @@
 #include <iostream>
 #include <memory>
 #include <thread>
+#include <experimental/filesystem>
+#include "partnet_loader.hpp"
+
+namespace fs = std::experimental::filesystem;
 
 #define CHECK(exp, msg)                                                        \
   {                                                                            \
@@ -16,37 +20,21 @@
     }                                                                          \
   }
 
-void loadSponza(Optifuser::Scene &scene) {
-  uint32_t id = 0;
-  auto objects = Optifuser::LoadObj(
-      "/home/fx/source/partnet-simulation/assets/robot/movo_description/meshes/"
-      "manipulation/jaco/visual/base.dae");
-  for (auto &obj : objects) {
-    obj->setSegmentId(++id);
-    obj->position = {-0.2, 0, 0.3};
-    obj->rotation = glm::angleAxis(0.2f, glm::vec3(1, 2, 1));
-    scene.addObject(std::move(obj));
-  }
-
-  objects = Optifuser::LoadObj(
-      "/home/fx/source/partnet-simulation/assets/robot/movo_description/meshes/"
-      "manipulation/jaco/visual/shoulder_7dof.dae");
-  for (auto &obj : objects) {
-    obj->setSegmentId(++id);
-    obj->position = {0.1, 0.3, -0.3};
-    obj->rotation = glm::angleAxis(0.2f, glm::vec3(-1, 2, 1));
-    scene.addObject(std::move(obj));
-  }
-
+void loadScene(Optifuser::Scene &scene) {
+  loadPartNet("../assets/46627");
   // int id = 0;
-  // auto objects = Optifuser::LoadObj("../scenes/sponza/sponza.obj");
-  // for (auto &obj : objects) {
-  //   obj->scale = glm::vec3(0.003f);
-  //   obj->position *= 0.003f;
-  //   obj->setSegmentId(++id);
-  //   scene.addObject(std::move(obj));
+  // for (const auto &f : fs::directory_iterator("../assets/46627/textured_objs")) {
+  //   if (f.path().extension().u8string() == ".obj") {
+  //     auto objs = Optifuser::LoadObj(f.path().u8string(), true, {0, 1, 0}, {0, 0, -1});
+  //     ++id;
+  //     for (auto & obj : objs) {
+  //       obj->setSegmentId(id);
+  //       scene.addObject(std::move(obj));
+  //     }
+  //   }
   // }
 }
+
 
 class MainWindow;
 Optifuser::GLFWRenderContext *gContext;
@@ -139,7 +127,7 @@ int main(int argc, char **argv) {
   gContext = &context;
   Optifuser::Scene scene;
 
-  loadSponza(scene);
+  loadScene(scene);
 
   Optifuser::FPSCameraSpec cam;
   cam.up = {0, 1, 0};
@@ -275,6 +263,10 @@ int main(int argc, char **argv) {
     }
 
     context.renderer.renderScene(scene, cam);
+    // context.renderer.saveLighting("lighting.raw");
+    // context.renderer.saveNormal("normal.raw");
+    // context.renderer.saveDepth("depth.raw");
+
     if (mode == "segmentation") {
       context.renderer.displaySegmentation();
     } else {

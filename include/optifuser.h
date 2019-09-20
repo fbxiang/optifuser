@@ -35,6 +35,8 @@ public:
 
   static GLFWRenderContext &Get(int w = 640, int h = 480);
 
+  void initGui();
+
 protected:
   GLFWRenderContext(int w = 640, int h = 480);
 

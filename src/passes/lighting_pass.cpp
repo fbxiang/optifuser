@@ -118,7 +118,7 @@ void LightingPass::render(const Scene &scene, const CameraSpec &camera) const {
         glm::lookAt(glm::vec3(0, 0, 0), csLightDir, glm::vec3(0, 1, 0));
 
     float v = 10.f;
-    glm::mat4 lsProj = glm::ortho(-v, v, -v, v, -v, v);
+    glm::mat4 lsProj = glm::ortho(-v, v, -v, v, -v, camera.far);
 
     m_shader->setTexture("shadowtex", m_shadowtex, m_colorTextures.size() + 2);
     m_shader->setMatrix("cameraToShadowMatrix", c2l);

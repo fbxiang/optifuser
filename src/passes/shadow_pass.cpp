@@ -68,7 +68,7 @@ void ShadowPass::render(const Scene &scene, const CameraSpec &camera) const {
   // float v = 4 * camera.far;
   // glm::mat4 lsProj = glm::ortho(-v, v, -v, v, -v, v);
   float v = 10.f;
-  glm::mat4 lsProj = glm::ortho(-v, v, -v, v, -v, v);
+  glm::mat4 lsProj = glm::ortho(-v, v, -v, v, -v, camera.far);
 
   glm::mat4 w2l = c2l * w2c;
   glm::mat4 lightSpaceMatrix = lsProj * w2l;

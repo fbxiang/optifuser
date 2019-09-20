@@ -57,4 +57,9 @@ glm::mat4 FPSCameraSpec::getViewMatLocal() const {
   return glm::inverse(t);
 }
 
+void FPSCameraSpec::update() {
+  glm::vec3 right = glm::cross(forward, up);
+  rotation = glm::angleAxis(yaw, up) * glm::angleAxis(pitch, right) * getRotation0();
+}
+
 } // namespace Optifuser

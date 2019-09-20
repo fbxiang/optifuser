@@ -1,0 +1,334 @@
+[{
+    "ori_id": 0,
+    "children": [{
+        "ori_id": 1,
+        "children": [{
+            "ori_id": 2,
+            "children": [{
+                "ori_id": 41,
+                "name": "back_panel",
+                "objs": ["original-5"],
+                "id": 3,
+                "text": "back_panel"
+            }, {
+                "ori_id": 42,
+                "name": "bottom_panel",
+                "objs": ["original-2"],
+                "id": 4,
+                "text": "bottom_panel"
+            }, {
+                "ori_id": 43,
+                "name": "vertical_side_panel",
+                "objs": ["original-11", "original-10"],
+                "id": 5,
+                "text": "vertical_side_panel"
+            }, {
+                "ori_id": 44,
+                "name": "vertical_side_panel",
+                "objs": ["original-15", "original-14"],
+                "id": 6,
+                "text": "vertical_side_panel"
+            }, {
+                "ori_id": 47,
+                "name": "frame_vertical_bar",
+                "objs": ["original-7"],
+                "id": 7,
+                "text": "frame_vertical_bar"
+            }, {
+                "ori_id": 48,
+                "name": "frame_vertical_bar",
+                "objs": ["original-17", "original-23"],
+                "id": 8,
+                "text": "frame_vertical_bar"
+            }, {
+                "ori_id": 49,
+                "name": "frame_vertical_bar",
+                "objs": ["original-3"],
+                "id": 9,
+                "text": "frame_vertical_bar"
+            }, {
+                "ori_id": 50,
+                "name": "frame_horizontal_bar",
+                "objs": ["original-22"],
+                "id": 10,
+                "text": "frame_horizontal_bar"
+            }, {
+                "ori_id": 51,
+                "name": "frame_horizontal_bar",
+                "objs": ["original-4"],
+                "id": 11,
+                "text": "frame_horizontal_bar"
+            }, {
+                "ori_id": 52,
+                "name": "frame_horizontal_bar",
+                "objs": ["original-21"],
+                "id": 12,
+                "text": "frame_horizontal_bar"
+            }, {
+                "ori_id": 53,
+                "name": "frame_horizontal_bar",
+                "objs": ["original-18"],
+                "id": 13,
+                "text": "frame_horizontal_bar"
+            }, {
+                "ori_id": 54,
+                "name": "frame_horizontal_bar",
+                "objs": ["original-6"],
+                "id": 14,
+                "text": "frame_horizontal_bar"
+            }, {
+                "ori_id": 55,
+                "name": "frame_horizontal_bar",
+                "objs": ["original-8"],
+                "id": 15,
+                "text": "frame_horizontal_bar"
+            }],
+            "name": "cabinet_frame",
+            "objs": ["original-5", "original-2", "original-11", "original-10", "original-15", "original-14", "original-154", "original-7", "original-17", "original-23", "original-3", "original-22", "original-4", "original-21", "original-18", "original-6", "original-8"],
+            "id": 2,
+            "text": "cabinet_frame"
+        }, {
+            "ori_id": 3,
+            "children": [{
+                "ori_id": 32,
+                "name": "cabinet_door_surface",
+                "objs": ["original-144", "original-148", "original-146", "original-139", "original-140", "original-149", "original-141", "original-147", "original-24", "original-142", "original-145"],
+                "id": 17,
+                "text": "cabinet_door_surface"
+            }, {
+                "ori_id": 33,
+                "name": "handle",
+                "objs": ["original-151", "original-152", "original-153"],
+                "id": 18,
+                "text": "handle"
+            }],
+            "name": "cabinet_door",
+            "objs": ["original-144", "original-148", "original-146", "original-139", "original-140", "original-149", "original-141", "original-147", "original-24", "original-142", "original-145", "original-151", "original-152", "original-153"],
+            "id": 16,
+            "text": "cabinet_door"
+        }, {
+            "ori_id": 4,
+            "children": [{
+                "ori_id": 30,
+                "name": "cabinet_door_surface",
+                "objs": ["original-128", "original-132", "original-123", "original-130", "original-133", "original-124", "original-126", "original-131", "original-125", "original-129"],
+                "id": 20,
+                "text": "cabinet_door_surface"
+            }, {
+                "ori_id": 31,
+                "name": "handle",
+                "objs": ["original-137", "original-135", "original-136"],
+                "id": 21,
+                "text": "handle"
+            }],
+            "name": "cabinet_door",
+            "objs": ["original-128", "original-132", "original-123", "original-130", "original-133", "original-124", "original-126", "original-131", "original-125", "original-129", "original-137", "original-135", "original-136"],
+            "id": 19,
+            "text": "cabinet_door"
+        }, {
+            "ori_id": 5,
+            "children": [{
+                "ori_id": 28,
+                "name": "cabinet_door_surface",
+                "objs": ["original-114", "original-107", "original-108", "original-116", "original-112", "original-115", "original-109", "original-110", "original-117", "original-113"],
+                "id": 23,
+                "text": "cabinet_door_surface"
+            }, {
+                "ori_id": 29,
+                "name": "handle",
+                "objs": ["original-119", "original-120", "original-121"],
+                "id": 24,
+                "text": "handle"
+            }],
+            "name": "cabinet_door",
+            "objs": ["original-114", "original-107", "original-108", "original-116", "original-112", "original-115", "original-109", "original-110", "original-117", "original-113", "original-119", "original-120", "original-121"],
+            "id": 22,
+            "text": "cabinet_door"
+        }, {
+            "ori_id": 6,
+            "children": [{
+                "ori_id": 26,
+                "name": "cabinet_door_surface",
+                "objs": ["original-92", "original-100", "original-65", "original-66", "original-91", "original-98", "original-96", "original-94", "original-101", "original-93", "original-99", "original-97", "original-71"],
+                "id": 26,
+                "text": "cabinet_door_surface"
+            }, {
+                "ori_id": 27,
+                "name": "handle",
+                "objs": ["original-103", "original-104", "original-105"],
+                "id": 27,
+                "text": "handle"
+            }],
+            "name": "cabinet_door",
+            "objs": ["original-92", "original-100", "original-65", "original-66", "original-91", "original-98", "original-96", "original-94", "original-101", "original-93", "original-99", "original-97", "original-71", "original-103", "original-104", "original-105"],
+            "id": 25,
+            "text": "cabinet_door"
+        }, {
+            "ori_id": 7,
+            "children": [{
+                "ori_id": 24,
+                "children": [{
+                    "ori_id": 25,
+                    "name": "drawer_front",
+                    "objs": ["original-84", "original-86", "original-89", "original-81", "original-80", "original-87", "original-82", "original-79", "original-88", "original-85"],
+                    "id": 30,
+                    "text": "drawer_front"
+                }],
+                "name": "drawer_box",
+                "objs": ["original-84", "original-86", "original-89", "original-81", "original-80", "original-87", "original-82", "original-79", "original-88", "original-85"],
+                "id": 29,
+                "text": "drawer_box"
+            }],
+            "name": "drawer",
+            "objs": ["original-84", "original-86", "original-89", "original-81", "original-80", "original-87", "original-82", "original-79", "original-88", "original-85"],
+            "id": 28,
+            "text": "drawer"
+        }, {
+            "ori_id": 8,
+            "children": [{
+                "ori_id": 17,
+                "children": [{
+                    "ori_id": 19,
+                    "name": "drawer_front",
+                    "objs": ["original-29", "original-42", "original-46", "original-37", "original-47", "original-38", "original-45", "original-39", "original-40", "original-25", "original-43", "original-44"],
+                    "id": 33,
+                    "text": "drawer_front"
+                }, {
+                    "ori_id": 20,
+                    "name": "drawer_side",
+                    "objs": ["original-28"],
+                    "id": 34,
+                    "text": "drawer_side"
+                }, {
+                    "ori_id": 21,
+                    "name": "drawer_side",
+                    "objs": ["original-35", "original-33"],
+                    "id": 35,
+                    "text": "drawer_side"
+                }, {
+                    "ori_id": 22,
+                    "name": "drawer_back",
+                    "objs": ["original-34"],
+                    "id": 36,
+                    "text": "drawer_back"
+                }, {
+                    "ori_id": 23,
+                    "name": "drawer_bottom",
+                    "objs": ["original-32", "original-31"],
+                    "id": 37,
+                    "text": "drawer_bottom"
+                }],
+                "name": "drawer_box",
+                "objs": ["original-29", "original-42", "original-46", "original-37", "original-47", "original-38", "original-45", "original-39", "original-40", "original-25", "original-43", "original-44", "original-28", "original-35", "original-33", "original-34", "original-32", "original-31"],
+                "id": 32,
+                "text": "drawer_box"
+            }, {
+                "ori_id": 18,
+                "name": "handle",
+                "objs": ["original-51", "original-49", "original-50"],
+                "id": 38,
+                "text": "handle"
+            }],
+            "name": "drawer",
+            "objs": ["original-29", "original-42", "original-46", "original-37", "original-47", "original-38", "original-45", "original-39", "original-40", "original-25", "original-43", "original-44", "original-28", "original-35", "original-33", "original-34", "original-32", "original-31", "original-51", "original-49", "original-50"],
+            "id": 31,
+            "text": "drawer"
+        }, {
+            "ori_id": 9,
+            "children": [{
+                "ori_id": 10,
+                "children": [{
+                    "ori_id": 12,
+                    "name": "drawer_front",
+                    "objs": ["original-68", "original-63", "original-70", "original-73", "original-64", "original-72", "original-55", "original-69"],
+                    "id": 41,
+                    "text": "drawer_front"
+                }, {
+                    "ori_id": 13,
+                    "name": "drawer_side",
+                    "objs": ["original-54"],
+                    "id": 42,
+                    "text": "drawer_side"
+                }, {
+                    "ori_id": 14,
+                    "name": "drawer_side",
+                    "objs": ["original-59", "original-61"],
+                    "id": 43,
+                    "text": "drawer_side"
+                }, {
+                    "ori_id": 15,
+                    "name": "drawer_back",
+                    "objs": ["original-60"],
+                    "id": 44,
+                    "text": "drawer_back"
+                }, {
+                    "ori_id": 16,
+                    "name": "drawer_bottom",
+                    "objs": ["original-58", "original-57"],
+                    "id": 45,
+                    "text": "drawer_bottom"
+                }],
+                "name": "drawer_box",
+                "objs": ["original-68", "original-63", "original-70", "original-73", "original-64", "original-72", "original-55", "original-69", "original-54", "original-59", "original-61", "original-60", "original-58", "original-57"],
+                "id": 40,
+                "text": "drawer_box"
+            }, {
+                "ori_id": 11,
+                "name": "handle",
+                "objs": ["original-75", "original-77", "original-76"],
+                "id": 46,
+                "text": "handle"
+            }],
+            "name": "drawer",
+            "objs": ["original-68", "original-63", "original-70", "original-73", "original-64", "original-72", "original-55", "original-69", "original-54", "original-59", "original-61", "original-60", "original-58", "original-57", "original-75", "original-77", "original-76"],
+            "id": 39,
+            "text": "drawer"
+        }, {
+            "ori_id": 56,
+            "children": [{
+                "ori_id": 58,
+                "children": [{
+                    "ori_id": 59,
+                    "name": "base_side_panel",
+                    "objs": ["original-16"],
+                    "id": 49,
+                    "text": "base_side_panel"
+                }, {
+                    "ori_id": 60,
+                    "name": "base_side_panel",
+                    "objs": ["original-19"],
+                    "id": 50,
+                    "text": "base_side_panel"
+                }, {
+                    "ori_id": 61,
+                    "name": "base_side_panel",
+                    "objs": ["original-12"],
+                    "id": 51,
+                    "text": "base_side_panel"
+                }, {
+                    "ori_id": 62,
+                    "name": "base_side_panel",
+                    "objs": ["original-20"],
+                    "id": 52,
+                    "text": "base_side_panel"
+                }],
+                "name": "panel_base",
+                "objs": ["original-16", "original-19", "original-12", "original-20"],
+                "id": 48,
+                "text": "panel_base"
+            }],
+            "name": "cabinet_base",
+            "objs": ["original-16", "original-19", "original-12", "original-20"],
+            "id": 47,
+            "text": "cabinet_base"
+        }],
+        "name": "cabinet",
+        "objs": ["original-5", "original-2", "original-11", "original-10", "original-15", "original-14", "original-154", "original-7", "original-17", "original-23", "original-3", "original-22", "original-4", "original-21", "original-18", "original-6", "original-8", "original-144", "original-148", "original-146", "original-139", "original-140", "original-149", "original-141", "original-147", "original-24", "original-142", "original-145", "original-151", "original-152", "original-153", "original-128", "original-132", "original-123", "original-130", "original-133", "original-124", "original-126", "original-131", "original-125", "original-129", "original-137", "original-135", "original-136", "original-114", "original-107", "original-108", "original-116", "original-112", "original-115", "original-109", "original-110", "original-117", "original-113", "original-119", "original-120", "original-121", "original-92", "original-100", "original-65", "original-66", "original-91", "original-98", "original-96", "original-94", "original-101", "original-93", "original-99", "original-97", "original-71", "original-103", "original-104", "original-105", "original-84", "original-86", "original-89", "original-81", "original-80", "original-87", "original-82", "original-79", "original-88", "original-85", "original-29", "original-42", "original-46", "original-37", "original-47", "original-38", "original-45", "original-39", "original-40", "original-25", "original-43", "original-44", "original-28", "original-35", "original-33", "original-34", "original-32", "original-31", "original-51", "original-49", "original-50", "original-68", "original-63", "original-70", "original-73", "original-64", "original-72", "original-55", "original-69", "original-54", "original-59", "original-61", "original-60", "original-58", "original-57", "original-75", "original-77", "original-76", "original-16", "original-19", "original-12", "original-20"],
+        "id": 1,
+        "text": "cabinet"
+    }],
+    "name": "storage_furniture",
+    "objs": ["original-5", "original-2", "original-11", "original-10", "original-15", "original-14", "original-154", "original-7", "original-17", "original-23", "original-3", "original-22", "original-4", "original-21", "original-18", "original-6", "original-8", "original-144", "original-148", "original-146", "original-139", "original-140", "original-149", "original-141", "original-147", "original-24", "original-142", "original-145", "original-151", "original-152", "original-153", "original-128", "original-132", "original-123", "original-130", "original-133", "original-124", "original-126", "original-131", "original-125", "original-129", "original-137", "original-135", "original-136", "original-114", "original-107", "original-108", "original-116", "original-112", "original-115", "original-109", "original-110", "original-117", "original-113", "original-119", "original-120", "original-121", "original-92", "original-100", "original-65", "original-66", "original-91", "original-98", "original-96", "original-94", "original-101", "original-93", "original-99", "original-97", "original-71", "original-103", "original-104", "original-105", "original-84", "original-86", "original-89", "original-81", "original-80", "original-87", "original-82", "original-79", "original-88", "original-85", "original-29", "original-42", "original-46", "original-37", "original-47", "original-38", "original-45", "original-39", "original-40", "original-25", "original-43", "original-44", "original-28", "original-35", "original-33", "original-34", "original-32", "original-31", "original-51", "original-49", "original-50", "original-68", "original-63", "original-70", "original-73", "original-64", "original-72", "original-55", "original-69", "original-54", "original-59", "original-61", "original-60", "original-58", "original-57", "original-75", "original-77", "original-76", "original-16", "original-19", "original-12", "original-20"],
+    "id": 0,
+    "text": "storage_furniture"
+}]

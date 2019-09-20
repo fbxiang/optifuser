@@ -45,6 +45,9 @@ public:
   glm::vec3 forward = {0, 0, -1};
   glm::vec3 up = {0, 1, 0};
 
+  // updates rotation based on forward and up
+  void update();
+
   void lookAt(const glm::vec3 &direction);
 
   inline void setForward(const glm::vec3 &dir) { forward = dir; }

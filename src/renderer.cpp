@@ -38,7 +38,7 @@ void Renderer::initTextures() {
   glGenTextures(N_COLORTEX, colortex);
   for (int n = 0; n < N_COLORTEX; n++) {
     glBindTexture(GL_TEXTURE_2D, colortex[n]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA,
                  GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -55,7 +55,7 @@ void Renderer::initTextures() {
     LABEL_TEXTURE(segtex[0], "segmentation tex");
 
     glBindTexture(GL_TEXTURE_2D, segtex[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA,
                  GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -64,7 +64,7 @@ void Renderer::initTextures() {
   // outputtex
   glGenTextures(1, &outputtex);
   glBindTexture(GL_TEXTURE_2D, outputtex);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA,
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA,
                GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -79,7 +79,7 @@ void Renderer::initTextures() {
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
   glTextureParameterf(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, 1);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, m_width, m_height, 0,
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, m_width, m_height, 0,
                GL_DEPTH_COMPONENT, GL_FLOAT, 0);
   LABEL_TEXTURE(depthtex, "gbuffer depth");
 
@@ -90,7 +90,7 @@ void Renderer::initTextures() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, shadowWidth,
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, shadowWidth,
                shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
   LABEL_TEXTURE(shadowtex, "shadow map");
 }
@@ -221,6 +221,30 @@ void Renderer::displaySegmentation(GLuint fbo) const {
 
 void Renderer::setObjectIdForAxis(int id) {
   axis_pass.setObjectId(id);
+}
+
+void Renderer::saveLighting(const std::string &file, bool raw) {
+  if (raw) {
+    writeTextureRGBAFloat32Raw(outputtex, m_width, m_height, file);
+  } else {
+    std::cerr << "Saving texture without raw is not supported" << std::endl;
+  }
+}
+
+void Renderer::saveNormal(const std::string &file, bool raw) {
+  if (raw) {
+    writeTextureRGBAFloat32Raw(colortex[2], m_width, m_height, file);
+  } else {
+    std::cerr << "Saving texture without raw is not supported" << std::endl;
+  }
+}
+
+void Renderer::saveDepth(const std::string &file, bool raw) {
+  if (raw) {
+    writeTextureDepthFloat32Raw(depthtex, m_width, m_height, file);
+  } else {
+    std::cerr << "Saving texture without raw is not supported" << std::endl;
+  }
 }
 
 // void Renderer::renderSceneToFile(std::shared_ptr<Scene> scene,

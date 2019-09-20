@@ -1,0 +1,266 @@
+[{
+    "id": 0,
+    "parent": 6,
+    "joint": "hinge",
+    "name": "cabinet_door",
+    "parts": [{
+        "id": 32,
+        "name": "cabinet_door_surface",
+        "children": []
+    }, {
+        "id": 33,
+        "name": "handle",
+        "children": []
+    }],
+    "jointData": {
+        "axis": {
+            "origin": [0.829697863837534, 0, 0.23835570886255797],
+            "direction": [0, 1, 0]
+        },
+        "limit": {
+            "a": 0,
+            "b": 90,
+            "noLimit": false
+        }
+    }
+}, {
+    "id": 1,
+    "parent": 6,
+    "joint": "hinge",
+    "name": "cabinet_door",
+    "parts": [{
+        "id": 30,
+        "name": "cabinet_door_surface",
+        "children": []
+    }, {
+        "id": 31,
+        "name": "handle",
+        "children": []
+    }],
+    "jointData": {
+        "axis": {
+            "origin": [0.31636731884824043, 0, 0.23882006694369268],
+            "direction": [0, 1, 0]
+        },
+        "limit": {
+            "a": 0,
+            "b": 90,
+            "noLimit": false
+        }
+    }
+}, {
+    "id": 2,
+    "parent": 6,
+    "joint": "hinge",
+    "name": "cabinet_door",
+    "parts": [{
+        "id": 28,
+        "name": "cabinet_door_surface",
+        "children": []
+    }, {
+        "id": 29,
+        "name": "handle",
+        "children": []
+    }],
+    "jointData": {
+        "axis": {
+            "origin": [-0.34320078124850134, 0, 0.23531425360919883],
+            "direction": [0, 1, 0]
+        },
+        "limit": {
+            "a": 0,
+            "b": -90,
+            "noLimit": false
+        }
+    }
+}, {
+    "id": 3,
+    "parent": 6,
+    "joint": "hinge",
+    "name": "cabinet_door",
+    "parts": [{
+        "id": 26,
+        "name": "cabinet_door_surface",
+        "children": []
+    }, {
+        "id": 27,
+        "name": "handle",
+        "children": []
+    }],
+    "jointData": {
+        "axis": {
+            "origin": [-0.8389482600668575, 0, 0.2285030728294573],
+            "direction": [0, 1, 0]
+        },
+        "limit": {
+            "a": 0,
+            "b": -90,
+            "noLimit": false
+        }
+    }
+}, {
+    "id": 4,
+    "parent": 6,
+    "joint": "slider",
+    "name": "drawer",
+    "parts": [{
+        "id": 19,
+        "name": "drawer_front",
+        "children": []
+    }, {
+        "id": 20,
+        "name": "drawer_side",
+        "children": []
+    }, {
+        "id": 21,
+        "name": "drawer_side",
+        "children": []
+    }, {
+        "id": 22,
+        "name": "drawer_back",
+        "children": []
+    }, {
+        "id": 23,
+        "name": "drawer_bottom",
+        "children": []
+    }, {
+        "id": 18,
+        "name": "handle",
+        "children": []
+    }],
+    "jointData": {
+        "axis": {
+            "origin": [0, 0, 0],
+            "direction": [0, 0, 1]
+        },
+        "limit": {
+            "a": 0,
+            "b": 0.3639999999999999,
+            "noLimit": false
+        }
+    }
+}, {
+    "id": 5,
+    "parent": 6,
+    "joint": "slider",
+    "name": "drawer",
+    "parts": [{
+        "id": 12,
+        "name": "drawer_front",
+        "children": []
+    }, {
+        "id": 13,
+        "name": "drawer_side",
+        "children": []
+    }, {
+        "id": 14,
+        "name": "drawer_side",
+        "children": []
+    }, {
+        "id": 15,
+        "name": "drawer_back",
+        "children": []
+    }, {
+        "id": 16,
+        "name": "drawer_bottom",
+        "children": []
+    }, {
+        "id": 11,
+        "name": "handle",
+        "children": []
+    }],
+    "jointData": {
+        "axis": {
+            "origin": [0, 0, 0],
+            "direction": [0, 0, 1]
+        },
+        "limit": {
+            "a": 0,
+            "b": 0.3639999999999999,
+            "noLimit": false
+        }
+    }
+}, {
+    "id": 6,
+    "parent": -1,
+    "joint": "heavy",
+    "name": "drawer_front",
+    "parts": [{
+        "id": 25,
+        "name": "drawer_front",
+        "children": []
+    }, {
+        "id": 41,
+        "name": "back_panel",
+        "children": []
+    }, {
+        "id": 42,
+        "name": "bottom_panel",
+        "children": []
+    }, {
+        "id": 43,
+        "name": "vertical_side_panel",
+        "children": []
+    }, {
+        "id": 44,
+        "name": "vertical_side_panel",
+        "children": []
+    }, {
+        "id": 46,
+        "name": "other_leaf",
+        "children": []
+    }, {
+        "id": 47,
+        "name": "frame_vertical_bar",
+        "children": []
+    }, {
+        "id": 48,
+        "name": "frame_vertical_bar",
+        "children": []
+    }, {
+        "id": 49,
+        "name": "frame_vertical_bar",
+        "children": []
+    }, {
+        "id": 50,
+        "name": "frame_horizontal_bar",
+        "children": []
+    }, {
+        "id": 51,
+        "name": "frame_horizontal_bar",
+        "children": []
+    }, {
+        "id": 52,
+        "name": "frame_horizontal_bar",
+        "children": []
+    }, {
+        "id": 53,
+        "name": "frame_horizontal_bar",
+        "children": []
+    }, {
+        "id": 54,
+        "name": "frame_horizontal_bar",
+        "children": []
+    }, {
+        "id": 55,
+        "name": "frame_horizontal_bar",
+        "children": []
+    }, {
+        "id": 59,
+        "name": "base_side_panel",
+        "children": []
+    }, {
+        "id": 60,
+        "name": "base_side_panel",
+        "children": []
+    }, {
+        "id": 61,
+        "name": "base_side_panel",
+        "children": []
+    }, {
+        "id": 62,
+        "name": "base_side_panel",
+        "children": []
+    }],
+    "jointData": {}
+}]

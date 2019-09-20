@@ -128,4 +128,47 @@ LoadCubeMapTexture(const std::string &front, const std::string &back,
   printf("Cube map loaded\n");
   return tex;
 }
+
+void writeTextureRGBAFloat32Raw(GLuint textureId, GLuint width, GLuint height,
+                                const std::string &filename) {
+  float *data = new float[width * height * 4];
+  glBindTexture(GL_TEXTURE_2D, textureId);
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, data);
+  for (uint32_t h1 = 0; h1 < height / 2; ++h1) {
+    uint32_t h2 = height - 1 - h1;
+    for (uint32_t i = 0; i < 4 * width; ++i) {
+      std::swap(data[h1 * width * 4 + i], data[h2 * width * 4 + i]);
+    }
+  }
+  std::ofstream file(filename, std::ios::out | std::ios::binary);
+  file.write(reinterpret_cast<char *>(data),
+             width * height * 4 * sizeof(float));
+  file.close();
+  delete [] data;
+  std::ofstream metafile(filename + ".meta");
+  metafile << "width: " << width << ", height: " << height << "\n";
+  metafile.close();
+}
+
+void writeTextureDepthFloat32Raw(GLuint textureId, GLuint width, GLuint height,
+                                 const std::string &filename) {
+  float *data = new float[width * height];
+  glBindTexture(GL_TEXTURE_2D, textureId);
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GL_FLOAT, data);
+  for (uint32_t h1 = 0; h1 < height / 2; ++h1) {
+    uint32_t h2 = height - 1 - h1;
+    for (uint32_t i = 0; i < width; ++i) {
+      std::swap(data[h1 * width + i], data[h2 * width + i]);
+    }
+  }
+  std::ofstream file(filename, std::ios::out | std::ios::binary);
+  file.write(reinterpret_cast<char *>(data),
+             width * height * sizeof(float));
+  file.close();
+  delete[] data;
+  std::ofstream metafile(filename + ".meta");
+  metafile << "width: " << width << ", height: " << height << "\n";
+  metafile.close();
+}
+
 } // namespace Optifuser

@@ -1,4 +1,7 @@
 #include "optifuser.h"
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 namespace Optifuser {
 
@@ -22,6 +25,7 @@ void ensureGlobalContext() {
     exit(1);
   }
   glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+  glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
   mainWindow = glfwCreateWindow(1, 1, "opengl", NULL, NULL);
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
@@ -63,6 +67,16 @@ void GLFWRenderContext::init(uint32_t width, uint32_t height) {
   glfwSetWindowSize(mainWindow, width, height);
   glViewport(0, 0, width, height);
   glfwShowWindow(mainWindow);
+}
+
+void GLFWRenderContext::initGui() {
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO &io = ImGui::GetIO();
+  (void)io;
+  ImGui::StyleColorsDark();
+  ImGui_ImplGlfw_InitForOpenGL(mainWindow, true);
+  ImGui_ImplOpenGL3_Init("#version 450");
 }
 
 void GLFWRenderContext::processEvents() {

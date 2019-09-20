@@ -1,5 +1,6 @@
 #pragma once
 #include <GL/glew.h>
+#include <fstream>
 #include <memory>
 
 namespace Optifuser {
@@ -66,5 +67,10 @@ LoadCubeMapTexture(const std::string &front, const std::string &back,
                    const std::string &top, const std::string &bottom,
                    const std::string &left, const std::string &right,
                    int wrapping, int filtering);
+
+void writeTextureRGBAFloat32Raw(GLuint textureId, GLuint width, GLuint height,
+                                const std::string &filename);
+void writeTextureDepthFloat32Raw(GLuint textureId, GLuint width, GLuint height,
+                                 const std::string &filename);
 
 } // namespace Optifuser

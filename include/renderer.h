@@ -74,8 +74,8 @@ public:
 protected:
   GLuint m_width, m_height;
 
-  GLuint shadowWidth = 4096;
-  GLuint shadowHeight = 4096;
+  GLuint shadowWidth = 8192;
+  GLuint shadowHeight = 8192;
 
 public:
   inline GLuint getWidth() const { return m_width; }
@@ -85,6 +85,12 @@ public:
   void renderScene(const Scene &scene, const CameraSpec &camera);
   void displayLighting(GLuint fbo = 0) const;
   void displaySegmentation(GLuint fbo = 0) const;
+
+  void saveLighting(const std::string &file, bool raw = true);
+  void saveNormal(const std::string &file, bool raw = true);
+  void saveDepth(const std::string &file, bool raw = true);
+  // void saveSegmentation(const std::string &file);
+
   void reloadShaders();
 };
 

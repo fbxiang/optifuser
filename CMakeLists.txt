@@ -11,10 +11,6 @@ find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(assimp REQUIRED)
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GTKMM3 REQUIRED gtkmm-3.0)
-include_directories(${GTKMM3_INCLUDE_DIRS})
-
 file(GLOB_RECURSE RENDER_SRC "include/*.h" "src/*.cpp")
 
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_RELEASE})
@@ -35,16 +31,19 @@ else()
   message(WARNING "Compiling without OptiX support")
   list(FILTER RENDER_SRC EXCLUDE REGEX "optix_renderer")
 endif()
+
+add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLEW)
+include_directories("3rd_party/imgui")
+include_directories("3rd_party/imgui/examples")
+file(GLOB GUI_SRC "3rd_party/imgui/*.cpp"
+  "3rd_party/imgui/examples/imgui_impl_glfw.cpp"
+  "3rd_party/imgui/examples/imgui_impl_opengl3.cpp" )
   
-add_library(optifuser SHARED ${RENDER_SRC})
+add_library(optifuser SHARED ${RENDER_SRC} ${GUI_SRC})
 target_link_libraries(optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLEW_LIBRARY}
   ${ASSIMP_LIBRARIES} pthread ${OPTIXLIBRARY})
 
-add_executable(gtk "app/gtk.cpp")
-target_link_libraries(gtk optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY}
-  ${ASSIMP_LIBRARIES} pthread ${OPTIX_LIBRARY} stdc++fs ${GTKMM3_LIBRARIES})
-
-add_executable(run app/main.cpp)
+add_executable(run app/main.cpp ${GUI_SRC})
 target_link_libraries(run optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY}
   ${ASSIMP_LIBRARIES} pthread ${OPTIX_LIBRARY} stdc++fs)
 

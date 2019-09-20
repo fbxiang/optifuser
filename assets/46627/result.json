@@ -1,0 +1,276 @@
+[{
+    "text": "Storage Furniture",
+    "children": [{
+        "text": "Cabinet",
+        "children": [{
+            "text": "Cabinet frame",
+            "children": [{
+                "text": "Back panel",
+                "objs": ["original-5"],
+                "id": 41,
+                "name": "back_panel"
+            }, {
+                "text": "Bottom panel",
+                "objs": ["original-2"],
+                "id": 42,
+                "name": "bottom_panel"
+            }, {
+                "text": "Vertical side panel",
+                "objs": ["original-11", "original-10"],
+                "id": 43,
+                "name": "vertical_side_panel"
+            }, {
+                "text": "Vertical side panel",
+                "objs": ["original-15", "original-14"],
+                "id": 44,
+                "name": "vertical_side_panel"
+            }, {
+                "text": "rectangle (other)",
+                "children": [{
+                    "text": "other_leaf",
+                    "objs": ["original-154"],
+                    "id": 46,
+                    "name": "other_leaf"
+                }],
+                "id": 45,
+                "name": "other"
+            }, {
+                "text": "Vertical support bar",
+                "objs": ["original-7"],
+                "id": 47,
+                "name": "frame_vertical_bar"
+            }, {
+                "text": "Vertical support bar",
+                "objs": ["original-17", "original-23"],
+                "id": 48,
+                "name": "frame_vertical_bar"
+            }, {
+                "text": "Vertical support bar",
+                "objs": ["original-3"],
+                "id": 49,
+                "name": "frame_vertical_bar"
+            }, {
+                "text": "Horizontal support bar",
+                "objs": ["original-22"],
+                "id": 50,
+                "name": "frame_horizontal_bar"
+            }, {
+                "text": "Horizontal support bar",
+                "objs": ["original-4"],
+                "id": 51,
+                "name": "frame_horizontal_bar"
+            }, {
+                "text": "Horizontal support bar",
+                "objs": ["original-21"],
+                "id": 52,
+                "name": "frame_horizontal_bar"
+            }, {
+                "text": "Horizontal support bar",
+                "objs": ["original-18"],
+                "id": 53,
+                "name": "frame_horizontal_bar"
+            }, {
+                "text": "Horizontal support bar",
+                "objs": ["original-6"],
+                "id": 54,
+                "name": "frame_horizontal_bar"
+            }, {
+                "text": "Horizontal support bar",
+                "objs": ["original-8"],
+                "id": 55,
+                "name": "frame_horizontal_bar"
+            }],
+            "id": 2,
+            "name": "cabinet_frame"
+        }, {
+            "text": "Cabinet door",
+            "children": [{
+                "text": "Cabinet door surface",
+                "objs": ["original-144", "original-148", "original-146", "original-139", "original-140", "original-149", "original-141", "original-147", "original-24", "original-142", "original-145"],
+                "id": 32,
+                "name": "cabinet_door_surface"
+            }, {
+                "text": "Handle",
+                "objs": ["original-151", "original-152", "original-153"],
+                "id": 33,
+                "name": "handle"
+            }],
+            "id": 3,
+            "name": "cabinet_door"
+        }, {
+            "text": "Cabinet door",
+            "children": [{
+                "text": "Cabinet door surface",
+                "objs": ["original-128", "original-132", "original-123", "original-130", "original-133", "original-124", "original-126", "original-131", "original-125", "original-129"],
+                "id": 30,
+                "name": "cabinet_door_surface"
+            }, {
+                "text": "Handle",
+                "objs": ["original-137", "original-135", "original-136"],
+                "id": 31,
+                "name": "handle"
+            }],
+            "id": 4,
+            "name": "cabinet_door"
+        }, {
+            "text": "Cabinet door",
+            "children": [{
+                "text": "Cabinet door surface",
+                "objs": ["original-114", "original-107", "original-108", "original-116", "original-112", "original-115", "original-109", "original-110", "original-117", "original-113"],
+                "id": 28,
+                "name": "cabinet_door_surface"
+            }, {
+                "text": "Handle",
+                "objs": ["original-119", "original-120", "original-121"],
+                "id": 29,
+                "name": "handle"
+            }],
+            "id": 5,
+            "name": "cabinet_door"
+        }, {
+            "text": "Cabinet door",
+            "children": [{
+                "text": "Cabinet door surface",
+                "objs": ["original-92", "original-100", "original-65", "original-66", "original-91", "original-98", "original-96", "original-94", "original-101", "original-93", "original-99", "original-97", "original-71"],
+                "id": 26,
+                "name": "cabinet_door_surface"
+            }, {
+                "text": "Handle",
+                "objs": ["original-103", "original-104", "original-105"],
+                "id": 27,
+                "name": "handle"
+            }],
+            "id": 6,
+            "name": "cabinet_door"
+        }, {
+            "text": "Drawer",
+            "children": [{
+                "text": "Drawer box",
+                "children": [{
+                    "text": "Drawer front",
+                    "objs": ["original-84", "original-86", "original-89", "original-81", "original-80", "original-87", "original-82", "original-79", "original-88", "original-85"],
+                    "id": 25,
+                    "name": "drawer_front"
+                }],
+                "id": 24,
+                "name": "drawer_box"
+            }],
+            "id": 7,
+            "name": "drawer"
+        }, {
+            "text": "Drawer",
+            "children": [{
+                "text": "Drawer box",
+                "children": [{
+                    "text": "Drawer front",
+                    "objs": ["original-29", "original-42", "original-46", "original-37", "original-47", "original-38", "original-45", "original-39", "original-40", "original-25", "original-43", "original-44"],
+                    "id": 19,
+                    "name": "drawer_front"
+                }, {
+                    "text": "Drawer side",
+                    "objs": ["original-28"],
+                    "id": 20,
+                    "name": "drawer_side"
+                }, {
+                    "text": "Drawer side",
+                    "objs": ["original-35", "original-33"],
+                    "id": 21,
+                    "name": "drawer_side"
+                }, {
+                    "text": "Drawer back",
+                    "objs": ["original-34"],
+                    "id": 22,
+                    "name": "drawer_back"
+                }, {
+                    "text": "Drawer bottom",
+                    "objs": ["original-32", "original-31"],
+                    "id": 23,
+                    "name": "drawer_bottom"
+                }],
+                "id": 17,
+                "name": "drawer_box"
+            }, {
+                "text": "Handle",
+                "objs": ["original-51", "original-49", "original-50"],
+                "id": 18,
+                "name": "handle"
+            }],
+            "id": 8,
+            "name": "drawer"
+        }, {
+            "text": "Drawer",
+            "children": [{
+                "text": "Drawer box",
+                "children": [{
+                    "text": "Drawer front",
+                    "objs": ["original-68", "original-63", "original-70", "original-73", "original-64", "original-72", "original-55", "original-69"],
+                    "id": 12,
+                    "name": "drawer_front"
+                }, {
+                    "text": "Drawer side",
+                    "objs": ["original-54"],
+                    "id": 13,
+                    "name": "drawer_side"
+                }, {
+                    "text": "Drawer side",
+                    "objs": ["original-59", "original-61"],
+                    "id": 14,
+                    "name": "drawer_side"
+                }, {
+                    "text": "Drawer back",
+                    "objs": ["original-60"],
+                    "id": 15,
+                    "name": "drawer_back"
+                }, {
+                    "text": "Drawer bottom",
+                    "objs": ["original-58", "original-57"],
+                    "id": 16,
+                    "name": "drawer_bottom"
+                }],
+                "id": 10,
+                "name": "drawer_box"
+            }, {
+                "text": "Handle",
+                "objs": ["original-75", "original-77", "original-76"],
+                "id": 11,
+                "name": "handle"
+            }],
+            "id": 9,
+            "name": "drawer"
+        }, {
+            "text": "Cabinet Base",
+            "children": [{
+                "text": "Panel Base",
+                "children": [{
+                    "text": "Base side panel",
+                    "objs": ["original-16"],
+                    "id": 59,
+                    "name": "base_side_panel"
+                }, {
+                    "text": "Base side panel",
+                    "objs": ["original-19"],
+                    "id": 60,
+                    "name": "base_side_panel"
+                }, {
+                    "text": "Base side panel",
+                    "objs": ["original-12"],
+                    "id": 61,
+                    "name": "base_side_panel"
+                }, {
+                    "text": "Base side panel",
+                    "objs": ["original-20"],
+                    "id": 62,
+                    "name": "base_side_panel"
+                }],
+                "id": 58,
+                "name": "panel_base"
+            }],
+            "id": 56,
+            "name": "cabinet_base"
+        }],
+        "id": 1,
+        "name": "cabinet"
+    }],
+    "id": 0,
+    "name": "storage_furniture"
+}]
