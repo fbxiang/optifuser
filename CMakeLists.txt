@@ -43,15 +43,11 @@ add_library(optifuser SHARED ${RENDER_SRC} ${GUI_SRC})
 target_link_libraries(optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLEW_LIBRARY}
   ${ASSIMP_LIBRARIES} pthread ${OPTIXLIBRARY})
 
-add_executable(run app/main.cpp ${GUI_SRC})
-target_link_libraries(run optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY}
+add_executable(test_optifuser app/main.cpp ${GUI_SRC})
+target_link_libraries(test_optifuser optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY}
   ${ASSIMP_LIBRARIES} pthread ${OPTIX_LIBRARY} stdc++fs)
 
-add_executable(zup app/zup.cpp)
-target_link_libraries(zup optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY}
-  ${ASSIMP_LIBRARIES} pthread ${OPTIX_LIBRARY})
-
-set_target_properties(optifuser run
+set_target_properties(optifuser test_optifuser
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
