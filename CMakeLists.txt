@@ -15,6 +15,11 @@ file(GLOB_RECURSE RENDER_SRC "include/*.h" "src/*.cpp")
 
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_RELEASE})
 
+if (GLEW_LIBRARY)
+else()
+  set(GLEW_LIBRARY GLEW)
+endif()
+
 include_directories("include")
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/OptiX)
   message(STATUS "Compiling with OptiX")
