@@ -50,7 +50,10 @@ void GBufferPass::setColorAttachments(int num, GLuint *tex, int width,
   m_colortex.insert(m_colortex.begin(), tex, tex + num);
 }
 
-void GBufferPass::setDepthAttachment(GLuint depthtex) { m_depthtex = depthtex; }
+void GBufferPass::setDepthAttachment(GLuint depthtex, bool clear) {
+  m_depthtex = depthtex;
+  m_clearDepth = clear;
+}
 
 // helper method for rendering an object tree
 void renderObjectTree(const Object &obj, const glm::mat4 &parentModelMat,
@@ -114,7 +117,10 @@ void GBufferPass::render(const Scene &scene, const CameraSpec &camera,
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
   }
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT);
+  if (m_clearDepth) {
+    glClear(GL_DEPTH_BUFFER_BIT);
+  }
   glm::mat4 viewMat = camera.getViewMat();
   glm::mat4 viewMatInv = glm::inverse(viewMat);
   glm::mat4 projMat = camera.getProjectionMat();

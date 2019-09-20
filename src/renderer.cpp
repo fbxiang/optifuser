@@ -78,7 +78,7 @@ void Renderer::initTextures() {
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
   glTextureParameterf(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, 1);
-  
+
   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, m_width, m_height, 0,
                GL_DEPTH_COMPONENT, GL_FLOAT, 0);
   LABEL_TEXTURE(depthtex, "gbuffer depth");
@@ -101,6 +101,10 @@ void Renderer::renderSegmentation(bool enabled) {
   rebindTextures();
 }
 
+void Renderer::setAxisShader(const std::string &vs, const std::string &fs) {
+  axis_pass.setShader(vs, fs);
+}
+
 void Renderer::setGBufferShader(const std::string &vs, const std::string &fs) {
   gbuffer_pass.setShader(vs, fs);
 }
@@ -119,10 +123,12 @@ void Renderer::init() {
   gbuffer_pass.init();
   lighting_pass.init();
   shadow_pass.init();
+  axis_pass.init();
 
   gbuffer_pass.setFbo(m_fbo[FBO_TYPE::GBUFFER]);
   lighting_pass.setFbo(m_fbo[FBO_TYPE::LIGHTING]);
   shadow_pass.setFbo(m_fbo[FBO_TYPE::SHADOW]);
+  axis_pass.setFbo(m_fbo[FBO_TYPE::AXIS]);
   initialized = true;
 }
 
@@ -151,6 +157,10 @@ void Renderer::rebindTextures() {
 
   lighting_pass.setAttachment(outputtex, m_width, m_height);
   lighting_pass.setInputTextures(N_COLORTEX, colortex, depthtex);
+
+  axis_pass.setColorAttachments(1, &outputtex, m_width, m_height);
+  axis_pass.setDepthAttachment(depthtex);
+  axis_pass.bindAttachments();
 }
 
 void Renderer::resize(GLuint w, GLuint h) {
@@ -162,39 +172,6 @@ void Renderer::resize(GLuint w, GLuint h) {
 
 void Renderer::reloadShaders() { std::cerr << "Not implemented" << std::endl; }
 
-// void Renderer::renderAxes(const glm::mat4 &modelMat) {
-//   static std::unique_ptr<Object> axes = nullptr;
-//   if (!axes) {
-//     auto x = NewCube();
-//     x->scale = {1, 0.05, 0.05};
-//     x->position = {1, 0, 0};
-//     x->material.kd = {1, 0, 0};
-
-//     auto y = NewCube();
-//     y->scale = {0.05, 1, 0.05};
-//     y->position = {0, 1, 0};
-//     y->material.kd = {0, 1, 0};
-
-//     auto z = NewCube();
-//     z->scale = {0.05, 0.05, 1};
-//     z->position = {0, 0, 1};
-//     z->material.kd = {0, 0, 1};
-
-//     axes = NewObject<Object>();
-//     axes->addChild(std::move(x));
-//     axes->addChild(std::move(y));
-//     axes->addChild(std::move(z));
-//   }
-
-//   glm::mat4 scaling;
-//   scaling[0] = glm::vec4(0.1, 0, 0, 0);
-//   scaling[1] = glm::vec4(0, 0.1, 0, 0);
-//   scaling[2] = glm::vec4(0, 0, 0.1, 0);
-//   scaling[3] = glm::vec4(0, 0, 0, 1);
-
-//   renderObjectTree(axes, modelMat * scaling);
-// }
-
 void Renderer::renderScene(const Scene &scene, const CameraSpec &camera) {
   if (!initialized) {
     fprintf(stderr, "Renderer is not initialized\n");
@@ -205,9 +182,9 @@ void Renderer::renderScene(const Scene &scene, const CameraSpec &camera) {
     shadow_pass.render(scene, camera);
     lighting_pass.setShadowTexture(shadowtex);
   }
-
   gbuffer_pass.render(scene, camera, m_renderSegmentation);
   lighting_pass.render(scene, camera);
+  axis_pass.render(scene, camera);
 
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
@@ -240,6 +217,10 @@ void Renderer::displaySegmentation(GLuint fbo) const {
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+}
+
+void Renderer::setObjectIdForAxis(int id) {
+  axis_pass.setObjectId(id);
 }
 
 // void Renderer::renderSceneToFile(std::shared_ptr<Scene> scene,

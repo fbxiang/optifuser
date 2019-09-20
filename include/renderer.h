@@ -1,5 +1,6 @@
 #pragma once
 #include "camera_spec.h"
+#include "passes/axis_pass.h"
 #include "passes/gbuffer_pass.h"
 #include "passes/lighting_pass.h"
 #include "passes/shadow_pass.h"
@@ -16,6 +17,7 @@ enum FBO_TYPE {
   SHADOW,
   GBUFFER,
   LIGHTING,
+  AXIS,
   COPY,
 
   COUNT
@@ -26,7 +28,9 @@ private:
   ShadowPass shadow_pass;
   GBufferPass gbuffer_pass;
   LightingPass lighting_pass;
+  AxisPass axis_pass;
 
+public:
   GLuint colortex[N_COLORTEX];
   GLuint depthtex = 0;
   GLuint outputtex = 0;
@@ -60,9 +64,12 @@ public:
 
 public:
 public:
+  void setAxisShader(const std::string &vs, const std::string &fs);
   void setGBufferShader(const std::string &vs, const std::string &fs);
   void setDeferredShader(const std::string &vs, const std::string &fs);
   void setShadowShader(const std::string &vs, const std::string &fs);
+
+  void setObjectIdForAxis(int id);
 
 protected:
   GLuint m_width, m_height;

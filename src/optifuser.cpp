@@ -72,6 +72,8 @@ void GLFWRenderContext::processEvents() {
   input.cursorPosCallback(xpos, ypos);
   input.mouseCallback(GLFW_MOUSE_BUTTON_RIGHT,
                       glfwGetMouseButton(mainWindow, GLFW_MOUSE_BUTTON_RIGHT));
+  input.mouseCallback(GLFW_MOUSE_BUTTON_LEFT,
+                      glfwGetMouseButton(mainWindow, GLFW_MOUSE_BUTTON_LEFT));
   int newWidth, newHeight;
   glfwGetWindowSize(mainWindow, &newWidth, &newHeight);
   if (width != newWidth || height != newHeight) {

@@ -15,7 +15,6 @@ class Scene;
 
 struct Material {
   std::string name = "";
-  std::string type = "regular";
 
   std::shared_ptr<Texture> kd_map = std::make_shared<Texture>();
   std::shared_ptr<Texture> ks_map = std::make_shared<Texture>();

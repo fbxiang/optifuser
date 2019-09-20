@@ -68,7 +68,7 @@ int main() {
     if (Optifuser::getInput().getMouseButton(GLFW_MOUSE_BUTTON_RIGHT) ==
         GLFW_PRESS) {
       double dx, dy;
-      Optifuser::getInput().getCursor(dx, dy);
+      Optifuser::getInput().getCursorDelta(dx, dy);
       cam.rotateYawPitch(-dx / 1000.f, -dy / 1000.f);
     }
     context.renderer.renderScene(scene, cam);

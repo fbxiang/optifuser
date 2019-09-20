@@ -10,7 +10,7 @@ class GBufferPass {
 public:
   GBufferPass();
 
-private:
+protected:
   GLuint m_fbo;
   std::vector<GLuint> m_colortex;
   GLuint m_depthtex;
@@ -23,19 +23,20 @@ private:
 
   bool m_initialized;
 
+  bool m_clearDepth = true;
+
 public:
   void init();
   void setFbo(GLuint fbo);
   void setShader(const std::string &vs, const std::string &fs);
   void setColorAttachments(int num, GLuint *tex, int width, int height);
-  void setDepthAttachment(GLuint depthtex);
+  void setDepthAttachment(GLuint depthtex, bool clear = true);
   void bindAttachments() const;
   void render(const Scene &scene, const CameraSpec &camera,
               bool renderSegmentation = false) const;
 
   int numColorAttachments() const;
 
-private:
 };
 
 } // namespace Optifuser

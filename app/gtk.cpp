@@ -17,32 +17,35 @@
   }
 
 void loadSponza(Optifuser::Scene &scene) {
-  // uint32_t id = 0;
-  // auto objects = Optifuser::LoadObj(
-  //     "/home/fx/source/physx-project/assets/robot/movo_description/meshes/"
-  //     "manipulation/jaco/visual/base.dae");
-  // for (auto &obj : objects) {
-  //   obj->setSegmentId(++id);
-  //   scene.addObject(std::move(obj));
-  // }
-
-  // objects = Optifuser::LoadObj(
-  //     "/home/fx/source/physx-project/assets/robot/movo_description/meshes/"
-  //     "manipulation/jaco/visual/shoulder_7dof.dae");
-  // for (auto &obj : objects) {
-  //   obj->setSegmentId(++id);
-  //   scene.addObject(std::move(obj));
-  // }
-
-  int id = 0;
-  auto objects = Optifuser::LoadObj("../scenes/sponza/sponza.obj");
+  uint32_t id = 0;
+  auto objects = Optifuser::LoadObj(
+      "/home/fx/source/partnet-simulation/assets/robot/movo_description/meshes/"
+      "manipulation/jaco/visual/base.dae");
   for (auto &obj : objects) {
-    obj->scale = glm::vec3(0.003f);
-    obj->position *= 0.003f;
     obj->setSegmentId(++id);
+    obj->position = {-0.2, 0, 0.3};
+    obj->rotation = glm::angleAxis(0.2f, glm::vec3(1, 2, 1));
     scene.addObject(std::move(obj));
   }
 
+  objects = Optifuser::LoadObj(
+      "/home/fx/source/partnet-simulation/assets/robot/movo_description/meshes/"
+      "manipulation/jaco/visual/shoulder_7dof.dae");
+  for (auto &obj : objects) {
+    obj->setSegmentId(++id);
+    obj->position = {0.1, 0.3, -0.3};
+    obj->rotation = glm::angleAxis(0.2f, glm::vec3(-1, 2, 1));
+    scene.addObject(std::move(obj));
+  }
+
+  // int id = 0;
+  // auto objects = Optifuser::LoadObj("../scenes/sponza/sponza.obj");
+  // for (auto &obj : objects) {
+  //   obj->scale = glm::vec3(0.003f);
+  //   obj->position *= 0.003f;
+  //   obj->setSegmentId(++id);
+  //   scene.addObject(std::move(obj));
+  // }
 }
 
 class MainWindow;
@@ -109,6 +112,12 @@ public:
   virtual ~MainWindow() = default;
 };
 
+void click(int id) { printf("Click object %d\n", id); }
+
+void enter(int id) { printf("Entering object %d\n", id); }
+
+void leave(int id) { printf("Leaving object %d\n", id); }
+
 int main(int argc, char **argv) {
 
   std::thread gtkThread([&] {
@@ -159,9 +168,16 @@ int main(int argc, char **argv) {
                                     "../glsl_shader/gbuffer_segmentation.fsh");
   context.renderer.setDeferredShader("../glsl_shader/deferred.vsh",
                                      "../glsl_shader/deferred.fsh");
+  context.renderer.setAxisShader("../glsl_shader/axes.vsh",
+                                 "../glsl_shader/axes.fsh");
   context.renderer.renderSegmentation(true);
 
+  GLuint pickingFbo;
+  glGenFramebuffers(1, &pickingFbo);
+
   std::string mode = "lighting";
+  int hoveredId = 0;
+  int leftPressed = 0;
   while (true) {
     while (!gRenderQueue.empty()) {
       std::string msg = gRenderQueue.pop();
@@ -210,9 +226,54 @@ int main(int argc, char **argv) {
     if (Optifuser::getInput().getMouseButton(GLFW_MOUSE_BUTTON_RIGHT) ==
         GLFW_PRESS) {
       double dx, dy;
-      Optifuser::getInput().getCursor(dx, dy);
+      Optifuser::getInput().getCursorDelta(dx, dy);
       cam.rotateYawPitch(-dx / 1000.f, -dy / 1000.f);
     }
+
+    int x, y;
+    Optifuser::getInput().getCursor(x, y);
+
+    bool leftClick = false;
+    if (Optifuser::getInput().getMouseButton(GLFW_MOUSE_BUTTON_LEFT) ==
+        GLFW_PRESS) {
+      if (!leftPressed) {
+        leftClick = true;
+        leftPressed = true;
+      }
+    } else {
+      leftPressed = false;
+    }
+    if (context.renderer.segtex[0]) {
+      if (x >= 0 && x < context.getWidth() && y >= 0 &&
+          y < context.getHeight()) {
+        int value;
+        glBindFramebuffer(GL_FRAMEBUFFER, pickingFbo);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D, context.renderer.segtex[0], 0);
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+
+        // pixel position is upside down
+        glReadPixels(x, context.getHeight() - y, 1, 1, GL_RED_INTEGER, GL_INT,
+                     &value);
+        if (value && leftClick) {
+          click(value);
+          context.renderer.setObjectIdForAxis(value);
+        }
+
+        if (value != hoveredId) {
+          if (hoveredId) {
+            leave(hoveredId);
+          }
+          if (value) {
+            enter(value);
+          }
+          hoveredId = value;
+        }
+      }
+
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
     context.renderer.renderScene(scene, cam);
     if (mode == "segmentation") {
       context.renderer.displaySegmentation();

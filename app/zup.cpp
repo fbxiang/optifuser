@@ -25,7 +25,7 @@ int main() {
 
   uint32_t id = 0;
   auto objects = Optifuser::LoadObj(
-      "/home/fx/source/physx-project/assets/robot/movo_description/meshes/"
+      "/home/fx/source/partnet-simulation/assets/robot/movo_description/meshes/"
       "manipulation/jaco/visual/base.dae");
   for (auto &obj : objects) {
     obj->setSegmentId(++id);
@@ -33,7 +33,7 @@ int main() {
   }
 
   objects = Optifuser::LoadObj(
-      "/home/fx/source/physx-project/assets/robot/movo_description/meshes/"
+      "/home/fx/source/partnet-simulation/assets/robot/movo_description/meshes/"
       "manipulation/jaco/visual/shoulder_7dof.dae");
   for (auto &obj : objects) {
     obj->setSegmentId(++id);
@@ -58,16 +58,19 @@ int main() {
   scene.setAmbientLight(glm::vec3(0.05, 0.05, 0.05));
 
   scene.setEnvironmentMap("../assets/ame_desert/desertsky_ft.tga",
-                           "../assets/ame_desert/desertsky_bk.tga",
-                           "../assets/ame_desert/desertsky_up.tga",
-                           "../assets/ame_desert/desertsky_dn.tga",
-                           "../assets/ame_desert/desertsky_lf.tga",
-                           "../assets/ame_desert/desertsky_rt.tga");
+                          "../assets/ame_desert/desertsky_bk.tga",
+                          "../assets/ame_desert/desertsky_up.tga",
+                          "../assets/ame_desert/desertsky_dn.tga",
+                          "../assets/ame_desert/desertsky_lf.tga",
+                          "../assets/ame_desert/desertsky_rt.tga");
 
   context.renderer.setGBufferShader("../glsl_shader/gbuffer.vsh",
                                     "../glsl_shader/gbuffer_segmentation.fsh");
   context.renderer.setDeferredShader("../glsl_shader/deferred.vsh",
                                      "../glsl_shader/deferred.fsh");
+  context.renderer.setAxisShader("../glsl_shader/axes.vsh",
+                                 "../glsl_shader/axes.fsh");
+
   context.renderer.renderSegmentation();
 
   while (true) {
@@ -96,7 +99,7 @@ int main() {
     if (Optifuser::getInput().getMouseButton(GLFW_MOUSE_BUTTON_RIGHT) ==
         GLFW_PRESS) {
       double dx, dy;
-      Optifuser::getInput().getCursor(dx, dy);
+      Optifuser::getInput().getCursorDelta(dx, dy);
       cam.rotateYawPitch(-dx / 1000.f, -dy / 1000.f);
     }
     context.renderer.renderScene(scene, cam);

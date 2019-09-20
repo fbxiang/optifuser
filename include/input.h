@@ -15,7 +15,8 @@ class Input {
 
  public:
   int getKeyState(int key) const;
-  void getCursor(double &dx, double &dy);
+  void getCursor(int &x, int &y);
+  void getCursorDelta(double &dx, double &dy);
   int getMouseButton(int button);
 };
 

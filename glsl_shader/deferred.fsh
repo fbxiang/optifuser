@@ -6,7 +6,7 @@ uniform sampler2D shadowtex;
 uniform mat4 cameraToShadowMatrix;
 uniform mat4 shadowProjectionMatrix;
 uniform vec3 shadowLightDirection;
-uniform vec3 shadowLightDirection;
+uniform vec3 shadowLightEmission;
 
 uniform sampler2D colortex0;  // albedo
 uniform sampler2D colortex1;  // 

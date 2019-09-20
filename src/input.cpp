@@ -24,7 +24,12 @@ void Input::cursorPosCallback(double x, double y) {
   lastY = y;
 }
 
-void Input::getCursor(double &dx, double &dy) {
+void Input::getCursor(int &x, int &y) {
+  x = (int)lastX;
+  y = (int)lastY;
+}
+
+void Input::getCursorDelta(double &dx, double &dy) {
   dx = this->dx;
   dy = this->dy;
   if (dx > 100)
