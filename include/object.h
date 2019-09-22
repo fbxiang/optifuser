@@ -44,6 +44,8 @@ public:
   glm::quat rotation;
   bool visible;
 
+  uint32_t showAxis = 0; // used for showing axis
+
 protected:
   Scene *scene;
 

@@ -49,6 +49,7 @@ public:
   void init(uint32_t width, uint32_t height);
   void processEvents();
   void swapBuffers() const;
+  GLFWwindow *getWindow() const;
 
   void destroy();
 };

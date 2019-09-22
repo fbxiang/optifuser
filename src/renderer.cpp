@@ -247,6 +247,34 @@ void Renderer::saveDepth(const std::string &file, bool raw) {
   }
 }
 
+void Renderer::enablePicking() {
+  glGenFramebuffers(1, &pickingFbo);
+}
+
+int Renderer::pickSegmentationId(int x, int y) {
+  if (!pickingFbo) {
+    std::cerr << "failed to pick segmentation id, you need to enable picking first." << std::endl;
+    return 0;
+  }
+  // only valid when using segmentation
+  if (!m_renderSegmentation) {
+    std::cerr << "failed to pick segmentation id, segmentation not enabled." << std::endl;
+    return 0;
+  }
+  if (x < 0 || x >= static_cast<int>(m_width) || y < 0 || y >= static_cast<int>(m_height)) {
+    return 0;
+  }
+  int value;
+  glBindFramebuffer(GL_FRAMEBUFFER, pickingFbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, segtex[0], 0);
+  glReadBuffer(GL_COLOR_ATTACHMENT0);
+  
+  // pixel position is upside down
+  glReadPixels(x, m_height - y, 1, 1, GL_RED_INTEGER, GL_INT, &value);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  return value;
+}
+
 // void Renderer::renderSceneToFile(std::shared_ptr<Scene> scene,
 //                                  std::string filename) {
 //   if (!initialized) {

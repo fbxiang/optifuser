@@ -39,6 +39,8 @@ public:
 
   GLuint m_fbo[FBO_TYPE::COUNT];
 
+  GLuint pickingFbo = 0;
+
   void deleteTextures();
   void initTextures();
   void rebindTextures();
@@ -58,6 +60,9 @@ public:
   void resize(GLuint w, GLuint h);
 
   void renderSegmentation(bool enabled = true);
+
+  int pickSegmentationId(int x, int y);
+  void enablePicking();
 
 public:
   bool initialized;

@@ -25,7 +25,6 @@ void ensureGlobalContext() {
     exit(1);
   }
   glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-  glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
   mainWindow = glfwCreateWindow(1, 1, "opengl", NULL, NULL);
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
@@ -86,8 +85,10 @@ void GLFWRenderContext::processEvents() {
   input.cursorPosCallback(xpos, ypos);
   input.mouseCallback(GLFW_MOUSE_BUTTON_RIGHT,
                       glfwGetMouseButton(mainWindow, GLFW_MOUSE_BUTTON_RIGHT));
-  input.mouseCallback(GLFW_MOUSE_BUTTON_LEFT,
-                      glfwGetMouseButton(mainWindow, GLFW_MOUSE_BUTTON_LEFT));
+  if (!ImGui::GetIO().WantCaptureMouse) {
+    input.mouseCallback(GLFW_MOUSE_BUTTON_LEFT,
+                        glfwGetMouseButton(mainWindow, GLFW_MOUSE_BUTTON_LEFT));
+  }
   int newWidth, newHeight;
   glfwGetWindowSize(mainWindow, &newWidth, &newHeight);
   if (width != newWidth || height != newHeight) {
@@ -99,9 +100,15 @@ void GLFWRenderContext::processEvents() {
 
 void GLFWRenderContext::swapBuffers() const {
   glfwSwapBuffers(mainWindow);
+  getInput().nextFrame();
 }
 
 void GLFWRenderContext::destroy() {
   glfwDestroyWindow(mainWindow);
 }
+
+GLFWwindow *GLFWRenderContext::getWindow() const {
+  return mainWindow;
+}
+
 } // namespace Optifuser

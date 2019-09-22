@@ -18,9 +18,18 @@ enum RenderMode {
   LIGHTING, ALBEDO, NORMAL, DEPTH, SEGMENTATION
 };
 
-// void loadPartNetModel(Optifuser::Scene &scene) {
-//   auto partnet = loadPartNet("../assets/46627");
-// }
+void loadPartNetModel(Optifuser::Scene &scene) {
+  // auto partnet = loadPartNet("../assets/46627");
+  auto files = fs::directory_iterator("/home/fx/source/partnet-simulation/3rd_party/optifuser/assets/46627/textured_objs");
+  for (auto &f : files) {
+    if (f.path().extension() == ".obj") {
+      auto objects = Optifuser::LoadObj(f.path().u8string());
+      for (auto &obj : objects) {
+        scene.addObject(std::move(obj));
+      }
+    }
+  }
+}
 
 void loadSponza(Optifuser::Scene &scene) {
   auto objects = Optifuser::LoadObj("../scenes/sponza/sponza.obj", true, {0,0,1}, {0,1,0});
@@ -44,15 +53,16 @@ int main() {
   std::vector<std::shared_ptr<Optifuser::Object>> objects;
 
   Optifuser::FPSCameraSpec cam;
-  cam.up = {0, 0, 1};
-  cam.forward = {0, 1, 0};
-  cam.position = {-3, 0, 1};
+  cam.up = {0, 1, 0};
+  cam.forward = {0, 0, -1};
+  cam.position = {0, 0, 3};
   cam.fovy = glm::radians(45.f);
   cam.aspect = w / (float)h;
   cam.rotation = cam.getRotation0();
-  cam.rotateYawPitch(glm::radians(-90.f), 0);
+  // cam.rotateYawPitch(glm::radians(-90.f), 0);
 
-  loadSponza(scene);
+  // loadSponza(scene);
+  loadPartNetModel(scene);
   scene.addDirectionalLight({glm::vec3(0, 0, -1), glm::vec3(0.5, 0.5, 0.5)});
   scene.setAmbientLight(glm::vec3(0.05, 0.05, 0.05));
 

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 project(Optifuser LANGUAGES CXX CUDA)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "-o0 -g3 -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-o3 -g0 -Wall")
 

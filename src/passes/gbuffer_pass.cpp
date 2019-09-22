@@ -146,7 +146,6 @@ void GBufferPass::bindAttachments() const {
                            GL_TEXTURE_2D, m_colortex[n], 0);
     attachments[n] = GL_COLOR_ATTACHMENT0 + n;
   }
-  printf("Draw buffer count %d\n", count);
   glDrawBuffers(count, attachments);
 
   glBindTexture(GL_TEXTURE_2D, m_depthtex);

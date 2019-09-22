@@ -2,14 +2,54 @@
 
 namespace Optifuser {
 
+void renderGlobalAxis(const glm::mat4 modelMat, const glm::mat4 &viewMat,
+                      const glm::mat4 &viewMatInv, const glm::mat4 &projMat,
+                      const glm::mat4 &projMatInv, Shader *shader,
+                      float length = 0.1, float thickness = 0.005) {
+
+  static std::unique_ptr<Object> x = nullptr;
+  static std::unique_ptr<Object> y = nullptr;
+  static std::unique_ptr<Object> z = nullptr;
+
+  shader->setMatrix("gbufferViewMatrix", viewMat);
+  shader->setMatrix("gbufferViewMatrixInverse", glm::inverse(viewMat));
+  shader->setMatrix("gbufferProjectionMatrix", projMat);
+  shader->setMatrix("gbufferProjectionMatrixInverse", glm::inverse(projMat));
+  
+  if (!x) {
+    x = NewCube();
+    y = NewCube();
+    z = NewCube();
+  }
+
+  x->scale = {length, thickness, thickness};
+  x->position = {length, 0, 0};
+  y->scale = {thickness, length, thickness};
+  y->position = {0, length, 0};
+  z->scale = {thickness, thickness, length};
+  z->position = {0, 0, length};
+
+  shader->setVec3("color", {1, 0, 0});
+  shader->setMatrix("gbufferModelMatrix", modelMat * x->getModelMat());
+  x->getMesh()->draw();
+
+  shader->setVec3("color", {0, 1, 0});
+  shader->setMatrix("gbufferModelMatrix", modelMat * y->getModelMat());
+  y->getMesh()->draw();
+
+  shader->setVec3("color", {0, 0, 1});
+  shader->setMatrix("gbufferModelMatrix", modelMat * z->getModelMat());
+  z->getMesh()->draw();
+}
+
 void renderObjectTree(const Object &obj, const glm::mat4 &parentModelMat,
                       const glm::mat4 &viewMat, const glm::mat4 &viewMatInv,
                       const glm::mat4 &projMat, const glm::mat4 &projMatInv,
-                      Shader *shader, int id) {
+                      Shader *shader) {
 
   glm::mat4 modelMat = parentModelMat * obj.getModelMat();
   auto mesh = obj.getMesh();
-  if (obj.getSegmentId() == id) {
+  if (obj.showAxis) {
     shader->setMatrix("gbufferViewMatrix", viewMat);
     shader->setMatrix("gbufferViewMatrixInverse", glm::inverse(viewMat));
     shader->setMatrix("gbufferProjectionMatrix", projMat);
@@ -18,6 +58,7 @@ void renderObjectTree(const Object &obj, const glm::mat4 &parentModelMat,
     static std::unique_ptr<Object> x = nullptr;
     static std::unique_ptr<Object> y = nullptr;
     static std::unique_ptr<Object> z = nullptr;
+
     if (!x) {
       float t = 0.1;
       x = NewCube();
@@ -52,7 +93,7 @@ void renderObjectTree(const Object &obj, const glm::mat4 &parentModelMat,
   }
   for (auto &child : obj.getChildren()) {
     renderObjectTree(*child, modelMat, viewMat, viewMatInv, projMat, projMatInv,
-                     shader, id);
+                     shader);
   }
 }
 
@@ -70,10 +111,16 @@ void AxisPass::render(const Scene &scene, const CameraSpec &camera) {
   glm::mat4 projMatInv = glm::inverse(projMat);
 
   m_shader->use();
-  for (const auto &obj : scene.getObjects()) {
-    renderObjectTree(*obj, glm::mat4(1.f), viewMat, viewMatInv, projMat,
-                     projMatInv, m_shader.get(), objId);
+
+  for (auto &[pos, rot] : scene.getAxes()) {
+    glm::mat4 t = glm::toMat4(rot);
+    t[3][0] = pos.x;
+    t[3][1] = pos.y;
+    t[3][2] = pos.z;
+
+    renderGlobalAxis(t, viewMat, viewMatInv, projMat, projMatInv, m_shader.get());
   }
+  renderGlobalAxis(glm::mat4(1), viewMat, viewMatInv, projMat, projMatInv, m_shader.get(), 1, 0.01);
 }
 
 } // namespace Optifuser
