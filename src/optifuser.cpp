@@ -111,4 +111,18 @@ GLFWwindow *GLFWRenderContext::getWindow() const {
   return mainWindow;
 }
 
+OffscreenRenderContext::OffscreenRenderContext(int w, int h) {
+  ensureGlobalContext();
+  width = w;
+  height = h;
+  glGenFramebuffers(1, &fbo);
+  renderer.init();
+  renderer.resize(w, h);
+}
+
+OffscreenRenderContext::~OffscreenRenderContext() {
+  renderer.exit();
+  glDeleteFramebuffers(1, &fbo);
+}
+
 } // namespace Optifuser

@@ -54,4 +54,16 @@ public:
   void destroy();
 };
 
+class OffscreenRenderContext : public RenderContext {
+ public:
+  Optifuser::Renderer renderer;
+  inline static std::unique_ptr<OffscreenRenderContext> Create(int w, int h) {
+    return std::make_unique<OffscreenRenderContext>(w, h);
+  }
+
+  ~OffscreenRenderContext();
+  OffscreenRenderContext(int w, int h);
+protected:
+};
+
 } // namespace Optifuser

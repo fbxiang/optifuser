@@ -50,9 +50,6 @@ public:
 public:
   int debug = 0;
 
-  float worldAxesScale = 0;
-  float objectAxesScale = 0;
-
 public:
   Renderer();
   void init();
