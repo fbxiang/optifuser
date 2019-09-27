@@ -171,4 +171,46 @@ void writeTextureDepthFloat32Raw(GLuint textureId, GLuint width, GLuint height,
   metafile.close();
 }
 
+std::vector<float> getDepthFloat32Texture(GLuint textureId, GLuint width, GLuint height) {
+  std::vector<float> output(width * height);
+  float *data = output.data();
+  glBindTexture(GL_TEXTURE_2D, textureId);
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GL_FLOAT, data);
+  for (uint32_t h1 = 0; h1 < height / 2; ++h1) {
+    uint32_t h2 = height - 1 - h1;
+    for (uint32_t i = 0; i < width; ++i) {
+      std::swap(data[h1 * width + i], data[h2 * width + i]);
+    }
+  }
+  return output;
+}
+
+std::vector<float> getRGBAFloat32Texture(GLuint textureId, GLuint width, GLuint height) {
+  std::vector<float> output(width * height * 4);
+  float *data = output.data();
+  glBindTexture(GL_TEXTURE_2D, textureId);
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, data);
+  for (uint32_t h1 = 0; h1 < height / 2; ++h1) {
+    uint32_t h2 = height - 1 - h1;
+    for (uint32_t i = 0; i < 4 * width; ++i) {
+      std::swap(data[h1 * width * 4 + i], data[h2 * width * 4 + i]);
+    }
+  }
+  return output;
+}
+
+std::vector<int> getInt32Texture(GLuint textureId, GLuint width, GLuint height) {
+  std::vector<int> output(width * height);
+  int *data = output.data();
+  glBindTexture(GL_TEXTURE_2D, textureId);
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_R, GL_INT, data);
+  for (uint32_t h1 = 0; h1 < height / 2; ++h1) {
+    uint32_t h2 = height - 1 - h1;
+    for (uint32_t i = 0; i <  width; ++i) {
+      std::swap(data[h1 * width + i], data[h2 * width + i]);
+    }
+  }
+  return output;
+}
+
 } // namespace Optifuser

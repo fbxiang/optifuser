@@ -158,7 +158,6 @@ int main(int argc, char **argv) {
                                      "../glsl_shader/deferred.fsh");
   context.renderer.setAxisShader("../glsl_shader/axes.vsh",
                                  "../glsl_shader/axes.fsh");
-  context.renderer.renderSegmentation(true);
 
   GLuint pickingFbo;
   glGenFramebuffers(1, &pickingFbo);

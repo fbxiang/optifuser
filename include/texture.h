@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 #include <fstream>
 #include <memory>
+#include <vector>
 
 namespace Optifuser {
 
@@ -63,9 +64,8 @@ private:
 };
 
 std::shared_ptr<CubeMapTexture>
-LoadCubeMapTexture(const std::string &front, const std::string &back,
-                   const std::string &top, const std::string &bottom,
-                   const std::string &left, const std::string &right,
+LoadCubeMapTexture(const std::string &front, const std::string &back, const std::string &top,
+                   const std::string &bottom, const std::string &left, const std::string &right,
                    int wrapping, int filtering);
 
 void writeTextureRGBAFloat32Raw(GLuint textureId, GLuint width, GLuint height,
@@ -73,4 +73,9 @@ void writeTextureRGBAFloat32Raw(GLuint textureId, GLuint width, GLuint height,
 void writeTextureDepthFloat32Raw(GLuint textureId, GLuint width, GLuint height,
                                  const std::string &filename);
 
+std::vector<float> getDepthFloat32Texture(GLuint textureId, GLuint width, GLuint height);
+std::vector<float> getRGBAFloat32Texture(GLuint textureId, GLuint width, GLuint height);
+std::vector<int> getInt32Texture(GLuint textureId, GLuint width, GLuint height);
+
 } // namespace Optifuser
+

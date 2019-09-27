@@ -81,7 +81,6 @@ int main() {
                                      "../glsl_shader/deferred.fsh");
   context.renderer.setAxisShader("../glsl_shader/axes.vsh",
                                  "../glsl_shader/axes.fsh");
-  context.renderer.renderSegmentation(true);
 
   while (true) {
     context.processEvents();

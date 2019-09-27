@@ -98,7 +98,7 @@ void LightingPass::render(const Scene &scene, const CameraSpec &camera) const {
     m_shader->setVec3(e, directionalLights[i].emission);
   }
 
-  for (int n = 0; n < m_colorTextures.size(); n++) {
+  for (size_t n = 0; n < m_colorTextures.size(); n++) {
     m_shader->setTexture("colortex" + std::to_string(n), m_colorTextures[n], n);
   }
   m_shader->setTexture("depthtex0", m_depthTexture, m_colorTextures.size());

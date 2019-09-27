@@ -71,7 +71,6 @@ int main() {
   context.renderer.setAxisShader("../glsl_shader/axes.vsh",
                                  "../glsl_shader/axes.fsh");
 
-  context.renderer.renderSegmentation();
 
   while (true) {
     context.processEvents();

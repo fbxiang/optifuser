@@ -45,22 +45,21 @@ void Renderer::initTextures() {
     LABEL_TEXTURE(colortex[n], "colortex" + std::to_string(n));
   }
 
-  if (m_renderSegmentation) {
-    glGenTextures(2, segtex);
-    glBindTexture(GL_TEXTURE_2D, segtex[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32I, m_width, m_height, 0,
-                 GL_RED_INTEGER, GL_INT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    LABEL_TEXTURE(segtex[0], "segmentation tex");
+  glGenTextures(2, segtex);
+  glBindTexture(GL_TEXTURE_2D, segtex[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_R32I, m_width, m_height, 0,
+               GL_RED_INTEGER, GL_INT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  LABEL_TEXTURE(segtex[0], "segmentation tex");
 
-    glBindTexture(GL_TEXTURE_2D, segtex[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA,
-                 GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    LABEL_TEXTURE(segtex[1], "segmentation color tex");
-  }
+  glBindTexture(GL_TEXTURE_2D, segtex[1]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA,
+               GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  LABEL_TEXTURE(segtex[1], "segmentation color tex");
+
   // outputtex
   glGenTextures(1, &outputtex);
   glBindTexture(GL_TEXTURE_2D, outputtex);
@@ -93,12 +92,6 @@ void Renderer::initTextures() {
   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, shadowWidth,
                shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
   LABEL_TEXTURE(shadowtex, "shadow map");
-}
-
-void Renderer::renderSegmentation(bool enabled) {
-  m_renderSegmentation = enabled;
-  initTextures();
-  rebindTextures();
 }
 
 void Renderer::setAxisShader(const std::string &vs, const std::string &fs) {
@@ -144,11 +137,9 @@ void Renderer::rebindTextures() {
   for (int n = 0; n < N_COLORTEX; ++n) {
     tex[n] = colortex[n];
   }
-  if (m_renderSegmentation) {
-    tex[N_COLORTEX] = segtex[0];
-    tex[N_COLORTEX + 1] = segtex[1];
-    n_tex = N_COLORTEX + 2;
-  }
+  tex[N_COLORTEX] = segtex[0];
+  tex[N_COLORTEX + 1] = segtex[1];
+  n_tex = N_COLORTEX + 2;
   shadow_pass.setDepthAttachment(shadowtex, shadowWidth, shadowHeight);
 
   gbuffer_pass.setColorAttachments(n_tex, tex, m_width, m_height);
@@ -182,7 +173,7 @@ void Renderer::renderScene(const Scene &scene, const CameraSpec &camera) {
     shadow_pass.render(scene, camera);
     lighting_pass.setShadowTexture(shadowtex);
   }
-  gbuffer_pass.render(scene, camera, m_renderSegmentation);
+  gbuffer_pass.render(scene, camera, true);
   lighting_pass.render(scene, camera);
   axis_pass.render(scene, camera);
 
@@ -247,6 +238,22 @@ void Renderer::saveDepth(const std::string &file, bool raw) {
   }
 }
 
+std::vector<float> Renderer::getLighting() {
+  return getRGBAFloat32Texture(outputtex, m_width, m_height);
+}
+std::vector<float> Renderer::getAlbedo() {
+  return getRGBAFloat32Texture(colortex[0], m_width, m_height);
+}
+std::vector<float> Renderer::getNormal() {
+  return getRGBAFloat32Texture(colortex[2], m_width, m_height);
+}
+std::vector<float> Renderer::getDepth() {
+  return getDepthFloat32Texture(depthtex, m_width, m_height);
+}
+std::vector<int> Renderer::getSegmentation() {
+  return getInt32Texture(segtex[0], m_width, m_height);
+}
+
 void Renderer::enablePicking() {
   glGenFramebuffers(1, &pickingFbo);
 }
@@ -257,10 +264,6 @@ int Renderer::pickSegmentationId(int x, int y) {
     return 0;
   }
   // only valid when using segmentation
-  if (!m_renderSegmentation) {
-    std::cerr << "failed to pick segmentation id, segmentation not enabled." << std::endl;
-    return 0;
-  }
   if (x < 0 || x >= static_cast<int>(m_width) || y < 0 || y >= static_cast<int>(m_height)) {
     return 0;
   }

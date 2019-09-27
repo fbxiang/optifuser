@@ -45,8 +45,6 @@ public:
   void initTextures();
   void rebindTextures();
 
-  bool m_renderSegmentation = false;
-
 public:
   int debug = 0;
 
@@ -55,8 +53,6 @@ public:
   void init();
   void exit();
   void resize(GLuint w, GLuint h);
-
-  void renderSegmentation(bool enabled = true);
 
   int pickSegmentationId(int x, int y);
   void enablePicking();
@@ -92,6 +88,12 @@ public:
   void saveNormal(const std::string &file, bool raw = true);
   void saveDepth(const std::string &file, bool raw = true);
   // void saveSegmentation(const std::string &file);
+
+  std::vector<float> getLighting();
+  std::vector<float> getAlbedo();
+  std::vector<float> getNormal();
+  std::vector<float> getDepth();
+  std::vector<int> getSegmentation();
 
   void reloadShaders();
 };
