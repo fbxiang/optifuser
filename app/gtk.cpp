@@ -130,8 +130,8 @@ int main(int argc, char **argv) {
   loadScene(scene);
 
   Optifuser::FPSCameraSpec cam;
-  cam.up = {0, 1, 0};
-  cam.forward = {0, 0, -1};
+  cam.setUp({0,1,0});
+  cam.setForward({0, 0, -1});
   CHECK(cam.isSane(), "Camera axes are wrong.");
 
   cam.position = {0, 0, 1};

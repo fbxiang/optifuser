@@ -53,8 +53,8 @@ int main() {
   std::vector<std::shared_ptr<Optifuser::Object>> objects;
 
   Optifuser::FPSCameraSpec cam;
-  cam.up = {0, 1, 0};
-  cam.forward = {0, 0, -1};
+  cam.setUp({0, 1, 0});
+  cam.setForward({0, 0, -1});
   cam.position = {0, 0, 3};
   cam.fovy = glm::radians(45.f);
   cam.aspect = w / (float)h;

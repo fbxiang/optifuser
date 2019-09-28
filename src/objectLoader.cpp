@@ -10,25 +10,21 @@ std::vector<std::unique_ptr<Object>>
 
 LoadObj(const std::string file, bool ignoreSpecification, glm::vec3 upAxis,
         glm::vec3 forwardAxis) {
+#ifdef _VERBOSE
   printf("Loading texture %s\n", file.c_str());
-  glm::mat3 formatTransform =
-      glm::mat3(glm::cross(forwardAxis, upAxis), upAxis, -forwardAxis);
+#endif
+  glm::mat3 formatTransform = glm::mat3(glm::cross(forwardAxis, upAxis), upAxis, -forwardAxis);
 
   auto objects = std::vector<std::unique_ptr<Object>>();
 
   Assimp::Importer importer;
-  uint32_t flags = aiProcess_CalcTangentSpace | aiProcess_Triangulate |
-                   aiProcess_GenNormals | aiProcess_FlipUVs;
+  uint32_t flags = aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_GenNormals |
+                   aiProcess_FlipUVs;
   if (!ignoreSpecification) {
     flags |= aiProcess_PreTransformVertices;
   }
 
   const aiScene *scene = importer.ReadFile(file, flags);
-
-  // auto tt = scene->mRootNode->mTransformation;
-  // printf("%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n", tt.a1, tt.a2,
-  //        tt.a3, tt.a4, tt.b1, tt.b2, tt.b3, tt.b4, tt.c1, tt.c2, tt.c3, tt.c4,
-  //        tt.d1, tt.d2, tt.d3, tt.d4);
 
   if (scene->mRootNode->mMetaData) {
     std::cerr << "HAS META" << std::endl;
@@ -40,8 +36,10 @@ LoadObj(const std::string file, bool ignoreSpecification, glm::vec3 upAxis,
     return objects;
   }
 
-  printf("Loaded %d meshes, %d materials, %d textures\n", scene->mNumMeshes,
-         scene->mNumMaterials, scene->mNumTextures);
+#ifdef _VERBOSE
+  printf("Loaded %d meshes, %d materials, %d textures\n", scene->mNumMeshes, scene->mNumMaterials,
+         scene->mNumTextures);
+#endif
 
   std::vector<Material> mats(scene->mNumMaterials);
   for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
@@ -108,35 +106,29 @@ LoadObj(const std::string file, bool ignoreSpecification, glm::vec3 upAxis,
     for (uint32_t v = 0; v < mesh->mNumVertices; v++) {
       glm::vec3 normal = glm::vec3(0);
       glm::vec2 texcoord = glm::vec2(0);
-      glm::vec3 position = formatTransform * glm::vec3(mesh->mVertices[v].x,
-                                                       mesh->mVertices[v].y,
+      glm::vec3 position = formatTransform * glm::vec3(mesh->mVertices[v].x, mesh->mVertices[v].y,
                                                        mesh->mVertices[v].z);
       glm::vec3 tangent = glm::vec3(0);
       glm::vec3 bitangent = glm::vec3(0);
       if (mesh->HasNormals()) {
-        normal = formatTransform * glm::vec3(mesh->mNormals[v].x,
-                                             mesh->mNormals[v].y,
-                                             mesh->mNormals[v].z);
+        normal = formatTransform *
+                 glm::vec3(mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z);
       }
       if (mesh->HasTextureCoords(0)) {
         texcoord = {mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y};
       }
       if (mesh->HasTangentsAndBitangents()) {
-        tangent = formatTransform * glm::vec3(mesh->mTangents[v].x,
-                                              mesh->mTangents[v].y,
-                                              mesh->mTangents[v].z);
-        bitangent = formatTransform * glm::vec3(mesh->mBitangents[v].x,
-                                                mesh->mBitangents[v].y,
+        tangent = formatTransform *
+                  glm::vec3(mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z);
+        bitangent = formatTransform * glm::vec3(mesh->mBitangents[v].x, mesh->mBitangents[v].y,
                                                 mesh->mBitangents[v].z);
       }
-      vertices.push_back(
-          Vertex(position, normal, texcoord, tangent, bitangent));
+      vertices.push_back(Vertex(position, normal, texcoord, tangent, bitangent));
     }
     for (uint32_t f = 0; f < mesh->mNumFaces; f++) {
       auto face = mesh->mFaces[f];
       if (face.mNumIndices != 3) {
-        fprintf(stderr, "A face with %d indices is found and ignored.",
-                face.mNumIndices);
+        fprintf(stderr, "A face with %d indices is found and ignored.", face.mNumIndices);
         continue;
       }
       indices.push_back(face.mIndices[0]);

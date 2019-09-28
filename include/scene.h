@@ -1,5 +1,4 @@
 #pragma once
-#include "camera.h"
 #include "lights.h"
 #include "object.h"
 #include <vector>
@@ -20,13 +19,9 @@ private:
 
   std::vector<std::tuple<glm::vec3, glm::quat>> axes;
 
- public:
-  void addAxes(const glm::vec3 &pos, const glm::quat &rot) {
-    axes.push_back({pos, rot});
-  }
-  void clearAxes() {
-    axes.clear();
-  }
+public:
+  void addAxes(const glm::vec3 &pos, const glm::quat &rot) { axes.push_back({pos, rot}); }
+  void clearAxes() { axes.clear(); }
   inline const std::vector<std::tuple<glm::vec3, glm::quat>> &getAxes() const { return axes; }
 
 public:
@@ -40,11 +35,9 @@ public:
   void addDirectionalLight(DirectionalLight light);
   void addParalleloGramLight(ParallelogramLight light);
 
-  void setEnvironmentMap(const std::string &front, const std::string &back,
-                         const std::string &top, const std::string &bottom,
-                         const std::string &left, const std::string &right,
-                         int wrapping = GL_CLAMP_TO_EDGE,
-                         int filtering = GL_LINEAR);
+  void setEnvironmentMap(const std::string &nz, const std::string &pz, const std::string &py,
+                         const std::string &ny, const std::string &nx, const std::string &px,
+                         int wrapping = GL_CLAMP_TO_EDGE, int filtering = GL_LINEAR);
 
   inline const std::shared_ptr<CubeMapTexture> &getEnvironmentMap() const {
     return environmentMap;
@@ -52,9 +45,7 @@ public:
 
   glm::vec3 getAmbientLight() const { return ambientLight; }
   const std::vector<PointLight> &getPointLights() const { return pointLights; }
-  const std::vector<DirectionalLight> &getDirectionalLights() const {
-    return directionalLights;
-  }
+  const std::vector<DirectionalLight> &getDirectionalLights() const { return directionalLights; }
   const std::vector<ParallelogramLight> &getParallelogramLights() const {
     return parallelogramLights;
   }

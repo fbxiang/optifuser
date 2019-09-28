@@ -10,10 +10,6 @@ void CameraSpec::lookAt(const glm::vec3 &direction, const glm::vec3 &up) {
   rotation = glm::quatLookAt(glm::normalize(direction), up);
 }
 
-void FPSCameraSpec::lookAt(const glm::vec3 &direction) {
-  CameraSpec::lookAt(direction, up);
-}
-
 bool FPSCameraSpec::isSane() const {
   return is_close(glm::length(forward), 1.f) &&
          is_close(glm::length(up), 1.f) && is_close(glm::dot(forward, up), 0.f);
@@ -45,16 +41,6 @@ void FPSCameraSpec::moveForwardRight(float d_forward, float d_right) {
 glm::quat FPSCameraSpec::getRotation0() const {
   glm::mat3 mat = glm::mat3(glm::cross(forward, up), up, -forward);
   return glm::quat(mat);
-}
-
-glm::mat4 FPSCameraSpec::getViewMatLocal() const {
-  glm::quat rotation_local = glm::angleAxis(yaw, glm::vec3(0, 1, 0)) *
-                             glm::angleAxis(pitch, glm::vec3(1, 0, 0));
-  glm::mat4 t = glm::toMat4(rotation_local);
-  t[3][0] = position.x;
-  t[3][1] = position.y;
-  t[3][2] = position.z;
-  return glm::inverse(t);
 }
 
 void FPSCameraSpec::update() {

@@ -65,16 +65,15 @@ void LightingPass::render(const Scene &scene, const CameraSpec &camera) const {
   m_shader->use();
   glm::mat4 viewMat = camera.getViewMat();
   glm::mat4 projMat = camera.getProjectionMat();
-  glm::mat4 environmentViewMat = camera.getViewMatLocal();
 
   // set uniforms
   m_shader->setMatrix("gbufferViewMatrix", viewMat);
   m_shader->setMatrix("gbufferViewMatrixInverse", glm::inverse(viewMat));
   m_shader->setMatrix("gbufferProjectionMatrix", projMat);
   m_shader->setMatrix("gbufferProjectionMatrixInverse", glm::inverse(projMat));
-  m_shader->setMatrix("environmentViewMatrix", environmentViewMat);
+  m_shader->setMatrix("environmentViewMatrix", viewMat);
   m_shader->setMatrix("environmentViewMatrixInverse",
-                      glm::inverse(environmentViewMat));
+                      glm::inverse(viewMat));
   m_shader->setVec3("cameraPosition", camera.position);
   m_shader->setVec3("ambientLight", scene.getAmbientLight());
   m_shader->setFloat("near", camera.near);

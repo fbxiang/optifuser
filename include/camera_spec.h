@@ -29,8 +29,6 @@ public:
 
   inline glm::mat4 getViewMat() const { return glm::inverse(getModelMat()); }
 
-  virtual inline glm::mat4 getViewMatLocal() const { return getViewMat(); }
-
   inline glm::mat4 getProjectionMat() const {
     return glm::perspective(fovy, aspect, near, far);
   }
@@ -40,15 +38,12 @@ class FPSCameraSpec : public CameraSpec {
 private:
   float yaw = 0.f;
   float pitch = 0.f;
-
-public:
   glm::vec3 forward = {0, 0, -1};
   glm::vec3 up = {0, 1, 0};
 
+public:
   // updates rotation based on forward and up
   void update();
-
-  void lookAt(const glm::vec3 &direction);
 
   inline void setForward(const glm::vec3 &dir) { forward = dir; }
 
@@ -61,8 +56,6 @@ public:
   void moveForwardRight(float d_forward, float d_right);
 
   glm::quat getRotation0() const;
-
-  virtual glm::mat4 getViewMatLocal() const;
 };
 
 } // namespace Optifuser

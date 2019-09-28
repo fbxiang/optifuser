@@ -45,8 +45,8 @@ int main() {
   // scene->addObject(std::move(axes));
 
   Optifuser::FPSCameraSpec cam;
-  cam.up = {0, 0, 1};
-  cam.forward = {0, 1, 0};
+  cam.setUp({0,0,1});
+  cam.setForward({0, 1, 0});
   CHECK(cam.isSane(), "Camera axes are wrong.");
 
   cam.position = {0, -1, 0};
