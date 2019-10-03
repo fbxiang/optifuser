@@ -139,8 +139,8 @@ std::unique_ptr<Object> NewSphere() {
   std::vector<Vertex> vertices;
   std::vector<GLuint> indices;
 
-  int stacks = 5;
-  int slices = 5;
+  int stacks = 20;
+  int slices = 20;
   float radius = 1.f;
 
   for (int i = 0; i <= stacks; ++i) {
