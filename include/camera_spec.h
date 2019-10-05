@@ -10,8 +10,8 @@ namespace Optifuser {
 class CameraSpec {
 public:
   std::string name;
-  glm::vec3 position;
-  glm::quat rotation;
+  glm::vec3 position = {0, 0, 0};
+  glm::quat rotation = {1, 0, 0, 0};
   float near = 0.1f;
   float far = 1000.f;
   float fovy = glm::radians(35.f);
@@ -29,9 +29,7 @@ public:
 
   inline glm::mat4 getViewMat() const { return glm::inverse(getModelMat()); }
 
-  inline glm::mat4 getProjectionMat() const {
-    return glm::perspective(fovy, aspect, near, far);
-  }
+  inline glm::mat4 getProjectionMat() const { return glm::perspective(fovy, aspect, near, far); }
 };
 
 class FPSCameraSpec : public CameraSpec {
