@@ -84,8 +84,7 @@ std::unique_ptr<T> NewObject(std::shared_ptr<AbstractMeshBase> mesh) {
 }
 
 template <typename T> std::unique_ptr<T> NewObject() {
-  static_assert(std::is_base_of<Object, T>::value,
-                "T must inherit from Obejct.");
+  static_assert(std::is_base_of<Object, T>::value, "T must inherit from Obejct.");
   auto obj = std::make_unique<T>();
   return obj;
 }
@@ -100,5 +99,6 @@ std::unique_ptr<Object> NewLine();
 std::unique_ptr<Object> NewLineCube();
 std::unique_ptr<Object> NewMeshGrid();
 std::unique_ptr<Object> NewAxes();
+std::unique_ptr<Object> NewCapsule(float halfHeight, float radius);
 
 } // namespace Optifuser
