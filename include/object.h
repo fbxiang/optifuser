@@ -93,6 +93,7 @@ std::unique_ptr<Object> NewNoisePlane(unsigned int res);
 std::unique_ptr<Object> NewDebugObject();
 std::unique_ptr<Object> NewPlane();
 std::unique_ptr<Object> NewYZPlane();
+std::unique_ptr<Object> NewFlatCube();
 std::unique_ptr<Object> NewCube();
 std::unique_ptr<Object> NewSphere();
 std::unique_ptr<Object> NewLine();

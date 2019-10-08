@@ -111,6 +111,35 @@ std::unique_ptr<Object> NewYZPlane() {
   return obj;
 }
 
+std::unique_ptr<Object> NewFlatCube() {
+  std::vector<Vertex> vertices = {
+      Vertex(glm::vec3(-1.0, -1.0, 1.0)),  Vertex(glm::vec3(1.0, -1.0, 1.0)),
+      Vertex(glm::vec3(1.0, 1.0, 1.0)),    Vertex(glm::vec3(-1.0, 1.0, 1.0)),
+
+      Vertex(glm::vec3(1.0, -1.0, 1.0)),   Vertex(glm::vec3(1.0, -1.0, -1.0)),
+      Vertex(glm::vec3(1.0, 1.0, -1.0)),   Vertex(glm::vec3(1.0, 1.0, 1.0)),
+
+      Vertex(glm::vec3(-1.0, 1.0, -1.0)),  Vertex(glm::vec3(1.0, 1.0, -1.0)),
+      Vertex(glm::vec3(1.0, -1.0, -1.0)),  Vertex(glm::vec3(-1.0, -1.0, -1.0)),
+
+      Vertex(glm::vec3(-1.0, -1.0, -1.0)), Vertex(glm::vec3(-1.0, -1.0, 1.0)),
+      Vertex(glm::vec3(-1.0, 1.0, 1.0)),   Vertex(glm::vec3(-1.0, 1.0, -1.0)),
+
+      Vertex(glm::vec3(-1.0, -1.0, -1.0)), Vertex(glm::vec3(1.0, -1.0, -1.0)),
+      Vertex(glm::vec3(1.0, -1.0, 1.0)),   Vertex(glm::vec3(-1.0, -1.0, 1.0)),
+
+      Vertex(glm::vec3(-1.0, 1.0, 1.0)),   Vertex(glm::vec3(1.0, 1.0, 1.0)),
+      Vertex(glm::vec3(1.0, 1.0, -1.0)),   Vertex(glm::vec3(-1.0, 1.0, -1.0))};
+  std::vector<GLuint> indices = {0,  1,  2,  2,  3,  0,  4,  5,  6,  6,  7,  4,
+                                 8,  9,  10, 10, 11, 8,  12, 13, 14, 14, 15, 12,
+                                 16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20};
+
+  static auto cubeMesh = std::make_shared<TriangleMesh>(vertices, indices, true);
+  auto obj = NewObject<Object>(cubeMesh);
+  obj->name = "FlatCube";
+  return obj;
+}
+
 std::unique_ptr<Object> NewCube() {
   std::vector<Vertex> vertices = {
       Vertex(glm::vec3(-1.0, -1.0, 1.0)),  Vertex(glm::vec3(1.0, -1.0, 1.0)),
