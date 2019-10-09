@@ -162,36 +162,45 @@ std::unique_ptr<Object> NewSphere() {
   int slices = 20;
   float radius = 1.f;
 
-  for (int i = 0; i <= stacks; ++i) {
-
-    GLfloat V = i / (float)stacks;
-    GLfloat phi = V * glm::pi<float>();
-
-    // Loop Through Slices
-    for (int j = 0; j <= slices; ++j) {
-
-      GLfloat U = j / (float)slices;
-      GLfloat theta = U * (glm::pi<float>() * 2);
-
-      // Calc The Vertex Positions
-      GLfloat x = cosf(theta) * sinf(phi);
-      GLfloat y = cosf(phi);
-      GLfloat z = sinf(theta) * sinf(phi);
-
-      // Push Back Vertex Data
-      vertices.push_back(Vertex({x * radius, y * radius, z * radius}));
+  for (uint32_t i = 1; i < stacks; ++i) {
+    float phi = glm::pi<float>() / stacks * i - glm::pi<float>() / 2;
+    for (uint32_t j = 0; j < slices; ++j) {
+      float theta = glm::pi<float>() * 2 / slices * j;
+      float x = sinf(phi) * radius;
+      float y = cosf(theta) * cosf(phi) * radius;
+      float z = sinf(theta) * cosf(phi) * radius;
+      vertices.push_back({{x, y, z}});
     }
   }
 
-  // Calc The Index Positions
-  for (int i = 0; i < slices * stacks + slices; ++i) {
-    indices.push_back(i);
-    indices.push_back(i + slices + 1);
-    indices.push_back(i + slices);
+  for (uint32_t i = 0; i < (stacks - 2) * slices; ++i) {
+    uint32_t right = (i + 1) % slices + i / slices * slices;
+    uint32_t up = i + slices;
+    uint32_t rightUp = right + slices;
 
-    indices.push_back(i + slices + 1);
     indices.push_back(i);
-    indices.push_back(i + 1);
+    indices.push_back(rightUp);
+    indices.push_back(up);
+
+    indices.push_back(i);
+    indices.push_back(right);
+    indices.push_back(rightUp);
+  }
+
+  vertices.push_back({{-radius, 0, 0}});
+  vertices.push_back({{radius, 0, 0}});
+
+  for (uint32_t i = 0; i < slices; ++i) {
+    uint32_t right = (i + 1) % slices + i / slices * slices;
+    indices.push_back(vertices.size() - 2);
+    indices.push_back(right);
+    indices.push_back(i);
+  }
+  for (uint32_t i = (stacks - 2) * slices; i < stacks * slices; ++i) {
+    uint32_t right = (i + 1) % slices + i / slices * slices;
+    indices.push_back(vertices.size() - 1);
+    indices.push_back(i);
+    indices.push_back(right);
   }
 
   auto obj = NewObject<Object>(std::make_shared<TriangleMesh>(vertices, indices, true));
