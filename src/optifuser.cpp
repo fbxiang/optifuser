@@ -11,8 +11,7 @@ Input input;
 
 Input &getInput() { return input; }
 
-void keyCallback(GLFWwindow *window, int key, int scancode, int action,
-                 int mods) {
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
   input.keyCallback(key, scancode, action, mods);
 }
 
@@ -65,8 +64,11 @@ GLFWRenderContext::~GLFWRenderContext() { renderer.exit(); }
 void GLFWRenderContext::init(uint32_t width, uint32_t height) {
   glfwSetWindowSize(mainWindow, width, height);
   glViewport(0, 0, width, height);
-  glfwShowWindow(mainWindow);
 }
+
+void GLFWRenderContext::showWindow() { glfwShowWindow(mainWindow); }
+
+void GLFWRenderContext::hideWindow() { glfwHideWindow(mainWindow); }
 
 void GLFWRenderContext::initGui() {
   IMGUI_CHECKVERSION();
@@ -103,13 +105,9 @@ void GLFWRenderContext::swapBuffers() const {
   getInput().nextFrame();
 }
 
-void GLFWRenderContext::destroy() {
-  glfwDestroyWindow(mainWindow);
-}
+void GLFWRenderContext::destroy() { glfwDestroyWindow(mainWindow); }
 
-GLFWwindow *GLFWRenderContext::getWindow() const {
-  return mainWindow;
-}
+GLFWwindow *GLFWRenderContext::getWindow() const { return mainWindow; }
 
 OffscreenRenderContext::OffscreenRenderContext(int w, int h) {
   ensureGlobalContext();

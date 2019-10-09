@@ -31,6 +31,10 @@ void Renderer::deleteTextures() {
   glDeleteTextures(1, &shadowtex);
 }
 
+void Renderer::enableAxisPass(bool enable) {
+  axisPassEnabled = enable;
+}
+
 void Renderer::initTextures() {
   deleteTextures();
 
@@ -175,7 +179,9 @@ void Renderer::renderScene(const Scene &scene, const CameraSpec &camera) {
   }
   gbuffer_pass.render(scene, camera, true);
   lighting_pass.render(scene, camera);
-  axis_pass.render(scene, camera);
+  if (axisPassEnabled) {
+    axis_pass.render(scene, camera);
+  }
 
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);

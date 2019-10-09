@@ -51,6 +51,9 @@ public:
   void swapBuffers() const;
   GLFWwindow *getWindow() const;
 
+  void showWindow();
+  void hideWindow();
+
   void destroy();
 };
 

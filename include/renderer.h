@@ -30,6 +30,8 @@ private:
   LightingPass lighting_pass;
   AxisPass axis_pass;
 
+  bool axisPassEnabled = false;
+
 public:
   GLuint colortex[N_COLORTEX];
   GLuint depthtex = 0;
@@ -56,6 +58,7 @@ public:
 
   int pickSegmentationId(int x, int y);
   void enablePicking();
+  void enableAxisPass(bool enable = true);
 
 public:
   bool initialized;
