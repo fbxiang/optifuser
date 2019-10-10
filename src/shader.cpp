@@ -136,7 +136,7 @@ void Shader::setUserData(const std::string &name, uint32_t size, float const *da
     std::cerr << "Only 16 floats are allowed in user data, forcing this constraint" << std::endl;
     size = 16;
   }
-  glm::mat4 mat;
+  glm::mat4 mat(0);
   for (uint32_t i = 0; i < size; ++i) {
     mat[i / 4][i % 4] = data[i];
   }
