@@ -37,6 +37,7 @@ public:
   GLuint depthtex = 0;
   GLuint outputtex = 0;
   GLuint segtex[2];
+  GLuint usertex[1];
   GLuint shadowtex = 0;
 
   GLuint m_fbo[FBO_TYPE::COUNT];
@@ -86,6 +87,7 @@ public:
   void renderScene(const Scene &scene, const CameraSpec &camera);
   void displayLighting(GLuint fbo = 0) const;
   void displaySegmentation(GLuint fbo = 0) const;
+  void displayUserTexture(GLuint fbo = 0) const;
 
   void saveLighting(const std::string &file, bool raw = true);
   void saveNormal(const std::string &file, bool raw = true);
@@ -97,6 +99,7 @@ public:
   std::vector<float> getNormal();
   std::vector<float> getDepth();
   std::vector<int> getSegmentation();
+  std::vector<float> getUserTexture();
 
   void reloadShaders();
 };
