@@ -52,8 +52,7 @@ Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath) {
   glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
   if (InfoLogLength > 0) {
     std::vector<char> VertexShaderErrorMessage(InfoLogLength + 1);
-    glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL,
-                       &VertexShaderErrorMessage[0]);
+    glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
     printf("%s\n", &VertexShaderErrorMessage[0]);
   }
 
@@ -68,8 +67,7 @@ Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath) {
   glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
   if (InfoLogLength > 0) {
     std::vector<char> FragmentShaderErrorMessage(InfoLogLength + 1);
-    glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL,
-                       &FragmentShaderErrorMessage[0]);
+    glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
     printf("%s\n", &FragmentShaderErrorMessage[0]);
   }
 
@@ -85,8 +83,7 @@ Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath) {
   glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
   if (InfoLogLength > 0) {
     std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
-    glGetProgramInfoLog(ProgramID, InfoLogLength, NULL,
-                        &ProgramErrorMessage[0]);
+    glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
     printf("%s\n", &ProgramErrorMessage[0]);
   }
 
@@ -121,8 +118,7 @@ void Shader::setFloat(const std::string &name, float value) const {
     glUniform1f(variableId, value);
 }
 
-void Shader::setMatrix(const std::string &name, const glm::mat4 &mat,
-                       bool transpose) const {
+void Shader::setMatrix(const std::string &name, const glm::mat4 &mat, bool transpose) const {
   GLint variableId = glGetUniformLocation(Id, name.c_str());
   if (variableId != -1)
     glUniformMatrix4fv(variableId, 1, transpose, &mat[0][0]);
@@ -134,8 +130,22 @@ void Shader::setVec3(const std::string &name, const glm::vec3 &vec) const {
     glUniform3f(variableId, vec[0], vec[1], vec[2]);
 }
 
-void Shader::setTexture(const std::string &name, GLuint textureId,
-                        GLint n) const {
+void Shader::setUserData(const std::string &name, uint32_t size, float const *data) const {
+  GLint variableId = glGetUniformLocation(Id, name.c_str());
+  if (size > 16) {
+    std::cerr << "Only 16 floats are allowed in user data, forcing this constraint" << std::endl;
+    size = 16;
+  }
+  glm::mat4 mat;
+  for (uint32_t i = 0; i < size; ++i) {
+    mat[i / 4][i % 4] = data[i];
+  }
+  if (variableId != -1) {
+    glUniformMatrix4fv(variableId, 1, GL_FALSE, &mat[0][0]);
+  }
+}
+
+void Shader::setTexture(const std::string &name, GLuint textureId, GLint n) const {
   GLint variableId = glGetUniformLocation(Id, name.c_str());
   if (variableId != -1) {
     glUniform1i(variableId, n);
@@ -144,8 +154,7 @@ void Shader::setTexture(const std::string &name, GLuint textureId,
   }
 }
 
-void Shader::setCubemap(const std::string &name, GLuint textureId,
-                        GLint n) const {
+void Shader::setCubemap(const std::string &name, GLuint textureId, GLint n) const {
   GLint variableId = glGetUniformLocation(Id, name.c_str());
   if (variableId != -1) {
     glUniform1i(variableId, n);

@@ -99,7 +99,8 @@ void renderObjectTree(const Object &obj, const glm::mat4 &parentModelMat,
                        3);
     shader->setBool("material.has_normal_map",
                     obj.material.normal_map->getId() != 0);
-
+    auto & userData = obj.getUserData();
+    shader->setUserData("user_data", userData.size(), userData.data());
     mesh->draw();
   }
   for (auto &child : obj.getChildren()) {

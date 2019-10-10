@@ -35,6 +35,8 @@ protected:
 
   uint32_t segmentId = 0; // used for rendering segmentation
 
+  std::vector<float> userData = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+
 public:
   std::shared_ptr<Shader> shader;
   Material material;
@@ -51,8 +53,8 @@ protected:
 
 public:
   Object(std::shared_ptr<AbstractMeshBase> m = nullptr)
-      : mesh(m), parent(nullptr), shader(nullptr), name(""), position(0.f),
-        scale(1.f), rotation(), visible(true), scene(nullptr) {}
+      : mesh(m), parent(nullptr), shader(nullptr), name(""), position(0.f), scale(1.f), rotation(),
+        visible(true), scene(nullptr) {}
 
   virtual ~Object() {}
 
@@ -63,22 +65,16 @@ public:
   std::shared_ptr<AbstractMeshBase> getMesh() const;
 
   void addChild(std::unique_ptr<Object> child);
-  inline const std::vector<std::unique_ptr<Object>> &getChildren() const {
-    return children;
-  }
+  inline const std::vector<std::unique_ptr<Object>> &getChildren() const { return children; }
 
-  inline void setSegmentId(uint32_t id) {
-    segmentId = id;
-  }
-  inline uint32_t getSegmentId() const {
-    return segmentId;
-  }
+  inline void setSegmentId(uint32_t id) { segmentId = id; }
+  inline uint32_t getSegmentId() const { return segmentId; }
+  inline void setUserData(std::vector<float> const &data) { userData = data; }
+  inline std::vector<float> const &getUserData() const { return userData; }
 };
 
-template <typename T>
-std::unique_ptr<T> NewObject(std::shared_ptr<AbstractMeshBase> mesh) {
-  static_assert(std::is_base_of<Object, T>::value,
-                "T must inherit from Obejct.");
+template <typename T> std::unique_ptr<T> NewObject(std::shared_ptr<AbstractMeshBase> mesh) {
+  static_assert(std::is_base_of<Object, T>::value, "T must inherit from Obejct.");
   auto obj = std::make_unique<T>(mesh);
   return obj;
 }

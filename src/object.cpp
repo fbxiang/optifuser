@@ -371,4 +371,5 @@ std::unique_ptr<Object> NewCapsule(float halfHeight, float radius) {
   return obj;
 }
 
+
 } // namespace Optifuser

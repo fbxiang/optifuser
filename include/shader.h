@@ -19,6 +19,7 @@ public:
   void setMatrix(const std::string &name, const glm::mat4 &mat,
                  bool transpose = GL_FALSE) const;
   void setVec3(const std::string &name, const glm::vec3 &vec) const;
+  void setUserData(const std::string &name, uint32_t size, float const * data) const;
   void setTexture(const std::string &name, GLuint textureId, GLint n) const;
   void setCubemap(const std::string &name, GLuint textureId, GLint n) const;
 };
