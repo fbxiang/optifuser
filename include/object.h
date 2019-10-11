@@ -22,7 +22,7 @@ struct Material {
   std::shared_ptr<Texture> normal_map = std::make_shared<Texture>();
 
   glm::vec3 kd = glm::vec3(0);
-  glm::vec3 ks = glm::vec3(1);
+  glm::vec3 ks = glm::vec3(0);
   glm::vec3 ka = glm::vec3(0);
   float exp = 1.f;
 };
