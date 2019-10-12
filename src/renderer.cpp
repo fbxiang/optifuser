@@ -7,7 +7,7 @@ Renderer::Renderer() {
   for (int n = 0; n < N_COLORTEX; ++n) {
     colortex[n] = 0;
   }
-  segtex[0] = segtex[1] = 0;
+  segtex[0] = segtex[1] = segtex[2] = 0;
   usertex[0] = 0;
   for (int n = 0; n < FBO_TYPE::COUNT; ++n) {
     m_fbo[n] = 0;
@@ -26,8 +26,8 @@ void Renderer::deleteTextures() {
   glDeleteTextures(1, &outputtex);
   outputtex = 0;
 
-  glDeleteTextures(2, segtex);
-  segtex[0] = segtex[1] = 0;
+  glDeleteTextures(3, segtex);
+  segtex[0] = segtex[1] = segtex[2] = 0;
 
   glDeleteTextures(1, usertex);
   usertex[0] = 0;
@@ -50,7 +50,7 @@ void Renderer::initTextures() {
     LABEL_TEXTURE(colortex[n], "colortex" + std::to_string(n));
   }
 
-  glGenTextures(2, segtex);
+  glGenTextures(3, segtex);
   glBindTexture(GL_TEXTURE_2D, segtex[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_R32I, m_width, m_height, 0, GL_RED_INTEGER, GL_INT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -58,10 +58,16 @@ void Renderer::initTextures() {
   LABEL_TEXTURE(segtex[0], "segmentation tex");
 
   glBindTexture(GL_TEXTURE_2D, segtex[1]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_R32I, m_width, m_height, 0, GL_RED_INTEGER, GL_INT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  LABEL_TEXTURE(segtex[0], "segmentation tex 2");
+
+  glBindTexture(GL_TEXTURE_2D, segtex[2]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  LABEL_TEXTURE(segtex[1], "segmentation color tex");
+  LABEL_TEXTURE(segtex[2], "segmentation color tex");
 
   glGenTextures(1, usertex);
   glBindTexture(GL_TEXTURE_2D, usertex[0]);
@@ -141,15 +147,16 @@ void Renderer::exit() {
 }
 
 void Renderer::rebindTextures() {
-  GLuint tex[N_COLORTEX + 2 + 1];
+  GLuint tex[N_COLORTEX + 4];
   int n_tex = N_COLORTEX;
   for (int n = 0; n < N_COLORTEX; ++n) {
     tex[n] = colortex[n];
   }
   tex[N_COLORTEX] = segtex[0];
   tex[N_COLORTEX + 1] = segtex[1];
-  tex[N_COLORTEX + 2] = usertex[0];
-  n_tex = N_COLORTEX + 3;
+  tex[N_COLORTEX + 2] = segtex[2];
+  tex[N_COLORTEX + 3] = usertex[0];
+  n_tex = N_COLORTEX + 4;
   shadow_pass.setDepthAttachment(shadowtex, shadowWidth, shadowHeight);
 
   gbuffer_pass.setColorAttachments(n_tex, tex, m_width, m_height);
@@ -224,7 +231,7 @@ void Renderer::displayUserTexture(GLuint fbo) const {
 void Renderer::displaySegmentation(GLuint fbo) const {
   // read from segmentation color
   glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo[FBO_TYPE::COPY]);
-  glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, segtex[1], 0);
+  glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, segtex[2], 0);
 
   // draw to given fbo
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
@@ -278,6 +285,9 @@ std::vector<float> Renderer::getDepth() {
 std::vector<int> Renderer::getSegmentation() {
   return getInt32Texture(segtex[0], m_width, m_height);
 }
+std::vector<int> Renderer::getSegmentation2() {
+  return getInt32Texture(segtex[1], m_width, m_height);
+}
 std::vector<float> Renderer::getUserTexture() {
   return getRGBAFloat32Texture(usertex[0], m_width, m_height);
 }
@@ -296,6 +306,26 @@ int Renderer::pickSegmentationId(int x, int y) {
   int value;
   glBindFramebuffer(GL_FRAMEBUFFER, pickingFbo);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, segtex[0], 0);
+  glReadBuffer(GL_COLOR_ATTACHMENT0);
+
+  // pixel position is upside down
+  glReadPixels(x, m_height - y, 1, 1, GL_RED_INTEGER, GL_INT, &value);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  return value;
+}
+
+int Renderer::pickObjectId(int x, int y) {
+  if (!pickingFbo) {
+    std::cerr << "failed to pick object id, you need to enable picking first." << std::endl;
+    return 0;
+  }
+  // only valid when using segmentation
+  if (x < 0 || x >= static_cast<int>(m_width) || y < 0 || y >= static_cast<int>(m_height)) {
+    return 0;
+  }
+  int value;
+  glBindFramebuffer(GL_FRAMEBUFFER, pickingFbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, segtex[1], 0);
   glReadBuffer(GL_COLOR_ATTACHMENT0);
 
   // pixel position is upside down

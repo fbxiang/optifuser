@@ -34,6 +34,7 @@ protected:
   std::vector<std::unique_ptr<Object>> children;
 
   uint32_t segmentId = 0; // used for rendering segmentation
+  uint32_t objId = 0; // used for rendering fine segmentation
 
   std::vector<float> userData = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
 
@@ -67,6 +68,8 @@ public:
   void addChild(std::unique_ptr<Object> child);
   inline const std::vector<std::unique_ptr<Object>> &getChildren() const { return children; }
 
+  inline void setObjId(uint32_t id) { objId = id; }
+  inline uint32_t getObjId() const { return objId; }
   inline void setSegmentId(uint32_t id) { segmentId = id; }
   inline uint32_t getSegmentId() const { return segmentId; }
   inline void setUserData(std::vector<float> const &data) { userData = data; }

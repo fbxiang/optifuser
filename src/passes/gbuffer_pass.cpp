@@ -73,6 +73,7 @@ void renderObjectTree(const Object &obj, const glm::mat4 &parentModelMat,
     }
     if (renderSegmentation) {
       shader->setInt("segmentation", obj.getSegmentId());
+      shader->setInt("segmentation2", obj.getObjId());
       shader->setVec3("segmentation_color",
                       colortable[obj.getSegmentId() % COLOR_TABLE_SIZE]);
     }

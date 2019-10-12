@@ -36,7 +36,7 @@ public:
   GLuint colortex[N_COLORTEX];
   GLuint depthtex = 0;
   GLuint outputtex = 0;
-  GLuint segtex[2];
+  GLuint segtex[3];
   GLuint usertex[1];
   GLuint shadowtex = 0;
 
@@ -58,6 +58,7 @@ public:
   void resize(GLuint w, GLuint h);
 
   int pickSegmentationId(int x, int y);
+  int pickObjectId(int x, int y);
   void enablePicking();
   void enableAxisPass(bool enable = true);
 
@@ -99,6 +100,7 @@ public:
   std::vector<float> getNormal();
   std::vector<float> getDepth();
   std::vector<int> getSegmentation();
+  std::vector<int> getSegmentation2();
   std::vector<float> getUserTexture();
 
   void reloadShaders();
