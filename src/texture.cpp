@@ -22,7 +22,6 @@ void Texture::load(const std::string &filename, int mipmap, int wrapping,
   int width, height, nrChannels;
   unsigned char *data =
       stbi_load(filename.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
-  printf("%d channels loaded\n", nrChannels);
 
   glTexStorage2D(GL_TEXTURE_2D, 4, GL_RGBA8, width, height);
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA,

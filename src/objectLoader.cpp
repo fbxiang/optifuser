@@ -62,7 +62,6 @@ LoadObj(const std::string file, bool ignoreSpecification, glm::vec3 upAxis,
 
       auto tex = LoadTexture(fullPath, 0);
       mats[i].kd_map = tex;
-      printf("Diffuse texture found at %s\n", fullPath.c_str());
     }
 
     if (m->GetTextureCount(aiTextureType_SPECULAR) > 0 &&

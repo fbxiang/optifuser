@@ -36,7 +36,7 @@ protected:
   uint32_t segmentId = 0; // used for rendering segmentation
   uint32_t objId = 0; // used for rendering fine segmentation
 
-  std::vector<float> userData = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+  std::vector<float> userData = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 public:
   std::shared_ptr<Shader> shader;
