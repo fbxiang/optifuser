@@ -34,10 +34,12 @@ void ensureGlobalContext() {
   glewExperimental = GL_TRUE;
   glewInit();
 
+#ifdef _VERBOSE
   const GLubyte *glrenderer = glGetString(GL_RENDERER);
   const GLubyte *version = glGetString(GL_VERSION);
   fprintf(stdout, "Renderer: %s\n", glrenderer);
   fprintf(stdout, "OpenGL Version: %s\n", version);
+#endif
 
   glfwInitialized = true;
 }

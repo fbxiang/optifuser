@@ -42,7 +42,9 @@ Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath) {
   int InfoLogLength;
 
   // Compile Vertex Shader
+#ifdef _VERBOSE
   printf("Compiling shader : %s\n", vertexPath);
+#endif
   char const *VertexSourcePointer = VertexShaderCode.c_str();
   glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
   glCompileShader(VertexShaderID);
@@ -57,7 +59,9 @@ Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath) {
   }
 
   // Compile Fragment Shader
+#ifdef _VERBOSE
   printf("Compiling shader : %s\n", fragmentPath);
+#endif
   char const *FragmentSourcePointer = FragmentShaderCode.c_str();
   glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
   glCompileShader(FragmentShaderID);
@@ -71,8 +75,10 @@ Shader::Shader(const GLchar *vertexPath, const GLchar *fragmentPath) {
     printf("%s\n", &FragmentShaderErrorMessage[0]);
   }
 
-  // Link the program
+// Link the program
+#ifdef _VERBOSE
   printf("Linking program\n");
+#endif
   GLuint ProgramID = glCreateProgram();
   glAttachShader(ProgramID, VertexShaderID);
   glAttachShader(ProgramID, FragmentShaderID);
