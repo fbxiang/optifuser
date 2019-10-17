@@ -31,6 +31,7 @@ public:
   const std::vector<std::unique_ptr<Object>> &getObjects() const;
 
   void setAmbientLight(glm::vec3 light);
+  void setShadowLight(DirectionalLight light);
   void addPointLight(PointLight light);
   void addDirectionalLight(DirectionalLight light);
   void addParalleloGramLight(ParallelogramLight light);

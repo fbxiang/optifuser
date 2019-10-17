@@ -37,6 +37,13 @@ void Scene::addPointLight(PointLight light) { pointLights.push_back(light); }
 void Scene::addDirectionalLight(DirectionalLight light) {
   directionalLights.push_back(light);
 }
+void Scene::setShadowLight(DirectionalLight light) {
+  if (!directionalLights.size()) {
+    addDirectionalLight(light);
+  } else {
+    directionalLights[0] = light;
+  }
+}
 void Scene::addParalleloGramLight(ParallelogramLight light) {
   parallelogramLights.push_back(light);
 }
