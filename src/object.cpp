@@ -196,7 +196,7 @@ std::unique_ptr<Object> NewSphere() {
     indices.push_back(right);
     indices.push_back(i);
   }
-  for (uint32_t i = (stacks - 2) * slices; i < stacks * slices; ++i) {
+  for (uint32_t i = (stacks - 2) * slices; i < (stacks - 1) * slices; ++i) {
     uint32_t right = (i + 1) % slices + i / slices * slices;
     indices.push_back(vertices.size() - 1);
     indices.push_back(i);
