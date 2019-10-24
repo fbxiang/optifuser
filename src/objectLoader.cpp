@@ -1,15 +1,25 @@
 #include "objectLoader.h"
 #include "mesh.h"
+#include <assimp/Exceptional.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <experimental/filesystem>
 #include <iostream>
 #include <string>
-namespace Optifuser {
-std::vector<std::unique_ptr<Object>>
 
+namespace fs = std::experimental::filesystem;
+
+namespace Optifuser {
+
+std::vector<std::unique_ptr<Object>>
 LoadObj(const std::string file, bool ignoreSpecification, glm::vec3 upAxis,
         glm::vec3 forwardAxis) {
+  if (!fs::exists(file)) {
+    std::cerr << "No render mesh file found: " << file << std::endl;
+    return {};
+  }
+
 #ifdef _VERBOSE
   printf("Loading texture %s\n", file.c_str());
 #endif
@@ -24,7 +34,11 @@ LoadObj(const std::string file, bool ignoreSpecification, glm::vec3 upAxis,
     flags |= aiProcess_PreTransformVertices;
   }
 
-  const aiScene *scene = importer.ReadFile(file, flags);
+  const aiScene * scene = importer.ReadFile(file, flags);
+
+  if (!scene) {
+    return {};
+  }
 
   if (scene->mRootNode->mMetaData) {
     std::cerr << "HAS META" << std::endl;
