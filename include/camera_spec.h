@@ -11,13 +11,20 @@ class CameraSpec {
 public:
   std::string name;
   glm::vec3 position = {0, 0, 0};
-  glm::quat rotation = {1, 0, 0, 0};
   float near = 0.1f;
   float far = 1000.f;
   float fovy = glm::radians(35.f);
   float aspect = 1.f;
 
+protected:
+  glm::quat rotation = {1, 0, 0, 0};
+
+public:
   void lookAt(const glm::vec3 &direction, const glm::vec3 &up);
+
+  inline void setRotation(glm::quat const &rot) { rotation = glm::normalize(rot); }
+
+  inline glm::quat const &getRotation() const { return rotation; }
 
   inline glm::mat4 getModelMat() const {
     glm::mat4 t = glm::toMat4(rotation);

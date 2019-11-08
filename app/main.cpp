@@ -58,7 +58,7 @@ int main() {
   cam.position = {0, 0, 3};
   cam.fovy = glm::radians(45.f);
   cam.aspect = w / (float)h;
-  cam.rotation = cam.getRotation0();
+  cam.setRotation(cam.getRotation0());
   // cam.rotateYawPitch(glm::radians(-90.f), 0);
 
   // loadSponza(scene);
@@ -143,7 +143,7 @@ int main() {
         ImGui::Text("Position");
         ImGui::Text("%-4.3f %-4.3f %-4.3f", cam.position.x, cam.position.y, cam.position.z);
         ImGui::Text("Forward");
-        auto forward = cam.rotation * glm::vec3(0,0,-1);
+        auto forward = cam.getRotation() * glm::vec3(0,0,-1);
         ImGui::Text("%-4.3f %-4.3f %-4.3f", forward.x, forward.y, forward.z);
       }
 

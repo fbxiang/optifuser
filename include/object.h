@@ -34,7 +34,7 @@ protected:
   std::vector<std::unique_ptr<Object>> children;
 
   uint32_t segmentId = 0; // used for rendering segmentation
-  uint32_t objId = 0; // used for rendering fine segmentation
+  uint32_t objId = 0;     // used for rendering fine segmentation
 
   std::vector<float> userData = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -44,20 +44,24 @@ public:
   std::string name;
   glm::vec3 position;
   glm::vec3 scale;
-  glm::quat rotation;
   bool visible;
 
   uint32_t showAxis = 0; // used for showing axis
 
 protected:
+  glm::quat rotation;
   Scene *scene;
 
 public:
   Object(std::shared_ptr<AbstractMeshBase> m = nullptr)
-      : mesh(m), parent(nullptr), shader(nullptr), name(""), position(0.f), scale(1.f), rotation(),
-        visible(true), scene(nullptr) {}
+      : mesh(m), parent(nullptr), shader(nullptr), name(""), position(0.f), scale(1.f),
+        visible(true), rotation(1, 0, 0, 0), scene(nullptr) {}
 
   virtual ~Object() {}
+
+  inline void setRotation(glm::quat const &rot) { rotation = glm::normalize(rot); }
+
+  inline glm::quat const &getRotation() const { return rotation; }
 
   glm::mat4 getModelMat() const;
   void setScene(Scene *inScene);
