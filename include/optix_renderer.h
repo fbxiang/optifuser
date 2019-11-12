@@ -2,30 +2,30 @@
 #include "scene.h"
 #include "shader.h"
 #include <GL/glew.h>
+#include <camera_spec.h>
 #include <cstdint>
 #include <iostream>
 #include <map>
 #include <optixu/optixpp.h>
 #include <optixu/optixu_math_namespace.h>
-#include <stdint.h>
 
 namespace Optifuser {
 
 class OptixRenderer {
 public:
-  OptixRenderer(uint32_t w, uint32_t h);
-  void init();
+  OptixRenderer();
+  void init(uint32_t w, uint32_t h);
   void exit();
 
   void invalidateCamera() { iterations = 0; };
   uint32_t max_iterations = 64;
 
 private:
-  std::map<std::shared_ptr<Object>, optix::Transform> _object_transform;
-  std::map<std::shared_ptr<TriangleMesh>, optix::Geometry> _mesh_geometry;
-  std::map<std::shared_ptr<DynamicMesh>, optix::Geometry> _dmesh_geometry;
-  std::map<std::shared_ptr<Object>, optix::Acceleration> _object_accel;
-  std::map<std::shared_ptr<Texture>, optix::TextureSampler> _texture_sampler;
+  std::map<const Object *, optix::Transform> _object_transform;
+  std::map<const TriangleMesh *, optix::Geometry> _mesh_geometry;
+  std::map<const DynamicMesh *, optix::Geometry> _dmesh_geometry;
+  std::map<const Object *, optix::Acceleration> _object_accel;
+  std::map<const Texture *, optix::TextureSampler> _texture_sampler;
   optix::TextureSampler _empty_sampler = 0;
 
   optix::Program _dmesh_intersect = 0;
@@ -43,19 +43,19 @@ private:
   optix::Program _material_mirror_any_hit = 0;
   optix::Program _material_mirror_shadow_any_hit = 0;
 
-  optix::Transform getObjectTransform(std::shared_ptr<Object> obj);
-  optix::Geometry getMeshGeometry(std::shared_ptr<TriangleMesh> mesh);
-  optix::Geometry getMeshGeometry(std::shared_ptr<DynamicMesh> mesh);
-  optix::Acceleration getObjectAccel(std::shared_ptr<Object> obj);
-  optix::TextureSampler getTextureSampler(std::shared_ptr<Texture> tex);
+  optix::Transform getObjectTransform(const Object *obj);
+  optix::Geometry getMeshGeometry(const TriangleMesh *mesh);
+  optix::Geometry getMeshGeometry(const DynamicMesh *mesh);
+  optix::Acceleration getObjectAccel(const Object *obj);
+  optix::TextureSampler getTextureSampler(const Texture *tex);
   optix::TextureSampler getEmptySampler();
 
   uint32_t iterations = 0;
 
 private:
   bool sceneInitialized = false;
-  void initSceneGeometry(std::shared_ptr<Scene> scene);
-  void initSceneLights(std::shared_ptr<Scene> scene);
+  void initSceneGeometry(const Scene &scene);
+  void initSceneLights(const Scene &scene);
 
 public:
   uint32_t numRays = 1;
@@ -80,9 +80,11 @@ private:
   uint32_t nSamplesSqrt = 1;
 
 public:
-  void renderScene(std::shared_ptr<Scene> scene);
-  void renderSceneToFile(std::shared_ptr<Scene> scene, std::string filename);
-  void renderCurrentToFile(std::string filename);
+  void renderScene(const Scene &scene, const CameraSpec &camera);
+  // void displayLighting(GLuint fbo = 0);
+  void renderSceneToFile(const Scene &scene, const CameraSpec &cam,
+                         std::string filename);
+  // void renderCurrentToFile(std::string filename);
 };
 
 } // namespace Optifuser

@@ -14,6 +14,8 @@ namespace Optifuser {
 class Scene;
 
 struct Material {
+  enum Type { SOLID, TRANSPARENT, MIRROR } type = SOLID;
+
   std::string name = "";
 
   std::shared_ptr<Texture> kd_map = std::make_shared<Texture>();
@@ -36,7 +38,8 @@ protected:
   uint32_t segmentId = 0; // used for rendering segmentation
   uint32_t objId = 0;     // used for rendering fine segmentation
 
-  std::vector<float> userData = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  std::vector<float> userData = {0, 0, 0, 0, 0, 0, 0, 0,
+                                 0, 0, 0, 0, 0, 0, 0, 0};
 
 public:
   std::shared_ptr<Shader> shader;
@@ -54,12 +57,14 @@ protected:
 
 public:
   Object(std::shared_ptr<AbstractMeshBase> m = nullptr)
-      : mesh(m), parent(nullptr), shader(nullptr), name(""), position(0.f), scale(1.f),
-        visible(true), rotation(1, 0, 0, 0), scene(nullptr) {}
+      : mesh(m), parent(nullptr), shader(nullptr), name(""), position(0.f),
+        scale(1.f), visible(true), rotation(1, 0, 0, 0), scene(nullptr) {}
 
   virtual ~Object() {}
 
-  inline void setRotation(glm::quat const &rot) { rotation = glm::normalize(rot); }
+  inline void setRotation(glm::quat const &rot) {
+    rotation = glm::normalize(rot);
+  }
 
   inline glm::quat const &getRotation() const { return rotation; }
 
@@ -70,7 +75,9 @@ public:
   std::shared_ptr<AbstractMeshBase> getMesh() const;
 
   void addChild(std::unique_ptr<Object> child);
-  inline const std::vector<std::unique_ptr<Object>> &getChildren() const { return children; }
+  inline const std::vector<std::unique_ptr<Object>> &getChildren() const {
+    return children;
+  }
 
   inline void setObjId(uint32_t id) { objId = id; }
   inline uint32_t getObjId() const { return objId; }
@@ -80,14 +87,17 @@ public:
   inline std::vector<float> const &getUserData() const { return userData; }
 };
 
-template <typename T> std::unique_ptr<T> NewObject(std::shared_ptr<AbstractMeshBase> mesh) {
-  static_assert(std::is_base_of<Object, T>::value, "T must inherit from Obejct.");
+template <typename T>
+std::unique_ptr<T> NewObject(std::shared_ptr<AbstractMeshBase> mesh) {
+  static_assert(std::is_base_of<Object, T>::value,
+                "T must inherit from Obejct.");
   auto obj = std::make_unique<T>(mesh);
   return obj;
 }
 
 template <typename T> std::unique_ptr<T> NewObject() {
-  static_assert(std::is_base_of<Object, T>::value, "T must inherit from Obejct.");
+  static_assert(std::is_base_of<Object, T>::value,
+                "T must inherit from Obejct.");
   auto obj = std::make_unique<T>();
   return obj;
 }

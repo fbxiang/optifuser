@@ -19,8 +19,7 @@ rtDeclareVariable(float3,            hit_point,                 attribute hit_po
 
 rtDeclareVariable(int,               use_shadow,                ,                           );
 
-rtTextureSampler<float4,             2> kd_map;
-
+rtDeclareVariable(float3,            tint,                        ,                         );
 
 rtDeclareVariable(PerRayData,        current_prd,               rtPayload,                  );
 rtDeclareVariable(PerRayData_shadow, prd_shadow,                rtPayload,                  );
@@ -91,5 +90,5 @@ RT_PROGRAM void shadow_any_hit() {
     return;
   }
 
-  prd_shadow.attenuation = make_float3(0.8, 0.9, 1.0);
+  prd_shadow.attenuation = tint;
 }

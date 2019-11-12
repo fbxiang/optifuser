@@ -56,6 +56,7 @@ GLFWRenderContext::GLFWRenderContext(int w, int h) {
   height = h;
   fbo = 0;
   tex = 0;
+
   init(width, height);
   renderer.init();
   renderer.resize(w, h);
@@ -89,10 +90,12 @@ void GLFWRenderContext::processEvents() {
   input.cursorPosCallback(xpos, ypos);
   input.mouseCallback(GLFW_MOUSE_BUTTON_RIGHT,
                       glfwGetMouseButton(mainWindow, GLFW_MOUSE_BUTTON_RIGHT));
+
   if (!ImGui::GetIO().WantCaptureMouse) {
     input.mouseCallback(GLFW_MOUSE_BUTTON_LEFT,
                         glfwGetMouseButton(mainWindow, GLFW_MOUSE_BUTTON_LEFT));
   }
+
   int newWidth, newHeight;
   glfwGetWindowSize(mainWindow, &newWidth, &newHeight);
   if (width != newWidth || height != newHeight) {
@@ -123,6 +126,11 @@ OffscreenRenderContext::OffscreenRenderContext(int w, int h) {
 OffscreenRenderContext::~OffscreenRenderContext() {
   renderer.exit();
   glDeleteFramebuffers(1, &fbo);
+}
+
+OptixContext::OptixContext(int w, int h) {
+  ensureGlobalContext();
+  renderer.init(w, h);
 }
 
 } // namespace Optifuser

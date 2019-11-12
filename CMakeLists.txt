@@ -18,23 +18,6 @@ else()
   set(GLEW_LIBRARY GLEW)
 endif()
 
-include_directories("include")
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/OptiX)
-  message(STATUS "Compiling with OptiX")
-  include_directories("3rd_party/OptiX/include")
-  link_directories("3rd_party/OptiX/lib64")
-  set(OPTIX_LIBRARY optix)
-  find_package(CUDA REQUIRED)
-  set(
-    CUDA_NVCC_FLAGS
-    ${CUDA_NVCC_FLAGS};
-    -O3 -std=c++11
-    )
-else()
-  message(WARNING "Compiling without OptiX support")
-  list(FILTER RENDER_SRC EXCLUDE REGEX "optix_renderer")
-endif()
-
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLEW)
 include_directories("3rd_party/imgui")
 include_directories("3rd_party/imgui/examples")
@@ -44,7 +27,37 @@ file(GLOB GUI_SRC "3rd_party/imgui/*.cpp"
 
 add_subdirectory("3rd_party/glfw")
 add_subdirectory("3rd_party/assimp")
-  
+
+include_directories("include")
+
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/OptiX)
+  message(STATUS "Compiling with OptiX")
+  include_directories("3rd_party/OptiX/include")
+  link_directories("3rd_party/OptiX/lib64")
+
+  set(OPTIX_LIBRARY optix)
+  find_package(CUDA REQUIRED)
+  set(
+    CUDA_NVCC_FLAGS
+    ${CUDA_NVCC_FLAGS};
+    -O3 -std=c++11
+    )
+
+  file(GLOB_RECURSE PTX_SRC "optix_shader/*.cu")
+  cuda_compile_ptx(cuda_ptx_files ${PTX_SRC})
+  add_custom_target(ptx ALL DEPENDS ${cuda_ptx_files} ${PTX_SRC} SOURCES ${PTX_SRC})
+
+  add_executable(test_optix app/test_optix.cpp ${GUI_SRC})
+  target_link_libraries(test_optix optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY}
+    assimp pthread ${OPTIX_LIBRARY} stdc++fs)
+
+  add_dependencies(test_optix ptx)
+
+else()
+  message(WARNING "Compiling without OptiX support")
+  list(FILTER RENDER_SRC EXCLUDE REGEX "optix_renderer")
+endif()
+ 
 add_library(optifuser SHARED ${RENDER_SRC} ${GUI_SRC})
 target_link_libraries(optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLEW_LIBRARY}
   assimp pthread ${OPTIXLIBRARY})

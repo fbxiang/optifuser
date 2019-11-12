@@ -1,5 +1,6 @@
 #pragma once
 #include "input.h"
+#include "optix_renderer.h"
 #include "renderer.h"
 #include "scene.h"
 #include <GL/glew.h>
@@ -58,7 +59,7 @@ public:
 };
 
 class OffscreenRenderContext : public RenderContext {
- public:
+public:
   Optifuser::Renderer renderer;
   inline static std::unique_ptr<OffscreenRenderContext> Create(int w, int h) {
     return std::make_unique<OffscreenRenderContext>(w, h);
@@ -66,7 +67,16 @@ class OffscreenRenderContext : public RenderContext {
 
   ~OffscreenRenderContext();
   OffscreenRenderContext(int w, int h);
-protected:
+};
+
+class OptixContext : public RenderContext {
+public:
+  Optifuser::OptixRenderer renderer;
+  inline static std::unique_ptr<OptixContext> Create(int w, int h) {
+    return std::make_unique<OptixContext>(w, h);
+  }
+
+  OptixContext(int w, int h);
 };
 
 } // namespace Optifuser
