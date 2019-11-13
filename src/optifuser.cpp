@@ -128,9 +128,11 @@ OffscreenRenderContext::~OffscreenRenderContext() {
   glDeleteFramebuffers(1, &fbo);
 }
 
+#ifdef _USE_OPTIX
 OptixContext::OptixContext(int w, int h) {
   ensureGlobalContext();
   renderer.init(w, h);
 }
+#endif
 
 } // namespace Optifuser

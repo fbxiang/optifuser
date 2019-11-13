@@ -1,6 +1,10 @@
 #pragma once
 #include "input.h"
+
+#ifdef _USE_OPTIX
 #include "optix_renderer.h"
+#endif
+
 #include "renderer.h"
 #include "scene.h"
 #include <GL/glew.h>
@@ -69,6 +73,7 @@ public:
   OffscreenRenderContext(int w, int h);
 };
 
+#ifdef _USE_OPTIX
 class OptixContext : public RenderContext {
 public:
   Optifuser::OptixRenderer renderer;
@@ -78,5 +83,6 @@ public:
 
   OptixContext(int w, int h);
 };
+#endif
 
 } // namespace Optifuser

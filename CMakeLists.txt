@@ -35,6 +35,7 @@ if(EXISTS ${OPTIX_HOME})
   message(STATUS "Compiling with OptiX")
   include_directories("${OPTIX_HOME}/include")
   link_directories("${OPTIX_HOME}/lib64")
+  add_definitions(-D_USE_OPTIX)
 
   set(OPTIX_LIBRARY optix)
   find_package(CUDA REQUIRED)
