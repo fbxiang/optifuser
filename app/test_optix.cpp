@@ -55,8 +55,8 @@ int main() {
   cam.aspect = w / (float)h;
   cam.setRotation(cam.getRotation0());
 
-  loadSponza(scene);
-  // loadPartNetModel(scene);
+  // loadSponza(scene);
+  loadPartNetModel(scene);
 
   scene.addDirectionalLight({glm::vec3(0, -1, 0.1), glm::vec3(1, 1, 1)});
   // scene.setAmbientLight(glm::vec3(0.05, 0.05, 0.05));

@@ -68,20 +68,19 @@ public:
     std::cerr << "resize not implemented" << std::endl;
   }
 
+  GLuint outputTex = 0;
 private:
   uint32_t width, height;
   bool initialized = false;
 
-  GLuint outputTex;
 
   optix::Context context = 0;
-  GLuint outputVBO = 0;
+  GLuint transferFbo = 0;
 
   uint32_t nSamplesSqrt = 1;
 
 public:
   void renderScene(const Scene &scene, const CameraSpec &camera);
-  // void displayLighting(GLuint fbo = 0);
   void renderSceneToFile(const Scene &scene, const CameraSpec &cam,
                          std::string filename);
   // void renderCurrentToFile(std::string filename);

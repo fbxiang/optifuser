@@ -12,8 +12,9 @@ find_package(GLEW REQUIRED)
 file(GLOB_RECURSE RENDER_SRC "include/*.h" "src/*.cpp")
 
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_RELEASE})
+set(OPTIX_HOME "NOT FOUND" CACHE FILEPATH "Home to OptiX")
 
-if (GLEW_LIBRARY)
+if (GLFW_LIBRARY)
 else()
   set(GLEW_LIBRARY GLEW)
 endif()
@@ -30,10 +31,10 @@ add_subdirectory("3rd_party/assimp")
 
 include_directories("include")
 
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/OptiX)
+if(EXISTS ${OPTIX_HOME})
   message(STATUS "Compiling with OptiX")
-  include_directories("3rd_party/OptiX/include")
-  link_directories("3rd_party/OptiX/lib64")
+  include_directories("${OPTIX_HOME}/include")
+  link_directories("${OPTIX_HOME}/lib64")
 
   set(OPTIX_LIBRARY optix)
   find_package(CUDA REQUIRED)
@@ -43,15 +44,19 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/OptiX)
     -O3 -std=c++11
     )
 
-  file(GLOB_RECURSE PTX_SRC "optix_shader/*.cu")
-  cuda_compile_ptx(cuda_ptx_files ${PTX_SRC})
+  file(GLOB_RECURSE CUDA_FILES "optix_shader/*.cu")
+  cuda_compile_ptx(cuda_ptx_files ${CUDA_FILES} TARGET_PATH "${CMAKE_BINARY_DIR}/ptx")
   add_custom_target(ptx ALL DEPENDS ${cuda_ptx_files} ${PTX_SRC} SOURCES ${PTX_SRC})
+
+  add_custom_target(ptx_dir COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/ptx"
+    COMMAND ${CMAKE_COMMAND} -E copy ${cuda_ptx_files} "${CMAKE_BINARY_DIR}/ptx")
 
   add_executable(test_optix app/test_optix.cpp ${GUI_SRC})
   target_link_libraries(test_optix optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY}
     assimp pthread ${OPTIX_LIBRARY} stdc++fs)
 
-  add_dependencies(test_optix ptx)
+  add_dependencies(ptx_dir ptx)
+  add_dependencies(test_optix ptx_dir)
 
 else()
   message(WARNING "Compiling without OptiX support")

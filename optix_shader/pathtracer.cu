@@ -53,6 +53,7 @@ RT_PROGRAM void camera() {
 
     PerRayData prd;
     prd.radiance    = make_float3(0.f);
+    prd.direction   = ray_direction;
     prd.result      = make_float3(0.f);
     prd.attenuation = make_float3(1.f);
     prd.done        = false;

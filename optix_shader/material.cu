@@ -53,7 +53,7 @@ RT_PROGRAM void closest_hit() {
   cosine_sample_hemisphere(z1, z2, p);
   Onb onb(ffnormal);
   onb.inverse_transform(p);
-  current_prd.direction = p;
+  current_prd.direction = normalize(p);
 
   current_prd.attenuation *= kd;
 
