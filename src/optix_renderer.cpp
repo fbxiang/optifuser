@@ -409,7 +409,10 @@ void OptixRenderer::renderScene(const Scene &scene, const CameraSpec &camera) {
 
   // ray trace
   context->launch(0, width, height);
+  iterations++;
+}
 
+void OptixRenderer::display() {
   glClear(GL_COLOR_BUFFER_BIT);
 
   glBindTexture(GL_TEXTURE_2D, outputTex);
@@ -428,8 +431,18 @@ void OptixRenderer::renderScene(const Scene &scene, const CameraSpec &camera) {
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+}
 
-  iterations++;
+std::vector<float> OptixRenderer::getResult() {
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  glBindTexture(GL_TEXTURE_2D, outputTex);
+  glEnable(GL_TEXTURE_2D);
+  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, context["output_buffer"]->getBuffer()->getGLBOId());
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
+  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+  return getRGBAFloat32Texture(outputTex, width, height);
 }
 
 void OptixRenderer::renderSceneToFile(const Scene &scene, const CameraSpec &cam,

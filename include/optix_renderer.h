@@ -81,6 +81,8 @@ private:
 
 public:
   void renderScene(const Scene &scene, const CameraSpec &camera);
+  void display();
+  std::vector<float> getResult();
   void renderSceneToFile(const Scene &scene, const CameraSpec &cam,
                          std::string filename);
   // void renderCurrentToFile(std::string filename);

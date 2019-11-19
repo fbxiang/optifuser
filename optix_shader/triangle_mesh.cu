@@ -36,6 +36,11 @@ static __device__ void meshIntersect(int primIdx) {
   const Vertex v1   = vertex_buffer[ v_idx.y ];
   const Vertex v2   = vertex_buffer[ v_idx.z ];
 
+  const float3 nf = normalize(cross(v1.position - v0.position, v2.position - v0.position));
+  if (dot(nf, ray.direction) >= 0.0f) {
+    return;
+  }
+
   float3 n;
   float t, beta, gamma;
   if (intersect_triangle(ray, v0.position, v1.position, v2.position, n, t, beta, gamma)) {
@@ -52,7 +57,6 @@ static __device__ void meshIntersect(int primIdx) {
       texcoord         = make_float3( t1*beta + t2*gamma + t0*(1.0f-beta-gamma) );
 
       hit_point        = ray.origin + ray.direction * t;
-
       rtReportIntersection(0);
     }
   }
