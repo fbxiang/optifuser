@@ -85,7 +85,7 @@ void renderObjectTree(const Object &obj, const glm::mat4 &parentModelMat,
 
     shader->setMatrix("gbufferModelMatrix", modelMat);
     shader->setVec3("material.ka", obj.material.ka);
-    shader->setVec3("material.kd", obj.material.kd);
+    shader->setVec4("material.kd", obj.material.kd);
     shader->setVec3("material.ks", obj.material.ks);
     shader->setFloat("material.ke", obj.material.exp);
     shader->setTexture("material.kd_map", obj.material.kd_map->getId(), 0);

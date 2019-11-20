@@ -136,6 +136,12 @@ void Shader::setVec3(const std::string &name, const glm::vec3 &vec) const {
     glUniform3f(variableId, vec[0], vec[1], vec[2]);
 }
 
+void Shader::setVec4(const std::string &name, const glm::vec4 &vec) const {
+  GLint variableId = glGetUniformLocation(Id, name.c_str());
+  if (variableId != -1)
+    glUniform4f(variableId, vec[0], vec[1], vec[2], vec[3]);
+}
+
 void Shader::setUserData(const std::string &name, uint32_t size, float const *data) const {
   GLint variableId = glGetUniformLocation(Id, name.c_str());
   if (size > 16) {
