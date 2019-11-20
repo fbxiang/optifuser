@@ -1,0 +1,6 @@
+link_0 hinge door door_frame glass
+link_1 slider door_button door_button
+link_2 hinge control_button control_button
+link_3 hinge control_button control_button
+link_4 hinge body_interior tray tray_support
+link_5 free frame frame display_panel

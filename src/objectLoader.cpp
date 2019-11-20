@@ -59,10 +59,12 @@ LoadObj(const std::string file, bool ignoreSpecification, glm::vec3 upAxis,
   for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
     auto *m = scene->mMaterials[i];
     aiColor3D color = aiColor3D(0, 0, 0);
+    float alpha = 1;
+    m->Get(AI_MATKEY_OPACITY, alpha);
     m->Get(AI_MATKEY_COLOR_AMBIENT, color);
     mats[i].ka = glm::vec3(color.r, color.g, color.b);
     m->Get(AI_MATKEY_COLOR_DIFFUSE, color);
-    mats[i].kd = glm::vec3(color.r, color.g, color.b);
+    mats[i].kd = glm::vec4(color.r, color.g, color.b, alpha);
     m->Get(AI_MATKEY_COLOR_SPECULAR, color);
     mats[i].ks = glm::vec3(color.r, color.g, color.b);
 

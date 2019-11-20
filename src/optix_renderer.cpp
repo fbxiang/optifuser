@@ -200,7 +200,7 @@ optix::Transform OptixRenderer::getObjectTransform(const Object *obj) {
       mat->setClosestHitProgram(0, _material_closest_hit);
       mat->setAnyHitProgram(0, _material_any_hit);
       mat->setAnyHitProgram(1, _material_shadow_any_hit);
-      mat["kd"]->setFloat(obj->material.kd.x, obj->material.kd.y, obj->material.kd.z);
+      mat["kd"]->setFloat(obj->material.kd.x, obj->material.kd.y, obj->material.kd.z, obj->material.kd.w);
       if (obj->material.kd_map->getId()) {
         mat["has_kd_map"]->setInt(1);
         mat["kd_map"]->setTextureSampler(getTextureSampler(obj->material.kd_map.get()));

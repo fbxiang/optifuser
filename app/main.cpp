@@ -61,8 +61,7 @@ int main() {
   cam.setRotation(cam.getRotation0());
   // cam.rotateYawPitch(glm::radians(-90.f), 0);
 
-  // loadSponza(scene);
-  loadPartNetModel(scene);
+  loadSponza(scene);
   scene.addDirectionalLight({glm::vec3(0, 0, -1), glm::vec3(0.5, 0.5, 0.5)});
   scene.setAmbientLight(glm::vec3(0.05, 0.05, 0.05));
 
@@ -81,6 +80,8 @@ int main() {
                                      "../glsl_shader/deferred.fsh");
   context.renderer.setAxisShader("../glsl_shader/axes.vsh",
                                  "../glsl_shader/axes.fsh");
+
+  context.showWindow();
 
   while (true) {
     context.processEvents();

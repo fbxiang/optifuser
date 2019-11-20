@@ -17,7 +17,7 @@ namespace fs = std::experimental::filesystem;
 GLFWwindow *window;
 
 void loadPartNetModel(Optifuser::Scene &scene) {
-  auto files = fs::directory_iterator("../assets/46627/textured_objs");
+  auto files = fs::directory_iterator("../assets/7128/textured_objs");
   for (auto &f : files) {
     if (f.path().extension() == ".obj") {
       auto objects = Optifuser::LoadObj(f.path().u8string());
@@ -50,7 +50,7 @@ int main() {
   cam.setUp({0, 1, 0});
   cam.setForward({0, 0, -1});
 
-  cam.position = {0, 2, 0};
+  cam.position = {0, 0, 2};
   cam.fovy = glm::radians(45.f);
   cam.aspect = w / (float)h;
   cam.setRotation(cam.getRotation0());
@@ -59,6 +59,7 @@ int main() {
   loadPartNetModel(scene);
 
   scene.addDirectionalLight({glm::vec3(0, -1, 0.1), glm::vec3(1, 1, 1)});
+  scene.addDirectionalLight({glm::vec3(0, 0, -1), glm::vec3(1, 1, 1)});
   // scene.setAmbientLight(glm::vec3(0.05, 0.05, 0.05));
 
   globalContext.initGui();
@@ -100,6 +101,7 @@ int main() {
     }
 
     optixContext->renderer.renderScene(scene, cam);
+    optixContext->renderer.display();
     globalContext.swapBuffers();
   }
 }
