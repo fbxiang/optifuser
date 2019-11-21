@@ -6,6 +6,9 @@
 
 namespace Optifuser {
 
+std::tuple<std::vector<unsigned char>, int, int, int> load_image(std::string const &filename);
+std::tuple<std::vector<float>, int, int, int> load_hdr(std::string const &filename);
+
 class Texture {
 private:
   GLuint id;
@@ -14,9 +17,8 @@ public:
   Texture() : id(0) {}
   virtual ~Texture() { destroy(); }
 
-  void load(const std::string &filename, int mipmap = 0,
-            int wrapping = GL_REPEAT, int minFilter = GL_NEAREST_MIPMAP_LINEAR,
-            int magFilter = GL_LINEAR);
+  void load(const std::string &filename, int mipmap = 0, int wrapping = GL_REPEAT,
+            int minFilter = GL_NEAREST_MIPMAP_LINEAR, int magFilter = GL_LINEAR);
   void destroy();
   GLuint getId() const;
 
@@ -26,13 +28,12 @@ public:
   // TODO: convert texture to Optix texture
 };
 
-std::shared_ptr<Texture> LoadTexture(const std::string &filename,
-                                     int mipmap = 0, int wrapping = GL_REPEAT,
+std::shared_ptr<Texture> LoadTexture(const std::string &filename, int mipmap = 0,
+                                     int wrapping = GL_REPEAT,
                                      int minFilter = GL_NEAREST_MIPMAP_LINEAR,
                                      int magFilter = GL_LINEAR);
 
-void writeToFile(GLuint textureId, GLuint width, GLuint height,
-                 std::string filename);
+void writeToFile(GLuint textureId, GLuint width, GLuint height, std::string filename);
 
 class CubeMapTexture {
 private:
@@ -49,10 +50,9 @@ public:
     id = 0;
   }
 
-  void load(const std::string &front, const std::string &back,
-            const std::string &top, const std::string &bottom,
-            const std::string &left, const std::string &right, int wrapping,
-            int filtering);
+  void load(const std::string &front, const std::string &back, const std::string &top,
+            const std::string &bottom, const std::string &left, const std::string &right,
+            int wrapping, int filtering);
 
   inline GLuint getId() const { return id; }
   inline int getWidth() const { return width; }
@@ -78,4 +78,3 @@ std::vector<float> getRGBAFloat32Texture(GLuint textureId, GLuint width, GLuint 
 std::vector<int> getInt32Texture(GLuint textureId, GLuint width, GLuint height);
 
 } // namespace Optifuser
-

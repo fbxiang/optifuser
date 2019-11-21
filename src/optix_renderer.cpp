@@ -1,4 +1,5 @@
 #include "optix_renderer.h"
+#include "texture.h"
 
 namespace Optifuser {
 const std::string ACCEL = "Trbvh";
@@ -54,10 +55,6 @@ void OptixRenderer::init(uint32_t w, uint32_t h) {
   context->setExceptionProgram(0, context->createProgramFromPTXFile(ptxFile, "exception"));
   context->setRayGenerationProgram(0, context->createProgramFromPTXFile(ptxFile, "camera"));
 
-  // ptxFile = get_ptx_filename("environment_map");
-  // context->setMissProgram(0, context->createProgramFromPTXFile(ptxFile, "miss"));
-  // context["envmap"]->setTextureSampler();
-
   glGenTextures(1, &outputTex);
   glBindTexture(GL_TEXTURE_2D, outputTex);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
@@ -86,15 +83,48 @@ void OptixRenderer::initSceneGeometry(const Scene &scene) {
   context["top_shadower"]->set(shadowGroup);
 
   std::string ptxFile;
-  if (auto envMap = scene.getEnvironmentMap()) {
-    printf("Creating sampler\n");
-    ptxFile = get_ptx_filename("environment_map");
+  if (useCubemap) {
+    printf("Using cubemap\n");
+    ptxFile = get_ptx_filename("cubemap");
 
-    optix::TextureSampler sampler =
-        context->createTextureSamplerFromGLImage(envMap->getId(), RT_TARGET_GL_TEXTURE_CUBE_MAP);
+    auto sampler = context->createTextureSampler();
+    sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE);
+    sampler->setWrapMode(1, RT_WRAP_CLAMP_TO_EDGE);
+    sampler->setWrapMode(2, RT_WRAP_CLAMP_TO_EDGE);
+
+    auto buffer = context->createBuffer(RT_BUFFER_INPUT | RT_BUFFER_CUBEMAP,
+                                        RT_FORMAT_UNSIGNED_BYTE4, cubemap.width, cubemap.width, 6);
+    unsigned char *dst = static_cast<unsigned char *>(buffer->map());
+    size_t image_size = cubemap.width * cubemap.width * 4;
+    memcpy(dst, cubemap.front.data(), image_size);
+    memcpy(dst + image_size, cubemap.back.data(), image_size);
+    memcpy(dst + 2 * image_size, cubemap.top.data(), image_size);
+    memcpy(dst + 3 * image_size, cubemap.bottom.data(), image_size);
+    memcpy(dst + 4 * image_size, cubemap.left.data(), image_size);
+    memcpy(dst + 5 * image_size, cubemap.right.data(), image_size);
+
+    buffer->unmap();
+    sampler->setBuffer(buffer);
+
+    context["envmapId"]->setInt(sampler->getId());
+    context->setMissProgram(0, context->createProgramFromPTXFile(ptxFile, "miss"));
+  } else if (useHdrmap) {
+    printf("Using HDR map");
+    ptxFile = get_ptx_filename("hdrmap");
+
+    auto sampler = context->createTextureSampler();
+    sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE);
+    sampler->setWrapMode(1, RT_WRAP_CLAMP_TO_EDGE);
+    auto buffer = context->createBuffer(RT_BUFFER_INPUT,
+                                        RT_FORMAT_FLOAT4, hdrmap.height * 2, hdrmap.height);
+    float *dst = static_cast<float *>(buffer->map());
+    size_t image_size = 2 * hdrmap.height * hdrmap.height * sizeof(float) * 4;
+    memcpy(dst, hdrmap.texture.data(), image_size);
+    buffer->unmap();
+    sampler->setBuffer(buffer);
+
     context["envmap"]->setTextureSampler(sampler);
     context->setMissProgram(0, context->createProgramFromPTXFile(ptxFile, "miss"));
-    printf("Finishing\n");
   } else {
     ptxFile = get_ptx_filename("procedural_sky");
     context->setMissProgram(0, context->createProgramFromPTXFile(ptxFile, "miss"));
@@ -200,7 +230,8 @@ optix::Transform OptixRenderer::getObjectTransform(const Object *obj) {
       mat->setClosestHitProgram(0, _material_closest_hit);
       mat->setAnyHitProgram(0, _material_any_hit);
       mat->setAnyHitProgram(1, _material_shadow_any_hit);
-      mat["kd"]->setFloat(obj->material.kd.x, obj->material.kd.y, obj->material.kd.z, obj->material.kd.w);
+      mat["kd"]->setFloat(obj->material.kd.x, obj->material.kd.y, obj->material.kd.z,
+                          obj->material.kd.w);
       if (obj->material.kd_map->getId()) {
         mat["has_kd_map"]->setInt(1);
         mat["kd_map"]->setTextureSampler(getTextureSampler(obj->material.kd_map.get()));
@@ -358,6 +389,61 @@ optix::TextureSampler OptixRenderer::getEmptySampler() {
     _empty_sampler->setBuffer(0u, 0u, buffer);
   }
   return _empty_sampler;
+}
+
+void OptixRenderer::setCubemap(std::string const &front, std::string const &back,
+                               std::string const &top, std::string const &bottom,
+                               std::string const &left, std::string const &right) {
+  useCubemap = 1;
+
+  {
+    // front
+    auto [data, width, height, nChannels] = load_image(front);
+    assert(width == height && nChannels == 4);
+    cubemap.front = std::move(data);
+    cubemap.width = width;
+  }
+  {
+    // back
+    auto [data, width, height, nChannels] = load_image(back);
+    assert(cubemap.width == width && cubemap.width == height && nChannels == 4);
+    cubemap.back = std::move(data);
+  }
+  {
+    // top
+    auto [data, width, height, nChannels] = load_image(top);
+    assert(cubemap.width == width && cubemap.width == height && nChannels == 4);
+    cubemap.top = std::move(data);
+  }
+  {
+    // bottom
+    auto [data, width, height, nChannels] = load_image(bottom);
+    assert(cubemap.width == width && cubemap.width == height && nChannels == 4);
+    cubemap.bottom = std::move(data);
+  }
+  {
+    // left
+    auto [data, width, height, nChannels] = load_image(left);
+    assert(cubemap.width == width && cubemap.width == height && nChannels == 4);
+    cubemap.left = std::move(data);
+  }
+  {
+    // right
+    auto [data, width, height, nChannels] = load_image(right);
+    assert(cubemap.width == width && cubemap.width == height && nChannels == 4);
+    cubemap.right = std::move(data);
+  }
+}
+
+void OptixRenderer::setHdrmap(std::string const &map) {
+  useHdrmap = 1;
+  auto [data, width, height, nChannels] = load_hdr(map);
+  assert(width == 2 * height);
+  hdrmap.height = height;
+  hdrmap.texture = std::move(data);
+
+  useCubemap = 0;
+  cubemap = {};
 }
 
 void OptixRenderer::renderScene(const Scene &scene, const CameraSpec &camera) {

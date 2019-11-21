@@ -64,28 +64,46 @@ public:
 public:
   inline uint32_t getWidth() const { return width; }
   inline uint32_t getHeight() const { return height; }
-  inline void resize(int width, int height) {
-    std::cerr << "resize not implemented" << std::endl;
-  }
+  inline void resize(int width, int height) { std::cerr << "resize not implemented" << std::endl; }
 
   GLuint outputTex = 0;
+
 private:
   uint32_t width, height;
   bool initialized = false;
-
 
   optix::Context context = 0;
   GLuint transferFbo = 0;
 
   uint32_t nSamplesSqrt = 1;
 
+  bool useCubemap = 0;
+  struct Cubemap {
+    uint32_t width;
+    std::vector<unsigned char> front;
+    std::vector<unsigned char> back;
+    std::vector<unsigned char> left;
+    std::vector<unsigned char> right;
+    std::vector<unsigned char> top;
+    std::vector<unsigned char> bottom;
+  } cubemap;
+
+  bool useHdrmap = 0;
+  struct Hdrmap {
+    uint32_t height;
+    std::vector<float> texture;
+  } hdrmap;
+
 public:
   void renderScene(const Scene &scene, const CameraSpec &camera);
   void display();
   std::vector<float> getResult();
-  void renderSceneToFile(const Scene &scene, const CameraSpec &cam,
-                         std::string filename);
+  void renderSceneToFile(const Scene &scene, const CameraSpec &cam, std::string filename);
   // void renderCurrentToFile(std::string filename);
+  void setCubemap(std::string const &front, std::string const &back, std::string const &top,
+                  std::string const &bottom, std::string const &left, std::string const &right);
+
+  void setHdrmap(std::string const &map);
 };
 
 } // namespace Optifuser
