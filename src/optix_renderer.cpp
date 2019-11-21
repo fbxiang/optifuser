@@ -10,11 +10,16 @@ static std::string get_ptx_filename(std::string name) {
 
 OptixRenderer::OptixRenderer() {}
 
+OptixRenderer::~OptixRenderer() {
+  exit();
+}
+
 void OptixRenderer::exit() {
   if (initialized) {
     context->destroy();
     glDeleteTextures(1, &outputTex);
     glDeleteFramebuffers(1, &transferFbo);
+    initialized = false;
   }
 }
 

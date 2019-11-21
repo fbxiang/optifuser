@@ -14,6 +14,7 @@ namespace Optifuser {
 class OptixRenderer {
 public:
   OptixRenderer();
+  ~OptixRenderer();
   void init(uint32_t w, uint32_t h);
   void exit();
 
