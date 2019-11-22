@@ -75,6 +75,7 @@ private:
 
   optix::Context context = 0;
   GLuint transferFbo = 0;
+  GLuint screenVbo = 0;
 
   uint32_t nSamplesSqrt = 1;
 

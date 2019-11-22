@@ -18,7 +18,13 @@ void OptixRenderer::exit() {
   if (initialized) {
     context->destroy();
     glDeleteTextures(1, &outputTex);
+    outputTex = 0;
     glDeleteFramebuffers(1, &transferFbo);
+    transferFbo = 0;
+    if (screenVbo) {
+      glDeleteBuffers(1, &screenVbo);
+      screenVbo = 0;
+    }
     initialized = false;
   }
 }
@@ -45,13 +51,12 @@ void OptixRenderer::init(uint32_t w, uint32_t h) {
   context["n_samples_sqrt"]->setUint(nSamplesSqrt);
 
   // create vbo for screen rendering
-  GLuint vbo = 0;
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glGenBuffers(1, &screenVbo);
+  glBindBuffer(GL_ARRAY_BUFFER, screenVbo);
   glBufferData(GL_ARRAY_BUFFER, 16 * width * height, 0, GL_STREAM_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-  optix::Buffer output_buffer = context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, vbo);
+  optix::Buffer output_buffer = context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, screenVbo);
   output_buffer->setFormat(RT_FORMAT_FLOAT4);
   output_buffer->setSize(width, height);
   context["output_buffer"]->set(output_buffer);
