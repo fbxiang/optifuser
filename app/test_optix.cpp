@@ -29,7 +29,7 @@ void loadPartNetModel(Optifuser::Scene &scene) {
 }
 
 void loadSponza(Optifuser::Scene &scene) {
-  auto objects = Optifuser::LoadObj("../scenes/sponza/sponza.obj", true, {0, 1, 0}, {0, 0, -1});
+  auto objects = Optifuser::LoadObj("../scenes/sponza/sponza.obj", true, {0, 0, 1}, {1, 0, 0});
   for (auto &obj : objects) {
     obj->scale = glm::vec3(0.003f);
     obj->position *= 0.003f;
@@ -38,11 +38,6 @@ void loadSponza(Optifuser::Scene &scene) {
 }
 
 int main() {
-  {
-    auto [vec, w, h, _] = Optifuser::load_hdr("/home/fx/textures/artist_workshop_4k.hdr");
-    std::cout << vec.size() << " " << w << " " << h << std::endl;
-  }
-
   int w = 640;
   int h = 480;
 
@@ -54,17 +49,19 @@ int main() {
   cam.setUp({0, 0, 1});
   cam.setForward({1, 0, 0});
 
-  cam.position = {-2, 0, 0};
+  cam.position = {-1, 0, 0};
   cam.fovy = glm::radians(45.f);
   cam.aspect = w / (float)h;
   cam.setRotation(cam.getRotation0());
 
-  // loadSponza(scene);
-  loadPartNetModel(scene);
+  loadSponza(scene);
+  // loadPartNetModel(scene);
 
-  scene.addDirectionalLight({glm::vec3(0, -1, 0.1), glm::vec3(1, 1, 1)});
-  scene.addDirectionalLight({glm::vec3(0, 0, -1), glm::vec3(1, 1, 1)});
+  // scene.addDirectionalLight({glm::vec3(0, -1, 0.1), glm::vec3(1, 1, 1)});
+  // scene.addDirectionalLight({glm::vec3(0, 0, -1), glm::vec3(1, 1, 1)});
   // scene.setAmbientLight(glm::vec3(0.05, 0.05, 0.05));
+
+  scene.addParalleloGramLight({{-5, 5, 3}, {10, 0, 0}, {0, -10, 0}, {0, 0, -1}, {0, 1, 1}});
 
   globalContext.initGui();
   globalContext.showWindow();
@@ -74,11 +71,7 @@ int main() {
 
   optixContext->renderer.numRays = 4;
   optixContext->renderer.max_iterations = 100000;
-  // optixContext->renderer.setCubemap(
-  //     "../assets/ame_desert/desertsky_ft.tga", "../assets/ame_desert/desertsky_bk.tga",
-  //     "../assets/ame_desert/desertsky_up.tga", "../assets/ame_desert/desertsky_dn.tga",
-  //     "../assets/ame_desert/desertsky_lf.tga", "../assets/ame_desert/desertsky_rt.tga");
-  optixContext->renderer.setHdrmap("/home/fx/textures/artist_workshop_4k.hdr");
+  // optixContext->renderer.setHdrmap("/home/fx/textures/artist_workshop_4k.hdr");
 
   while (true) {
     globalContext.processEvents();

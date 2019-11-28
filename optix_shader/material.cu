@@ -31,12 +31,10 @@ rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
 rtDeclareVariable(float, t_hit, rtIntersectionDistance, );
 
 RT_PROGRAM void closest_hit() {
-  float3 world_shading_normal =
-      normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, shading_normal));
+  float3 world_shading_normal = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, shading_normal));
   float3 world_geometric_normal =
       normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, geometric_normal));
-  float3 ffnormal =
-      faceforward(world_shading_normal, -ray.direction, world_geometric_normal);
+  float3 ffnormal = faceforward(world_shading_normal, -ray.direction, world_geometric_normal);
   float3 hitpoint = rtTransformPoint(RT_OBJECT_TO_WORLD, hit_point);
 
   current_prd.max_depth_override = 0;
@@ -70,8 +68,8 @@ RT_PROGRAM void closest_hit() {
         PerRayData_shadow shadow_prd;
         shadow_prd.attenuation = make_float3(1.0f);
         shadow_prd.inShadow = false;
-        Ray shadow_ray = make_Ray(hitpoint, L, pathtrace_shadow_ray_type,
-                                  scene_epsilon, RT_DEFAULT_MAX);
+        Ray shadow_ray =
+            make_Ray(hitpoint, L, pathtrace_shadow_ray_type, scene_epsilon, RT_DEFAULT_MAX);
         rtTrace(top_shadower, shadow_ray, shadow_prd);
 
         if (!shadow_prd.inShadow) {
@@ -89,16 +87,45 @@ RT_PROGRAM void closest_hit() {
         PerRayData_shadow shadow_prd;
         shadow_prd.attenuation = make_float3(1.0f);
         shadow_prd.inShadow = false;
-        Ray shadow_ray = make_Ray(hitpoint, L, pathtrace_shadow_ray_type,
-                                  scene_epsilon, Ldist - scene_epsilon);
+        Ray shadow_ray =
+            make_Ray(hitpoint, L, pathtrace_shadow_ray_type, scene_epsilon, Ldist - scene_epsilon);
         rtTrace(top_shadower, shadow_ray, shadow_prd);
 
         if (!shadow_prd.inShadow) {
-          result += kd_val * nDl * light.emission / Ldist / Ldist *
-                    shadow_prd.attenuation;
+          result += kd_val * nDl * light.emission / Ldist / Ldist * shadow_prd.attenuation;
         }
       }
     }
+    for (int i = 0; i < parallelogram_lights.size(); ++i) {
+      ParallelogramLight light = parallelogram_lights[i];
+
+      // sample a point on the light
+      float r1 = rnd(current_prd.seed);
+      float r2 = rnd(current_prd.seed);
+      float3 light_position = light.corner + r1 * light.v1 + r2 * light.v2;
+      const float Ldist = length(light_position - hitpoint);
+      const float3 L = normalize(light_position - hitpoint);
+      const float nDl = dot(ffnormal, L);
+      const float lnDl = dot(light.normal, L); // light normal dot light direction
+
+      if (nDl > 0.f && lnDl < 0.f) {
+        PerRayData_shadow shadow_prd;
+        shadow_prd.attenuation = make_float3(1.0f);
+        shadow_prd.inShadow = false;
+        const float area = length(cross(light.v1, light.v2));
+        Ray shadow_ray =
+            make_Ray(hitpoint, L, pathtrace_shadow_ray_type, scene_epsilon, Ldist - scene_epsilon);
+        rtTrace(top_shadower, shadow_ray, shadow_prd);
+
+        if (!shadow_prd.inShadow) {
+          result += kd_val           // brdf
+                    * nDl            // normal attenuation
+                    * (-lnDl) * area // visible area
+                    * light.emission / Ldist / Ldist * shadow_prd.attenuation;
+        }
+      }
+    }
+
   } else {
     // transmission
     current_prd.origin = hitpoint;
