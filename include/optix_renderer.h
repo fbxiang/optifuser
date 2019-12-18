@@ -54,6 +54,8 @@ private:
   uint32_t iterations = 0;
 
 private:
+  enum BackgroundMode { BLACK, PROCEDUAL_SKY, CUBEMAP, HDRMAP } backgroundMode = PROCEDUAL_SKY;
+
   bool sceneInitialized = false;
   void initSceneGeometry(const Scene &scene);
   void initSceneLights(const Scene &scene);
@@ -79,7 +81,6 @@ private:
 
   uint32_t nSamplesSqrt = 1;
 
-  bool useCubemap = 0;
   struct Cubemap {
     uint32_t width;
     std::vector<unsigned char> front;
@@ -90,7 +91,6 @@ private:
     std::vector<unsigned char> bottom;
   } cubemap;
 
-  bool useHdrmap = 0;
   struct Hdrmap {
     uint32_t height;
     std::vector<float> texture;
@@ -106,6 +106,8 @@ public:
                   std::string const &bottom, std::string const &left, std::string const &right);
 
   void setHdrmap(std::string const &map);
+  inline void setBlackBackground() { backgroundMode = BLACK; };
+  inline void setProcedualSkyBackground() { backgroundMode = PROCEDUAL_SKY; };
 };
 
 } // namespace Optifuser

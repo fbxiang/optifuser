@@ -22,12 +22,14 @@ endif()
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLEW)
 include_directories("3rd_party/imgui")
 include_directories("3rd_party/imgui/examples")
+include_directories("3rd_party/spdlog/include")
 file(GLOB GUI_SRC "3rd_party/imgui/*.cpp"
   "3rd_party/imgui/examples/imgui_impl_glfw.cpp"
   "3rd_party/imgui/examples/imgui_impl_opengl3.cpp" )
 
 add_subdirectory("3rd_party/glfw")
 add_subdirectory("3rd_party/assimp")
+add_subdirectory("3rd_party/spdlog")
 
 include_directories("include")
 
@@ -54,7 +56,7 @@ if(EXISTS ${OPTIX_HOME})
 
   add_executable(test_optix app/test_optix.cpp ${GUI_SRC})
   target_link_libraries(test_optix optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY}
-    assimp pthread ${OPTIX_LIBRARY} stdc++fs)
+    assimp pthread ${OPTIX_LIBRARY} stdc++fs spdlog)
 
   add_dependencies(ptx_dir ptx)
   add_dependencies(test_optix ptx_dir)
@@ -70,7 +72,7 @@ target_link_libraries(optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLEW_
 
 add_executable(test_optifuser app/main.cpp ${GUI_SRC})
 target_link_libraries(test_optifuser optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY}
-  assimp pthread ${OPTIX_LIBRARY} stdc++fs)
+  assimp pthread ${OPTIX_LIBRARY} stdc++fs spdlog)
 
 set_target_properties(optifuser test_optifuser
     PROPERTIES

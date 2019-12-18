@@ -6,54 +6,51 @@
 #include <assimp/scene.h>
 #include <experimental/filesystem>
 #include <iostream>
+#include <spdlog/spdlog.h>
 #include <string>
 
 namespace fs = std::experimental::filesystem;
 
 namespace Optifuser {
 
-std::vector<std::unique_ptr<Object>>
-LoadObj(const std::string file, bool ignoreSpecification, glm::vec3 upAxis,
-        glm::vec3 forwardAxis) {
+
+std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignoreRootTransform,
+                                             glm::vec3 upAxis, glm::vec3 forwardAxis) {
   if (!fs::exists(file)) {
-    std::cerr << "No render mesh file found: " << file << std::endl;
+    spdlog::warn("No mesh file found: {}.", file);
     return {};
   }
 
-#ifdef _VERBOSE
-  printf("Loading texture %s\n", file.c_str());
-#endif
   glm::mat3 formatTransform = glm::mat3(glm::cross(forwardAxis, upAxis), upAxis, -forwardAxis);
 
   auto objects = std::vector<std::unique_ptr<Object>>();
 
   Assimp::Importer importer;
+
+
   uint32_t flags = aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_GenNormals |
-                   aiProcess_FlipUVs;
-  if (!ignoreSpecification) {
-    flags |= aiProcess_PreTransformVertices;
+                   aiProcess_FlipUVs | aiProcess_PreTransformVertices;
+
+  if (ignoreRootTransform) {
+    importer.SetPropertyInteger(AI_CONFIG_PP_PTV_ADD_ROOT_TRANSFORMATION, 1);
+  } else {
+    importer.SetPropertyInteger(AI_CONFIG_PP_PTV_ADD_ROOT_TRANSFORMATION, 0);
   }
 
-  const aiScene * scene = importer.ReadFile(file, flags);
+  const aiScene *scene = importer.ReadFile(file, flags);
 
   if (!scene) {
+    spdlog::warn("Cannot load scene from file: {}. Error: {}", file, importer.GetErrorString());
     return {};
   }
 
   if (scene->mRootNode->mMetaData) {
-    std::cerr << "HAS META" << std::endl;
+    spdlog::error("Mesh file has unsupported metadata: {}.", file);
     exit(1);
   }
 
-  if (!scene) {
-    fprintf(stderr, "%s\n", importer.GetErrorString());
-    return objects;
-  }
-
-#ifdef _VERBOSE
-  printf("Loaded %d meshes, %d materials, %d textures\n", scene->mNumMeshes, scene->mNumMaterials,
-         scene->mNumTextures);
-#endif
+  spdlog::info("Loaded {} meshes, {} materials, {} textures\n", scene->mNumMeshes,
+               scene->mNumMaterials, scene->mNumTextures);
 
   std::vector<Material> mats(scene->mNumMaterials);
   for (uint32_t i = 0; i < scene->mNumMaterials; i++) {

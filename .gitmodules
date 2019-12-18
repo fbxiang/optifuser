@@ -7,3 +7,6 @@
 [submodule "3rd_party/assimp"]
 	path = 3rd_party/assimp
 	url = git@github.com:assimp/assimp.git
+[submodule "3rd_party/spdlog"]
+	path = 3rd_party/spdlog
+	url = https://github.com/gabime/spdlog.git

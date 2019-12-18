@@ -10,9 +10,7 @@ static std::string get_ptx_filename(std::string name) {
 
 OptixRenderer::OptixRenderer() {}
 
-OptixRenderer::~OptixRenderer() {
-  exit();
-}
+OptixRenderer::~OptixRenderer() { exit(); }
 
 void OptixRenderer::exit() {
   if (initialized) {
@@ -93,7 +91,7 @@ void OptixRenderer::initSceneGeometry(const Scene &scene) {
   context["top_shadower"]->set(shadowGroup);
 
   std::string ptxFile;
-  if (useCubemap) {
+  if (backgroundMode == CUBEMAP) {
     printf("Using cubemap\n");
     ptxFile = get_ptx_filename("cubemap");
 
@@ -118,15 +116,15 @@ void OptixRenderer::initSceneGeometry(const Scene &scene) {
 
     context["envmapId"]->setInt(sampler->getId());
     context->setMissProgram(0, context->createProgramFromPTXFile(ptxFile, "miss"));
-  } else if (useHdrmap) {
+  } else if (backgroundMode == HDRMAP) {
     printf("Using HDR map");
     ptxFile = get_ptx_filename("hdrmap");
 
     auto sampler = context->createTextureSampler();
     sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE);
     sampler->setWrapMode(1, RT_WRAP_CLAMP_TO_EDGE);
-    auto buffer = context->createBuffer(RT_BUFFER_INPUT,
-                                        RT_FORMAT_FLOAT4, hdrmap.height * 2, hdrmap.height);
+    auto buffer =
+        context->createBuffer(RT_BUFFER_INPUT, RT_FORMAT_FLOAT4, hdrmap.height * 2, hdrmap.height);
     float *dst = static_cast<float *>(buffer->map());
     size_t image_size = 2 * hdrmap.height * hdrmap.height * sizeof(float) * 4;
     memcpy(dst, hdrmap.texture.data(), image_size);
@@ -135,8 +133,12 @@ void OptixRenderer::initSceneGeometry(const Scene &scene) {
 
     context["envmap"]->setTextureSampler(sampler);
     context->setMissProgram(0, context->createProgramFromPTXFile(ptxFile, "miss"));
-  } else {
+  } else if (backgroundMode == PROCEDUAL_SKY) {
     ptxFile = get_ptx_filename("procedural_sky");
+    context->setMissProgram(0, context->createProgramFromPTXFile(ptxFile, "miss"));
+  } else {
+    ptxFile = get_ptx_filename("constantbg");
+    context["bg_color"]->setFloat(0, 0, 0);
     context->setMissProgram(0, context->createProgramFromPTXFile(ptxFile, "miss"));
   }
 
@@ -404,7 +406,7 @@ optix::TextureSampler OptixRenderer::getEmptySampler() {
 void OptixRenderer::setCubemap(std::string const &front, std::string const &back,
                                std::string const &top, std::string const &bottom,
                                std::string const &left, std::string const &right) {
-  useCubemap = 1;
+  backgroundMode = CUBEMAP;
 
   {
     // front
@@ -446,13 +448,13 @@ void OptixRenderer::setCubemap(std::string const &front, std::string const &back
 }
 
 void OptixRenderer::setHdrmap(std::string const &map) {
-  useHdrmap = 1;
+  backgroundMode = HDRMAP;
+
   auto [data, width, height, nChannels] = load_hdr(map);
   assert(width == 2 * height);
   hdrmap.height = height;
   hdrmap.texture = std::move(data);
 
-  useCubemap = 0;
   cubemap = {};
 }
 
