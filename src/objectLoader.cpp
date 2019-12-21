@@ -1,6 +1,5 @@
 #include "objectLoader.h"
 #include "mesh.h"
-#include <assimp/Exceptional.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>

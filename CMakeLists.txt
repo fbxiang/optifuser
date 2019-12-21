@@ -5,9 +5,12 @@ set(CMAKE_CXX_FLAGS_DEBUG "-o0 -g3 -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-o3 -g0 -Wall")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
+find_package(ASSIMP REQUIRED)
+find_package(spdlog REQUIRED)
 
 file(GLOB_RECURSE RENDER_SRC "include/*.h" "src/*.cpp")
 
@@ -22,14 +25,11 @@ endif()
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLEW)
 include_directories("3rd_party/imgui")
 include_directories("3rd_party/imgui/examples")
-include_directories("3rd_party/spdlog/include")
 file(GLOB GUI_SRC "3rd_party/imgui/*.cpp"
   "3rd_party/imgui/examples/imgui_impl_glfw.cpp"
   "3rd_party/imgui/examples/imgui_impl_opengl3.cpp" )
 
 add_subdirectory("3rd_party/glfw")
-add_subdirectory("3rd_party/assimp")
-add_subdirectory("3rd_party/spdlog")
 
 include_directories("include")
 
@@ -56,7 +56,7 @@ if(EXISTS ${OPTIX_HOME})
 
   add_executable(test_optix app/test_optix.cpp ${GUI_SRC})
   target_link_libraries(test_optix optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY}
-    assimp pthread ${OPTIX_LIBRARY} stdc++fs spdlog)
+    pthread ${OPTIX_LIBRARY} stdc++fs)
 
   add_dependencies(ptx_dir ptx)
   add_dependencies(test_optix ptx_dir)
@@ -66,13 +66,15 @@ else()
   list(FILTER RENDER_SRC EXCLUDE REGEX "optix_renderer")
 endif()
  
-add_library(optifuser SHARED ${RENDER_SRC} ${GUI_SRC})
+add_library(optifuser STATIC ${RENDER_SRC} ${GUI_SRC})
 target_link_libraries(optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLEW_LIBRARY}
-  assimp pthread ${OPTIXLIBRARY})
+  ${ASSIMP_LIBRARIES}
+  pthread ${OPTIX_LIBRARY} ${SPDLOG_LIBRARIES})
 
 add_executable(test_optifuser app/main.cpp ${GUI_SRC})
 target_link_libraries(test_optifuser optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY}
-  assimp pthread ${OPTIX_LIBRARY} stdc++fs spdlog)
+  pthread ${OPTIX_LIBRARY} stdc++fs)
+
 
 set_target_properties(optifuser test_optifuser
     PROPERTIES
