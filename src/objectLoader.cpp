@@ -48,7 +48,7 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
     exit(1);
   }
 
-  spdlog::info("Loaded {} meshes, {} materials, {} textures\n", scene->mNumMeshes,
+  spdlog::info("Loaded {} meshes, {} materials, {} textures.", scene->mNumMeshes,
                scene->mNumMaterials, scene->mNumTextures);
 
   std::vector<Material> mats(scene->mNumMaterials);
