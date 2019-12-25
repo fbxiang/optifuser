@@ -73,14 +73,14 @@ void GLFWRenderContext::showWindow() { glfwShowWindow(mainWindow); }
 
 void GLFWRenderContext::hideWindow() { glfwHideWindow(mainWindow); }
 
-void GLFWRenderContext::initGui() {
+void GLFWRenderContext::initGui(const std::string &version) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
   (void)io;
   ImGui::StyleColorsDark();
   ImGui_ImplGlfw_InitForOpenGL(mainWindow, true);
-  ImGui_ImplOpenGL3_Init("#version 450");
+  ImGui_ImplOpenGL3_Init(("#version " + version).c_str());
 }
 
 void GLFWRenderContext::processEvents() {

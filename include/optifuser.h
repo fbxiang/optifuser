@@ -14,8 +14,7 @@
 
 namespace Optifuser {
 
-void keyCallback(GLFWwindow *window, int key, int scancode, int action,
-                 int mods);
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 void ensureGlobalContext();
 Input &getInput();
 
@@ -40,7 +39,7 @@ public:
 
   static GLFWRenderContext &Get(int w = 640, int h = 480);
 
-  void initGui();
+  void initGui(const std::string &version = "450");
 
 protected:
   GLFWRenderContext(int w = 640, int h = 480);
