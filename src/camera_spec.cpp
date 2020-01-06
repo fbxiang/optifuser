@@ -18,12 +18,12 @@ bool FPSCameraSpec::isSane() const {
 void FPSCameraSpec::rotateYawPitch(float d_yaw, float d_pitch) {
   yaw += d_yaw;
   pitch += d_pitch;
-  if (yaw >= M_PIf32) {
-    yaw -= 2 * M_PIf32;
-  } else if (yaw < -M_PIf32) {
-    yaw += 2 * M_PIf32;
+  if (yaw >= glm::pi<float>()) {
+    yaw -= 2 * glm::pi<float>();
+  } else if (yaw < -glm::pi<float>()) {
+    yaw += 2 * glm::pi<float>();
   }
-  pitch = glm::clamp(pitch, -M_PIf32 / 2 + 0.05f, M_PIf32 / 2 - 0.05f);
+  pitch = glm::clamp(pitch, -glm::pi<float>() / 2 + 0.05f, M_PIf32 / 2 - 0.05f);
   glm::vec3 right = glm::cross(forward, up);
   rotation =
       glm::angleAxis(yaw, up) * glm::angleAxis(pitch, right) * getRotation0();
