@@ -465,7 +465,6 @@ void OptixRenderer::renderScene(const Scene &scene, const CameraSpec &camera) {
 
   // initialize scene
   if (!sceneInitialized) {
-    printf("Initializing scene gemoetry...\n");
     initSceneGeometry(scene);
   }
 

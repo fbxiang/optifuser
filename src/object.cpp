@@ -77,7 +77,7 @@ std::unique_ptr<Object> NewDebugObject() {
   return obj;
 }
 
-std::unique_ptr<Object> NewPlane() {
+std::unique_ptr<Object> NewXYPlane() {
   std::vector<Vertex> vertices;
   vertices.push_back(Vertex(glm::vec3(-1, 1, 0), glm::vec3(0, 0, 1), glm::vec2(0, 1),
                             glm::vec3(1, 0, 0), glm::vec3(0, 1, 0)));

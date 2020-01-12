@@ -104,7 +104,7 @@ template <typename T> std::unique_ptr<T> NewObject() {
 
 std::unique_ptr<Object> NewNoisePlane(unsigned int res);
 std::unique_ptr<Object> NewDebugObject();
-std::unique_ptr<Object> NewPlane();
+std::unique_ptr<Object> NewXYPlane();
 std::unique_ptr<Object> NewYZPlane();
 std::unique_ptr<Object> NewFlatCube();
 std::unique_ptr<Object> NewCube();

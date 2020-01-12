@@ -26,7 +26,7 @@ public:
 
 public:
   void addObject(std::unique_ptr<Object> obj);
-  void removeObject(std::unique_ptr<Object> &obj);
+  void removeObject(Object *obj);
   void removeObjectsByName(std::string name);
   const std::vector<std::unique_ptr<Object>> &getObjects() const;
 
