@@ -82,7 +82,7 @@ void OptixRenderer::initSceneGeometry(const Scene &scene) {
   shadowGroup->setAcceleration(context->createAcceleration(ACCEL));
 
   for (const auto &obj : scene.getObjects()) {
-    if (obj->getMesh()) {
+    if (obj->getMesh() && obj->visible) {
       topGroup->addChild(getObjectTransform(obj.get()));
       shadowGroup->addChild(getObjectTransform(obj.get()));
     }

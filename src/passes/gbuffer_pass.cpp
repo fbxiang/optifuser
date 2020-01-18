@@ -63,7 +63,7 @@ void renderObjectTree(const Object &obj, const glm::mat4 &parentModelMat,
 
   glm::mat4 modelMat = parentModelMat * obj.getModelMat();
   auto mesh = obj.getMesh();
-  if (mesh) {
+  if (mesh && obj.visible) {
     auto shader = obj.shader.get();
     if (shader) {
       shader->use();
