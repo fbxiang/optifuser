@@ -17,12 +17,16 @@ private:
   glm::vec3 ambientLight = {0, 0, 0};
   std::shared_ptr<CubeMapTexture> environmentMap;
 
-  std::vector<std::tuple<glm::vec3, glm::quat>> axes;
+  std::vector<std::tuple<glm::vec3, glm::quat, glm::vec3>> axes;
 
 public:
-  void addAxes(const glm::vec3 &pos, const glm::quat &rot) { axes.push_back({pos, rot}); }
+  void addAxes(const glm::vec3 &pos, const glm::quat &rot, const glm::vec3 &scale = {1, 1, 1}) {
+    axes.push_back({pos, rot, scale});
+  }
   void clearAxes() { axes.clear(); }
-  inline const std::vector<std::tuple<glm::vec3, glm::quat>> &getAxes() const { return axes; }
+  inline const std::vector<std::tuple<glm::vec3, glm::quat, glm::vec3>> &getAxes() const {
+    return axes;
+  }
 
 public:
   void addObject(std::unique_ptr<Object> obj);

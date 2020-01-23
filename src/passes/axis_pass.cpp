@@ -112,11 +112,14 @@ void AxisPass::render(const Scene &scene, const CameraSpec &camera) {
 
   m_shader->use();
 
-  for (auto &[pos, rot] : scene.getAxes()) {
+  for (auto &[pos, rot, scale] : scene.getAxes()) {
     glm::mat4 t = glm::toMat4(rot);
     t[3][0] = pos.x;
     t[3][1] = pos.y;
     t[3][2] = pos.z;
+    t[0][0] *= scale.x;
+    t[1][1] *= scale.y;
+    t[2][2] *= scale.z;
 
     renderGlobalAxis(t, viewMat, viewMatInv, projMat, projMatInv, m_shader.get());
   }
