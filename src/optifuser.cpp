@@ -15,6 +15,10 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
   input.keyCallback(key, scancode, action, mods);
 }
 
+void wheelCallback(GLFWwindow *window, double xoffset, double yoffset) {
+  input.wheelCallback(xoffset, yoffset);
+}
+
 void ensureGlobalContext() {
   if (glfwInitialized) {
     return;
@@ -30,6 +34,7 @@ void ensureGlobalContext() {
   glfwMakeContextCurrent(mainWindow);
 
   glfwSetKeyCallback(mainWindow, keyCallback);
+  glfwSetScrollCallback(mainWindow, wheelCallback);
 
   glewExperimental = GL_TRUE;
   glewInit();

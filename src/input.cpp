@@ -34,6 +34,11 @@ void Input::cursorPosCallback(double x, double y) {
   lastY = y;
 }
 
+void Input::wheelCallback(double x, double y) {
+  wdx = x;
+  wdy = y;
+}
+
 void Input::getCursor(int &x, int &y) {
   x = (int)lastX;
   y = (int)lastY;
@@ -50,6 +55,13 @@ void Input::getCursorDelta(double &dx, double &dy) {
     firstTime = false;
     dx = dy = 0;
   }
+}
+
+void Input::getWheelDelta(double &dx, double &dy) {
+  dx = wdx;
+  dy = wdy;
+  wdx = 0;
+  wdy = 0;
 }
 
 void Input::mouseCallback(int button, int state) {
