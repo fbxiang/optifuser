@@ -14,15 +14,15 @@ void Scene::removeObject(Object *obj) {
     return;
   }
   obj->setScene(nullptr);
-  std::remove_if(objects.begin(), objects.end(),
-                 [obj](std::unique_ptr<Object> &o) { return obj == o.get(); }),
-      objects.end();
+  objects.erase(std::remove_if(objects.begin(), objects.end(),
+                               [obj](std::unique_ptr<Object> &o) { return obj == o.get(); }),
+                objects.end());
 }
 
 void Scene::removeObjectsByName(std::string name) {
-  std::remove_if(objects.begin(), objects.end(),
-                 [&](std::unique_ptr<Object> &o) { return o->name == name; }),
-      objects.end();
+  objects.erase(std::remove_if(objects.begin(), objects.end(),
+                               [&](std::unique_ptr<Object> &o) { return o->name == name; }),
+                objects.end());
 }
 
 const std::vector<std::unique_ptr<Object>> &Scene::getObjects() const { return objects; }
