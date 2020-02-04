@@ -5,10 +5,19 @@ namespace Optifuser {
 void Input::keyCallback(int key, int scancode, int action, int mods) {
   if (action == GLFW_PRESS) {
     keyState[key] = 1;
+    keyMods[key] = mods;
     keyDown[key] = 1;
   } else if (action == GLFW_RELEASE) {
     keyState[key] = 0;
   }
+}
+
+int Input::getKeyMods(int key) const {
+  auto m = keyMods.find(key);
+  if (m != keyMods.end()) {
+    return m->second;
+  }
+  return 0;
 }
 
 int Input::getKeyState(int key) const {

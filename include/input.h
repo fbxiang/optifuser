@@ -2,6 +2,7 @@
 namespace Optifuser {
 class Input {
   std::map<int, int> keyState;
+  std::map<int, int> keyMods;
   std::map<int, int> mouseState;
   std::map<int, int> keyDown;
   std::map<int, int> mouseDown;
@@ -19,6 +20,7 @@ public:
 
 public:
   int getKeyState(int key) const;
+  int getKeyMods(int key) const;
   int getKeyDown(int key) const;
   void getCursor(int &x, int &y);
   void getCursorDelta(double &dx, double &dy);

@@ -65,9 +65,9 @@ void ShadowPass::render(const Scene &scene, const CameraSpec &camera) const {
   glm::mat4 c2l =
       glm::lookAt(glm::vec3(0, 0, 0), csLightDir, glm::vec3(0, 1, 0));
   // TODO: tune this with view frustum
-  // float v = 4 * camera.far;
+  float v = 100.f;
   // glm::mat4 lsProj = glm::ortho(-v, v, -v, v, -v, v);
-  float v = 10.f;
+  // float v = 10.f;
   glm::mat4 lsProj = glm::ortho(-v, v, -v, v, -v, camera.far);
 
   glm::mat4 w2l = c2l * w2c;
