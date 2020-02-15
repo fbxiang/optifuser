@@ -79,11 +79,12 @@ void renderObjectTree(const Object &obj, const glm::mat4 &parentModelMat,
     }
 
     shader->setMatrix("gbufferViewMatrix", viewMat);
-    shader->setMatrix("gbufferViewMatrixInverse", glm::inverse(viewMat));
+    shader->setMatrix("gbufferViewMatrixInverse", viewMatInv);
     shader->setMatrix("gbufferProjectionMatrix", projMat);
-    shader->setMatrix("gbufferProjectionMatrixInverse", glm::inverse(projMat));
+    shader->setMatrix("gbufferProjectionMatrixInverse", projMatInv);
 
     shader->setMatrix("gbufferModelMatrix", modelMat);
+    shader->setMatrix("gbufferModelMatrixInverse", glm::inverse(modelMat));
     shader->setVec3("material.ka", obj.material.ka);
     shader->setVec4("material.kd", obj.material.kd);
     shader->setVec3("material.ks", obj.material.ks);
@@ -129,7 +130,6 @@ void GBufferPass::render(const Scene &scene, const CameraSpec &camera,
 
   glm::mat4 projMatInv = glm::inverse(projMat);
 
-  // TODO: render axes
   for (const auto &obj : scene.getObjects()) {
     renderObjectTree(*obj, glm::mat4(1.f), viewMat, viewMatInv, projMat,
                      projMatInv, m_shader.get(), renderSegmentation);

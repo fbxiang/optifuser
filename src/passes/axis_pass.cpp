@@ -2,20 +2,18 @@
 
 namespace Optifuser {
 
-void renderGlobalAxis(const glm::mat4 modelMat, const glm::mat4 &viewMat,
-                      const glm::mat4 &viewMatInv, const glm::mat4 &projMat,
-                      const glm::mat4 &projMatInv, Shader *shader,
-                      float length = 0.1, float thickness = 0.005) {
+void renderGlobalAxis(const glm::mat4 modelMat, const glm::mat4 &viewMat, const glm::mat4 &projMat,
+                      Shader *shader, float length = 0.1, float thickness = 0.005) {
 
   static std::unique_ptr<Object> x = nullptr;
   static std::unique_ptr<Object> y = nullptr;
   static std::unique_ptr<Object> z = nullptr;
 
   shader->setMatrix("gbufferViewMatrix", viewMat);
-  shader->setMatrix("gbufferViewMatrixInverse", glm::inverse(viewMat));
+  // shader->setMatrix("gbufferViewMatrixInverse", glm::inverse(viewMat));
   shader->setMatrix("gbufferProjectionMatrix", projMat);
-  shader->setMatrix("gbufferProjectionMatrixInverse", glm::inverse(projMat));
-  
+  // shader->setMatrix("gbufferProjectionMatrixInverse", glm::inverse(projMat));
+
   if (!x) {
     x = NewCube();
     y = NewCube();
@@ -29,31 +27,36 @@ void renderGlobalAxis(const glm::mat4 modelMat, const glm::mat4 &viewMat,
   z->scale = {thickness, thickness, length};
   z->position = {0, 0, length};
 
+  glm::mat mat = modelMat * x->getModelMat();
   shader->setVec3("color", {1, 0, 0});
-  shader->setMatrix("gbufferModelMatrix", modelMat * x->getModelMat());
+  shader->setMatrix("gbufferModelMatrix", mat);
+  // shader->setMatrix("gbufferModelMatrix", glm::inverse(mat));
   x->getMesh()->draw();
 
+  mat = modelMat * y->getModelMat();
   shader->setVec3("color", {0, 1, 0});
-  shader->setMatrix("gbufferModelMatrix", modelMat * y->getModelMat());
+  shader->setMatrix("gbufferModelMatrix", mat);
+  // shader->setMatrix("gbufferModelMatrixInverse", glm::inverse(mat));
   y->getMesh()->draw();
 
+  mat = modelMat * z->getModelMat();
   shader->setVec3("color", {0, 0, 1});
-  shader->setMatrix("gbufferModelMatrix", modelMat * z->getModelMat());
+  shader->setMatrix("gbufferModelMatrix", mat);
+  // shader->setMatrix("gbufferModelMatrixInverse", glm::inverse(mat));
   z->getMesh()->draw();
 }
 
-void renderObjectTree(const Object &obj, const glm::mat4 &parentModelMat,
-                      const glm::mat4 &viewMat, const glm::mat4 &viewMatInv,
-                      const glm::mat4 &projMat, const glm::mat4 &projMatInv,
-                      Shader *shader) {
+void renderObjectTree(const Object &obj, const glm::mat4 &parentModelMat, const glm::mat4 &viewMat,
+                      const glm::mat4 &viewMatInv, const glm::mat4 &projMat,
+                      const glm::mat4 &projMatInv, Shader *shader) {
 
   glm::mat4 modelMat = parentModelMat * obj.getModelMat();
   auto mesh = obj.getMesh();
   if (obj.showAxis) {
     shader->setMatrix("gbufferViewMatrix", viewMat);
-    shader->setMatrix("gbufferViewMatrixInverse", glm::inverse(viewMat));
+    // shader->setMatrix("gbufferViewMatrixInverse", glm::inverse(viewMat));
     shader->setMatrix("gbufferProjectionMatrix", projMat);
-    shader->setMatrix("gbufferProjectionMatrixInverse", glm::inverse(projMat));
+    // shader->setMatrix("gbufferProjectionMatrixInverse", glm::inverse(projMat));
 
     static std::unique_ptr<Object> x = nullptr;
     static std::unique_ptr<Object> y = nullptr;
@@ -79,21 +82,27 @@ void renderObjectTree(const Object &obj, const glm::mat4 &parentModelMat,
       z->scale *= t;
       z->position *= t;
     }
+
+    glm::mat mat = modelMat * x->getModelMat();
     shader->setVec3("color", {1, 0, 0});
-    shader->setMatrix("gbufferModelMatrix", modelMat * x->getModelMat());
+    shader->setMatrix("gbufferModelMatrix", mat);
+    // shader->setMatrix("gbufferModelMatrix", glm::inverse(mat));
     x->getMesh()->draw();
 
+    mat = modelMat * y->getModelMat();
     shader->setVec3("color", {0, 1, 0});
-    shader->setMatrix("gbufferModelMatrix", modelMat * y->getModelMat());
+    shader->setMatrix("gbufferModelMatrix", mat);
+    // shader->setMatrix("gbufferModelMatrixInverse", glm::inverse(mat));
     y->getMesh()->draw();
 
+    mat = modelMat * z->getModelMat();
     shader->setVec3("color", {0, 0, 1});
-    shader->setMatrix("gbufferModelMatrix", modelMat * z->getModelMat());
+    shader->setMatrix("gbufferModelMatrix", mat);
+    // shader->setMatrix("gbufferModelMatrixInverse", glm::inverse(mat));
     z->getMesh()->draw();
   }
   for (auto &child : obj.getChildren()) {
-    renderObjectTree(*child, modelMat, viewMat, viewMatInv, projMat, projMatInv,
-                     shader);
+    renderObjectTree(*child, modelMat, viewMat, viewMatInv, projMat, projMatInv, shader);
   }
 }
 
@@ -106,9 +115,9 @@ void AxisPass::render(const Scene &scene, const CameraSpec &camera) {
 
   // do not clear color or depth
   glm::mat4 viewMat = camera.getViewMat();
-  glm::mat4 viewMatInv = glm::inverse(viewMat);
+  // glm::mat4 viewMatInv = glm::inverse(viewMat);
   glm::mat4 projMat = camera.getProjectionMat();
-  glm::mat4 projMatInv = glm::inverse(projMat);
+  // glm::mat4 projMatInv = glm::inverse(projMat);
 
   m_shader->use();
 
@@ -121,9 +130,9 @@ void AxisPass::render(const Scene &scene, const CameraSpec &camera) {
     t[1][1] *= scale.y;
     t[2][2] *= scale.z;
 
-    renderGlobalAxis(t, viewMat, viewMatInv, projMat, projMatInv, m_shader.get());
+    renderGlobalAxis(t, viewMat, projMat, m_shader.get());
   }
-  renderGlobalAxis(glm::mat4(1), viewMat, viewMatInv, projMat, projMatInv, m_shader.get(), 1, 0.01);
+  renderGlobalAxis(glm::mat4(1), viewMat, projMat, m_shader.get(), 1, 0.01);
 }
 
 } // namespace Optifuser
