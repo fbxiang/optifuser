@@ -132,7 +132,9 @@ void AxisPass::render(const Scene &scene, const CameraSpec &camera) {
 
     renderGlobalAxis(t, viewMat, projMat, m_shader.get());
   }
-  renderGlobalAxis(glm::mat4(1), viewMat, projMat, m_shader.get(), 1, 0.01);
+  if (globalAxes) {
+    renderGlobalAxis(glm::mat4(1), viewMat, projMat, m_shader.get(), 1, 0.01);
+  }
 }
 
 } // namespace Optifuser

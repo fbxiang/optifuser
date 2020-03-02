@@ -4,11 +4,11 @@
 namespace Optifuser {
 const std::string ACCEL = "Trbvh";
 
-static std::string get_ptx_filename(std::string name) {
-  return "ptx/cuda_compile_ptx_1_generated_" + name + ".cu.ptx";
+std::string OptixRenderer::getPtxFilename(std::string const &name) {
+  return mPtxDir + "/cuda_compile_ptx_1_generated_" + name + ".cu.ptx";
 }
 
-OptixRenderer::OptixRenderer() {}
+OptixRenderer::OptixRenderer(std::string const &ptxDir) : mPtxDir(ptxDir) {}
 
 OptixRenderer::~OptixRenderer() { exit(); }
 
@@ -59,7 +59,7 @@ void OptixRenderer::init(uint32_t w, uint32_t h) {
   output_buffer->setSize(width, height);
   context["output_buffer"]->set(output_buffer);
 
-  std::string ptxFile = get_ptx_filename("pathtracer");
+  std::string ptxFile = getPtxFilename("pathtracer");
   context->setExceptionProgram(0, context->createProgramFromPTXFile(ptxFile, "exception"));
   context->setRayGenerationProgram(0, context->createProgramFromPTXFile(ptxFile, "camera"));
 
@@ -93,7 +93,7 @@ void OptixRenderer::initSceneGeometry(const Scene &scene) {
   std::string ptxFile;
   if (backgroundMode == CUBEMAP) {
     printf("Using cubemap\n");
-    ptxFile = get_ptx_filename("cubemap");
+    ptxFile = getPtxFilename("cubemap");
 
     auto sampler = context->createTextureSampler();
     sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE);
@@ -118,7 +118,7 @@ void OptixRenderer::initSceneGeometry(const Scene &scene) {
     context->setMissProgram(0, context->createProgramFromPTXFile(ptxFile, "miss"));
   } else if (backgroundMode == HDRMAP) {
     printf("Using HDR map");
-    ptxFile = get_ptx_filename("hdrmap");
+    ptxFile = getPtxFilename("hdrmap");
 
     auto sampler = context->createTextureSampler();
     sampler->setWrapMode(0, RT_WRAP_CLAMP_TO_EDGE);
@@ -134,10 +134,10 @@ void OptixRenderer::initSceneGeometry(const Scene &scene) {
     context["envmap"]->setTextureSampler(sampler);
     context->setMissProgram(0, context->createProgramFromPTXFile(ptxFile, "miss"));
   } else if (backgroundMode == PROCEDUAL_SKY) {
-    ptxFile = get_ptx_filename("procedural_sky");
+    ptxFile = getPtxFilename("procedural_sky");
     context->setMissProgram(0, context->createProgramFromPTXFile(ptxFile, "miss"));
   } else {
-    ptxFile = get_ptx_filename("constantbg");
+    ptxFile = getPtxFilename("constantbg");
     context["bg_color"]->setFloat(0, 0, 0);
     context->setMissProgram(0, context->createProgramFromPTXFile(ptxFile, "miss"));
   }
@@ -206,14 +206,14 @@ optix::Transform OptixRenderer::getObjectTransform(const Object *obj) {
     gio->setMaterialCount(1);
     optix::Material mat = context->createMaterial();
     if (!_material_closest_hit) {
-      std::string ptxFile = get_ptx_filename("material");
+      std::string ptxFile = getPtxFilename("material");
 
       _material_closest_hit = context->createProgramFromPTXFile(ptxFile, "closest_hit");
       _material_shadow_any_hit = context->createProgramFromPTXFile(ptxFile, "shadow_any_hit");
       _material_any_hit = context->createProgramFromPTXFile(ptxFile, "any_hit");
     }
     if (!_material_fluid_closest_hit) {
-      std::string ptxFile = get_ptx_filename("material_transparent");
+      std::string ptxFile = getPtxFilename("material_transparent");
 
       _material_fluid_closest_hit = context->createProgramFromPTXFile(ptxFile, "closest_hit");
       _material_fluid_shadow_any_hit =
@@ -221,7 +221,7 @@ optix::Transform OptixRenderer::getObjectTransform(const Object *obj) {
       _material_fluid_any_hit = context->createProgramFromPTXFile(ptxFile, "any_hit");
     }
     if (!_material_mirror_closest_hit) {
-      std::string ptxFile = get_ptx_filename("material_mirror");
+      std::string ptxFile = getPtxFilename("material_mirror");
 
       _material_mirror_closest_hit = context->createProgramFromPTXFile(ptxFile, "closest_hit");
       _material_mirror_shadow_any_hit =
@@ -301,7 +301,7 @@ optix::Geometry OptixRenderer::getMeshGeometry(const TriangleMesh *mesh) {
     g->setPrimitiveCount((uint32_t)mesh->size());
 
     if (!_mesh_intersect) {
-      std::string ptxFile = get_ptx_filename("triangle_mesh");
+      std::string ptxFile = getPtxFilename("triangle_mesh");
       _mesh_intersect = context->createProgramFromPTXFile(ptxFile, "mesh_intersect");
       _mesh_bounds = context->createProgramFromPTXFile(ptxFile, "mesh_bounds");
     }
@@ -340,7 +340,7 @@ optix::Geometry OptixRenderer::getMeshGeometry(const DynamicMesh *mesh) {
     g->setPrimitiveCount(mesh->getVertexCount() / 3);
 
     if (!_dmesh_intersect) {
-      std::string ptxFile = get_ptx_filename("dynamic_mesh");
+      std::string ptxFile = getPtxFilename("dynamic_mesh");
       _dmesh_intersect = context->createProgramFromPTXFile(ptxFile, "mesh_intersect");
       _dmesh_bounds = context->createProgramFromPTXFile(ptxFile, "mesh_bounds");
     }

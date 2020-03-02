@@ -80,7 +80,7 @@ public:
     return std::make_unique<OptixContext>(w, h);
   }
 
-  OptixContext(int w, int h);
+  OptixContext(int w, int h, const std::string &ptxDir = "ptx");
 };
 #endif
 

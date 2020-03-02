@@ -61,6 +61,7 @@ public:
   int pickObjectId(int x, int y);
   void enablePicking();
   void enableAxisPass(bool enable = true);
+  void enableGlobalAxes(bool enable = true);
 
 public:
   bool initialized;

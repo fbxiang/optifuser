@@ -13,7 +13,7 @@ namespace Optifuser {
 
 class OptixRenderer {
 public:
-  OptixRenderer();
+  OptixRenderer(std::string const &ptxDir);
   ~OptixRenderer();
   void init(uint32_t w, uint32_t h);
   void exit();
@@ -22,6 +22,9 @@ public:
   uint32_t max_iterations = 64;
 
 private:
+  std::string mPtxDir;
+  std::string getPtxFilename(std::string const &name);
+
   std::map<const Object *, optix::Transform> _object_transform;
   std::map<const TriangleMesh *, optix::Geometry> _mesh_geometry;
   std::map<const DynamicMesh *, optix::Geometry> _dmesh_geometry;

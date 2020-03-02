@@ -134,7 +134,7 @@ OffscreenRenderContext::~OffscreenRenderContext() {
 }
 
 #ifdef _USE_OPTIX
-OptixContext::OptixContext(int w, int h) {
+OptixContext::OptixContext(int w, int h, const std::string &ptxDir) : renderer(ptxDir) {
   ensureGlobalContext();
   renderer.init(w, h);
 }

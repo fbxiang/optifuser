@@ -37,6 +37,10 @@ void Renderer::deleteTextures() {
 
 void Renderer::enableAxisPass(bool enable) { axisPassEnabled = enable; }
 
+void Renderer::enableGlobalAxes(bool enable) {
+  axis_pass.globalAxes = enable;
+}
+
 void Renderer::initTextures() {
   deleteTextures();
 
@@ -44,8 +48,7 @@ void Renderer::initTextures() {
   glGenTextures(N_COLORTEX, colortex);
   for (int n = 0; n < N_COLORTEX; n++) {
     glBindTexture(GL_TEXTURE_2D, colortex[n]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA,
-                 GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     LABEL_TEXTURE(colortex[n], "colortex" + std::to_string(n));
@@ -53,30 +56,26 @@ void Renderer::initTextures() {
 
   glGenTextures(3, segtex);
   glBindTexture(GL_TEXTURE_2D, segtex[0]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_R32I, m_width, m_height, 0, GL_RED_INTEGER,
-               GL_INT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_R32I, m_width, m_height, 0, GL_RED_INTEGER, GL_INT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   LABEL_TEXTURE(segtex[0], "segmentation tex");
 
   glBindTexture(GL_TEXTURE_2D, segtex[1]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_R32I, m_width, m_height, 0, GL_RED_INTEGER,
-               GL_INT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_R32I, m_width, m_height, 0, GL_RED_INTEGER, GL_INT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   LABEL_TEXTURE(segtex[1], "segmentation tex 2");
 
   glBindTexture(GL_TEXTURE_2D, segtex[2]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA,
-               GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   LABEL_TEXTURE(segtex[2], "segmentation color tex");
 
   glGenTextures(1, usertex);
   glBindTexture(GL_TEXTURE_2D, usertex[0]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA,
-               GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   LABEL_TEXTURE(usertex[0], "User Texture 0");
@@ -84,8 +83,7 @@ void Renderer::initTextures() {
   // outputtex
   glGenTextures(1, &outputtex);
   glBindTexture(GL_TEXTURE_2D, outputtex);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA,
-               GL_FLOAT, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   LABEL_TEXTURE(outputtex, "output");
@@ -98,13 +96,12 @@ void Renderer::initTextures() {
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, m_width, m_height, 0,
-               GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, m_width, m_height, 0, GL_DEPTH_COMPONENT,
+               GL_FLOAT, 0);
   LABEL_TEXTURE(depthtex, "gbuffer depth");
 
   // GLfloat color[4] = {1.f, 1.f, 1.f, 1.f};
   // glTextureParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
-
 
   // shadowtex
   glGenTextures(1, &shadowtex);
@@ -113,8 +110,8 @@ void Renderer::initTextures() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, shadowWidth,
-               shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, shadowWidth, shadowHeight, 0,
+               GL_DEPTH_COMPONENT, GL_FLOAT, 0);
   LABEL_TEXTURE(shadowtex, "shadow map");
 }
 
@@ -214,8 +211,8 @@ void Renderer::renderScene(const Scene &scene, const CameraSpec &camera) {
 void Renderer::displayLighting(GLuint fbo) const {
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo[FBO_TYPE::LIGHTING]);
-  glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height,
-                    GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height, GL_COLOR_BUFFER_BIT,
+                    GL_NEAREST);
 
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
@@ -225,14 +222,13 @@ void Renderer::displayLighting(GLuint fbo) const {
 void Renderer::displayUserTexture(GLuint fbo) const {
   // read from segmentation color
   glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo[FBO_TYPE::COPY]);
-  glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                         GL_TEXTURE_2D, usertex[0], 0);
+  glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, usertex[0], 0);
 
   // draw to given fbo
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
 
-  glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height,
-                    GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height, GL_COLOR_BUFFER_BIT,
+                    GL_NEAREST);
 
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
@@ -242,14 +238,13 @@ void Renderer::displayUserTexture(GLuint fbo) const {
 void Renderer::displaySegmentation(GLuint fbo) const {
   // read from segmentation color
   glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo[FBO_TYPE::COPY]);
-  glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                         GL_TEXTURE_2D, segtex[2], 0);
+  glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, segtex[2], 0);
 
   // draw to given fbo
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
 
-  glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height,
-                    GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height, GL_COLOR_BUFFER_BIT,
+                    GL_NEAREST);
 
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
@@ -308,20 +303,16 @@ void Renderer::enablePicking() { glGenFramebuffers(1, &pickingFbo); }
 
 int Renderer::pickSegmentationId(int x, int y) {
   if (!pickingFbo) {
-    std::cerr
-        << "failed to pick segmentation id, you need to enable picking first."
-        << std::endl;
+    std::cerr << "failed to pick segmentation id, you need to enable picking first." << std::endl;
     return 0;
   }
   // only valid when using segmentation
-  if (x < 0 || x >= static_cast<int>(m_width) || y < 0 ||
-      y >= static_cast<int>(m_height)) {
+  if (x < 0 || x >= static_cast<int>(m_width) || y < 0 || y >= static_cast<int>(m_height)) {
     return 0;
   }
   int value;
   glBindFramebuffer(GL_FRAMEBUFFER, pickingFbo);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                         segtex[0], 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, segtex[0], 0);
   glReadBuffer(GL_COLOR_ATTACHMENT0);
 
   // pixel position is upside down
@@ -332,19 +323,16 @@ int Renderer::pickSegmentationId(int x, int y) {
 
 int Renderer::pickObjectId(int x, int y) {
   if (!pickingFbo) {
-    std::cerr << "failed to pick object id, you need to enable picking first."
-              << std::endl;
+    std::cerr << "failed to pick object id, you need to enable picking first." << std::endl;
     return 0;
   }
   // only valid when using segmentation
-  if (x < 0 || x >= static_cast<int>(m_width) || y < 0 ||
-      y >= static_cast<int>(m_height)) {
+  if (x < 0 || x >= static_cast<int>(m_width) || y < 0 || y >= static_cast<int>(m_height)) {
     return 0;
   }
   int value;
   glBindFramebuffer(GL_FRAMEBUFFER, pickingFbo);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                         segtex[1], 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, segtex[1], 0);
   glReadBuffer(GL_COLOR_ATTACHMENT0);
 
   // pixel position is upside down
