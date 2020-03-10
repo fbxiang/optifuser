@@ -2,17 +2,11 @@
 
 namespace Optifuser {
 
-bool is_close(float f1, float f2, float eps = 1e-4) {
-  return f1 - f2 > -eps && f1 - f2 < eps;
-}
-
-void CameraSpec::lookAt(const glm::vec3 &direction, const glm::vec3 &up) {
-  rotation = glm::quatLookAt(glm::normalize(direction), up);
-}
+bool is_close(float f1, float f2, float eps = 1e-4) { return f1 - f2 > -eps && f1 - f2 < eps; }
 
 bool FPSCameraSpec::isSane() const {
-  return is_close(glm::length(forward), 1.f) &&
-         is_close(glm::length(up), 1.f) && is_close(glm::dot(forward, up), 0.f);
+  return is_close(glm::length(forward), 1.f) && is_close(glm::length(up), 1.f) &&
+         is_close(glm::dot(forward, up), 0.f);
 }
 
 void FPSCameraSpec::rotateYawPitch(float d_yaw, float d_pitch) {
@@ -25,8 +19,7 @@ void FPSCameraSpec::rotateYawPitch(float d_yaw, float d_pitch) {
   }
   pitch = glm::clamp(pitch, -glm::pi<float>() / 2 + 0.05f, glm::pi<float>() / 2 - 0.05f);
   glm::vec3 right = glm::cross(forward, up);
-  rotation =
-      glm::angleAxis(yaw, up) * glm::angleAxis(pitch, right) * getRotation0();
+  rotation = glm::angleAxis(yaw, up) * glm::angleAxis(pitch, right) * getRotation0();
 }
 
 void FPSCameraSpec::moveForwardRight(float d_forward, float d_right) {

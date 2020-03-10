@@ -13,8 +13,46 @@ public:
   glm::vec3 position = {0, 0, 0};
   float near = 0.1f;
   float far = 1000.f;
-  float fovy = glm::radians(35.f);
   float aspect = 1.f;
+
+protected:
+  glm::quat rotation = {1, 0, 0, 0};
+
+public:
+  inline void lookAt(const glm::vec3 &direction, const glm::vec3 &up) {
+    rotation = glm::quatLookAt(glm::normalize(direction), up);
+  }
+  inline void setRotation(glm::quat const &rot) { rotation = glm::normalize(rot); }
+  inline glm::quat const &getRotation() const { return rotation; }
+
+  inline glm::mat4 getModelMat() const {
+    glm::mat4 t = glm::toMat4(rotation);
+    t[3][0] = position.x;
+    t[3][1] = position.y;
+    t[3][2] = position.z;
+    return t;
+  }
+
+  inline glm::mat4 getViewMat() const { return glm::inverse(getModelMat()); }
+
+  virtual ~CameraSpec() = default;
+
+  virtual glm::mat4 getProjectionMat() const = 0;
+};
+
+class OrthographicCameraSpec : public CameraSpec {
+public:
+  float scaling = 1;
+
+public:
+  inline glm::mat4 getProjectionMat() const override {
+    return glm::ortho(-scaling * aspect, scaling * aspect, -scaling, scaling);
+  }
+};
+
+class PerspectiveCameraSpec : public CameraSpec {
+public:
+  float fovy = glm::radians(35.f);
 
 protected:
   glm::quat rotation = {1, 0, 0, 0};
@@ -36,10 +74,12 @@ public:
 
   inline glm::mat4 getViewMat() const { return glm::inverse(getModelMat()); }
 
-  inline glm::mat4 getProjectionMat() const { return glm::perspective(fovy, aspect, near, far); }
+  inline glm::mat4 getProjectionMat() const override {
+    return glm::perspective(fovy, aspect, near, far);
+  }
 };
 
-class FPSCameraSpec : public CameraSpec {
+class FPSCameraSpec : public PerspectiveCameraSpec {
 private:
   float yaw = 0.f;
   float pitch = 0.f;
