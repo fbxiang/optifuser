@@ -42,11 +42,11 @@ public:
 
 class OrthographicCameraSpec : public CameraSpec {
 public:
-  float scaling = 1;
+  float scaling = 1.f;
 
 public:
   inline glm::mat4 getProjectionMat() const override {
-    return glm::ortho(-scaling * aspect, scaling * aspect, -scaling, scaling);
+    return glm::ortho(-scaling * aspect, scaling * aspect, -scaling, scaling, near, far);
   }
 };
 
@@ -54,26 +54,7 @@ class PerspectiveCameraSpec : public CameraSpec {
 public:
   float fovy = glm::radians(35.f);
 
-protected:
-  glm::quat rotation = {1, 0, 0, 0};
-
 public:
-  void lookAt(const glm::vec3 &direction, const glm::vec3 &up);
-
-  inline void setRotation(glm::quat const &rot) { rotation = glm::normalize(rot); }
-
-  inline glm::quat const &getRotation() const { return rotation; }
-
-  inline glm::mat4 getModelMat() const {
-    glm::mat4 t = glm::toMat4(rotation);
-    t[3][0] = position.x;
-    t[3][1] = position.y;
-    t[3][2] = position.z;
-    return t;
-  }
-
-  inline glm::mat4 getViewMat() const { return glm::inverse(getModelMat()); }
-
   inline glm::mat4 getProjectionMat() const override {
     return glm::perspective(fovy, aspect, near, far);
   }
