@@ -13,7 +13,6 @@ public:
 
 private:
   bool m_initialized = false;
-  ;
 
   GLuint m_fbo = 0;
   GLuint m_quadVao = 0;
