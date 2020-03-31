@@ -1,4 +1,6 @@
 #include "object.h"
+#include <map>
+
 namespace Optifuser {
 glm::mat4 Object::getModelMat() const {
   glm::mat4 t = glm::toMat4(rotation);
@@ -371,5 +373,22 @@ std::unique_ptr<Object> NewCapsule(float halfHeight, float radius) {
   return obj;
 }
 
+std::shared_ptr<PBRMaterial> loadDefaultMaterial(std::string const &name) {
+  static std::map<std::string, std::shared_ptr<PBRMaterial>> materials;
+  {
+    auto it = materials.find(name);
+    if (it != materials.end()) {
+      return it->second;
+    }
+  }
+  {
+    std::shared_ptr<PBRMaterial> mat;
+    if (name == "aluminum") {
+      materials["aluminum"] = std::make_shared<PBRMaterial>();
+
+    }
+    return mat;
+  }
+}
 
 } // namespace Optifuser

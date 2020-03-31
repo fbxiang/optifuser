@@ -133,7 +133,7 @@ void OptixRenderer::initSceneGeometry(const Scene &scene) {
 
     context["envmap"]->setTextureSampler(sampler);
     context->setMissProgram(0, context->createProgramFromPTXFile(ptxFile, "miss"));
-  } else if (backgroundMode == PROCEDUAL_SKY) {
+  } else if (backgroundMode == PROCEDURAL_SKY) {
     ptxFile = getPtxFilename("procedural_sky");
     context->setMissProgram(0, context->createProgramFromPTXFile(ptxFile, "miss"));
   } else {
@@ -206,7 +206,7 @@ optix::Transform OptixRenderer::getObjectTransform(const Object *obj) {
     gio->setMaterialCount(1);
     optix::Material mat = context->createMaterial();
     if (!_material_closest_hit) {
-      std::string ptxFile = getPtxFilename("material");
+      std::string ptxFile = getPtxFilename("material_unified");
 
       _material_closest_hit = context->createProgramFromPTXFile(ptxFile, "closest_hit");
       _material_shadow_any_hit = context->createProgramFromPTXFile(ptxFile, "shadow_any_hit");
@@ -229,27 +229,39 @@ optix::Transform OptixRenderer::getObjectTransform(const Object *obj) {
       _material_mirror_any_hit = context->createProgramFromPTXFile(ptxFile, "any_hit");
     }
 
-    if (obj->material.type == Optifuser::Material::Type::TRANSPARENT) {
-      mat->setClosestHitProgram(0, _material_fluid_closest_hit);
-      mat->setAnyHitProgram(0, _material_fluid_any_hit);
-      mat->setAnyHitProgram(1, _material_fluid_shadow_any_hit);
-      mat["tint"]->setFloat(obj->material.kd.x, obj->material.kd.y, obj->material.kd.z);
-    } else if (obj->material.type == Optifuser::Material::Type::MIRROR) {
-      mat->setClosestHitProgram(0, _material_mirror_closest_hit);
-      mat->setAnyHitProgram(0, _material_mirror_any_hit);
-      mat->setAnyHitProgram(1, _material_mirror_shadow_any_hit);
-    } else {
+    // if (obj->material.type == Optifuser::Material::Type::TRANSPARENT) {
+    //   mat->setClosestHitProgram(0, _material_fluid_closest_hit);
+    //   mat->setAnyHitProgram(0, _material_fluid_any_hit);
+    //   mat->setAnyHitProgram(1, _material_fluid_shadow_any_hit);
+    //   mat["tint"]->setFloat(obj->pbrMaterial->kd.x, obj->pbrMaterial->kd.y, obj->pbrMaterial->kd.z);
+    // } else if (obj->material.type == Optifuser::Material::Type::MIRROR) {
+    //   mat->setClosestHitProgram(0, _material_mirror_closest_hit);
+    //   mat->setAnyHitProgram(0, _material_mirror_any_hit);
+    //   mat->setAnyHitProgram(1, _material_mirror_shadow_any_hit);
+    // } else
+    {
       mat->setClosestHitProgram(0, _material_closest_hit);
       mat->setAnyHitProgram(0, _material_any_hit);
       mat->setAnyHitProgram(1, _material_shadow_any_hit);
-      mat["kd"]->setFloat(obj->material.kd.x, obj->material.kd.y, obj->material.kd.z,
-                          obj->material.kd.w);
-      if (obj->material.kd_map->getId()) {
+      mat["kd"]->setFloat(obj->pbrMaterial->kd.x, obj->pbrMaterial->kd.y, obj->pbrMaterial->kd.z,
+                          obj->pbrMaterial->kd.w);
+      mat["ks"]->setFloat(obj->pbrMaterial->ks.x,
+                          obj->pbrMaterial->ks.y,
+                          obj->pbrMaterial->ks.z,
+                          obj->pbrMaterial->roughness);
+      if (obj->pbrMaterial->kd_map->getId()) {
         mat["has_kd_map"]->setInt(1);
-        mat["kd_map"]->setTextureSampler(getTextureSampler(obj->material.kd_map.get()));
+        mat["kd_map"]->setTextureSampler(getTextureSampler(obj->pbrMaterial->kd_map.get()));
       } else {
         mat["has_kd_map"]->setInt(0);
         mat["kd_map"]->setTextureSampler(getEmptySampler());
+      }
+      if (obj->pbrMaterial->ks_map->getId()) {
+        mat["has_ks_map"]->setInt(1);
+        mat["ks_map"]->setTextureSampler(getTextureSampler(obj->pbrMaterial->ks_map.get()));
+      } else {
+        mat["has_ks_map"]->setInt(0);
+        mat["ks_map"]->setTextureSampler(getEmptySampler());
       }
     }
     gio->setMaterial(0, mat);
@@ -474,7 +486,7 @@ void OptixRenderer::renderScene(const Scene &scene, const CameraSpec &camera) {
   glm::vec3 w = camera.getRotation() * glm::vec3(0, 0, 1);
 
   optix::float3 W = -optix::make_float3(w.x, w.y, w.z);
-  float vlen = tanf(0.5f * camera.fovy);
+  float vlen = tanf(0.5f * camera.getFovy());
   optix::float3 V = vlen * optix::make_float3(v.x, v.y, v.z);
   float ulen = vlen * camera.aspect;
   optix::float3 U = ulen * optix::make_float3(u.x, u.y, u.z);
@@ -559,7 +571,7 @@ void OptixRenderer::renderSceneToFile(const Scene &scene, const CameraSpec &cam,
   glm::vec3 w = cam.getRotation() * glm::vec3(0, 0, 1);
 
   optix::float3 W = -optix::make_float3(w.x, w.y, w.z);
-  float vlen = tanf(0.5f * cam.fovy);
+  float vlen = tanf(0.5f * cam.getFovy());
   optix::float3 V = vlen * optix::make_float3(v.x, v.y, v.z);
   float ulen = vlen * cam.aspect;
   optix::float3 U = ulen * optix::make_float3(u.x, u.y, u.z);

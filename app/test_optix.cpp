@@ -5,6 +5,7 @@
 #include "partnet_loader.hpp"
 #include "scene.h"
 #include <experimental/filesystem>
+#include <spdlog/spdlog.h>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -37,6 +38,13 @@ void loadSponza(Optifuser::Scene &scene) {
   }
 }
 
+Optifuser::Object* loadDragon(Optifuser::Scene &scene) {
+  auto objects = Optifuser::LoadObj("../assets/dragon.obj", true, {0,0,1}, {1,0,0});
+  auto obj = objects[0].get();
+  scene.addObject(std::move(objects[0]));
+  return obj;
+}
+
 int main() {
   int w = 640;
   int h = 480;
@@ -54,14 +62,15 @@ int main() {
   cam.aspect = w / (float)h;
   cam.setRotation(cam.getRotation0());
 
-  loadSponza(scene);
-  // loadPartNetModel(scene);
+  auto dragon = loadDragon(scene);
+  dragon->pbrMaterial->kd = {0.85, 0.56, 0.34,1};
+  dragon->pbrMaterial->roughness = 0.01f;
+  dragon->pbrMaterial->ks = {0.85, 0.56, 0.34};
 
+  // scene.addPointLight({ {0,0,1}, {1,0.9, 0.5} });
   // scene.addDirectionalLight({glm::vec3(0, -1, 0.1), glm::vec3(1, 1, 1)});
-  // scene.addDirectionalLight({glm::vec3(0, 0, -1), glm::vec3(1, 1, 1)});
   // scene.setAmbientLight(glm::vec3(0.05, 0.05, 0.05));
-
-  scene.addParalleloGramLight({{-5, 5, 3}, {10, 0, 0}, {0, -10, 0}, {0, 0, -1}, {0, 1, 1}});
+  // scene.addParalleloGramLight({{-5, 5, 3}, {10, 0, 0}, {0, -10, 0}, {0, 0, -1}, {0, 1, 1}});
 
   globalContext.initGui();
   globalContext.showWindow();
@@ -69,9 +78,10 @@ int main() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 
+  optixContext->renderer.setBlackBackground();
   optixContext->renderer.numRays = 4;
   optixContext->renderer.max_iterations = 100000;
-  // optixContext->renderer.setHdrmap("/home/fx/textures/artist_workshop_4k.hdr");
+  optixContext->renderer.setHdrmap("/home/fx/textures/artist_workshop_4k.hdr");
 
   while (true) {
     globalContext.processEvents();

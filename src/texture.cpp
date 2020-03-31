@@ -47,8 +47,6 @@ std::shared_ptr<Texture> LoadTexture(const std::string &filename, int mipmap, in
   return tex;
 }
 
-GLuint Texture::getId() const { return id; }
-
 void writeToFile(GLuint textureId, GLuint width, GLuint height, std::string filename) {
   uint8_t data[width * height * 4];
   glBindTexture(GL_TEXTURE_2D, textureId);

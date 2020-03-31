@@ -38,6 +38,7 @@ public:
   virtual ~CameraSpec() = default;
 
   virtual glm::mat4 getProjectionMat() const = 0;
+  virtual float getFovy() const = 0;
 };
 
 class OrthographicCameraSpec : public CameraSpec {
@@ -48,6 +49,8 @@ public:
   inline glm::mat4 getProjectionMat() const override {
     return glm::ortho(-scaling * aspect, scaling * aspect, -scaling, scaling, near, far);
   }
+
+  float getFovy() const override { return 0; }
 };
 
 class PerspectiveCameraSpec : public CameraSpec {
@@ -58,6 +61,8 @@ public:
   inline glm::mat4 getProjectionMat() const override {
     return glm::perspective(fovy, aspect, near, far);
   }
+
+  float getFovy() const override { return fovy; }
 };
 
 class FPSCameraSpec : public PerspectiveCameraSpec {

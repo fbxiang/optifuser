@@ -12,7 +12,6 @@ namespace fs = std::experimental::filesystem;
 
 namespace Optifuser {
 
-
 std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignoreRootTransform,
                                              glm::vec3 upAxis, glm::vec3 forwardAxis) {
   if (!fs::exists(file)) {
@@ -52,6 +51,10 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
                scene->mNumMaterials, scene->mNumTextures);
 
   std::vector<Material> mats(scene->mNumMaterials);
+  std::vector<std::shared_ptr<PBRMaterial>> pbrMats(scene->mNumMaterials);
+  for (auto &mat : pbrMats) {
+    mat = std::make_shared<PBRMaterial>();
+  }
   for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
     auto *m = scene->mMaterials[i];
     aiColor3D color = aiColor3D(0, 0, 0);
@@ -61,9 +64,10 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
     mats[i].ka = glm::vec3(color.r, color.g, color.b);
     m->Get(AI_MATKEY_COLOR_DIFFUSE, color);
     mats[i].kd = glm::vec4(color.r, color.g, color.b, alpha);
+    pbrMats[i]->kd = glm::vec4(color.r, color.g, color.b, alpha);  // kd and transmission for diffuse
     m->Get(AI_MATKEY_COLOR_SPECULAR, color);
     mats[i].ks = glm::vec3(color.r, color.g, color.b);
-
+    pbrMats[i]->ks = glm::vec3(color.r, color.g, color.b);  // specular color for metal
     std::string parentdir = file.substr(0, file.find_last_of('/')) + "/";
 
     aiString path;
@@ -74,6 +78,7 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
 
       auto tex = LoadTexture(fullPath, 0);
       mats[i].kd_map = tex;
+      pbrMats[i]->kd_map = tex;
     }
 
     if (m->GetTextureCount(aiTextureType_SPECULAR) > 0 &&
@@ -82,6 +87,7 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
       std::string fullPath = parentdir + p;
 
       auto tex = LoadTexture(fullPath, 0);
+      mats[i].ks_map = tex;
       mats[i].ks_map = tex;
       printf("Specular texture found at %s\n", fullPath.c_str());
     }
@@ -93,6 +99,7 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
 
       auto tex = LoadTexture(fullPath, 0);
       mats[i].height_map = tex;
+      // TODO: height map for pbr material
       printf("Height texture found at %s\n", fullPath.c_str());
     }
 
@@ -103,6 +110,7 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
 
       auto tex = LoadTexture(fullPath, 0);
       mats[i].normal_map = tex;
+      pbrMats[i]->normal_map = tex;
       printf("Normal texture found at %s\n", fullPath.c_str());
     }
   }
@@ -149,6 +157,7 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
     auto m = std::make_shared<TriangleMesh>(vertices, indices);
     objects.push_back(NewObject<Object>(m));
     objects.back()->material = mats[mesh->mMaterialIndex];
+    objects.back()->pbrMaterial = pbrMats[mesh->mMaterialIndex];
   }
   return objects;
 }

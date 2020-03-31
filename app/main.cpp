@@ -18,19 +18,6 @@ enum RenderMode {
   LIGHTING, ALBEDO, NORMAL, DEPTH, SEGMENTATION
 };
 
-void loadPartNetModel(Optifuser::Scene &scene) {
-  // auto partnet = loadPartNet("../assets/46627");
-  auto files = fs::directory_iterator("/home/fx/source/partnet-simulation/3rd_party/optifuser/assets/46627/textured_objs");
-  for (auto &f : files) {
-    if (f.path().extension() == ".obj") {
-      auto objects = Optifuser::LoadObj(f.path().u8string());
-      for (auto &obj : objects) {
-        scene.addObject(std::move(obj));
-      }
-    }
-  }
-}
-
 void loadSponza(Optifuser::Scene &scene) {
   auto objects = Optifuser::LoadObj("../scenes/sponza/sponza.obj", true, {0,0,1}, {0,1,0});
   for (auto &obj : objects) {
@@ -38,6 +25,13 @@ void loadSponza(Optifuser::Scene &scene) {
     obj->position *= 0.003f;
     scene.addObject(std::move(obj));
   }
+}
+
+Optifuser::Object* loadDragon(Optifuser::Scene &scene) {
+  auto objects = Optifuser::LoadObj("../assets/dragon.obj");
+  auto obj = objects[0].get();
+  scene.addObject(std::move(objects[0]));
+  return obj;
 }
 
 int main() {
@@ -61,10 +55,12 @@ int main() {
   cam.setRotation(cam.getRotation0());
   // cam.rotateYawPitch(glm::radians(-90.f), 0);
 
-  loadSponza(scene);
+  // loadSponza(scene);
   scene.addDirectionalLight({glm::vec3(0, 0, -1), glm::vec3(0.5, 0.5, 0.5)});
   scene.setAmbientLight(glm::vec3(0.05, 0.05, 0.05));
 
+  auto dragon = loadDragon(scene);
+  dragon->material.kd = {1, 0, 0, 1};
   // scene.setEnvironmentMap("../assets/ame_desert/desertsky_ft.tga",
   //                          "../assets/ame_desert/desertsky_bk.tga",
   //                          "../assets/ame_desert/desertsky_up.tga",

@@ -11,21 +11,19 @@ std::tuple<std::vector<float>, int, int, int> load_hdr(std::string const &filena
 
 class Texture {
 private:
-  GLuint id;
+  GLuint id = 0;
 
 public:
-  Texture() : id(0) {}
+  Texture() {}
   virtual ~Texture() { destroy(); }
 
   void load(const std::string &filename, int mipmap = 0, int wrapping = GL_REPEAT,
             int minFilter = GL_NEAREST_MIPMAP_LINEAR, int magFilter = GL_LINEAR);
   void destroy();
-  GLuint getId() const;
+  inline GLuint getId() const { return id; };
 
 public:
   static const Texture Empty;
-
-  // TODO: convert texture to Optix texture
 };
 
 std::shared_ptr<Texture> LoadTexture(const std::string &filename, int mipmap = 0,

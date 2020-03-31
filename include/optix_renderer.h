@@ -57,7 +57,7 @@ private:
   uint32_t iterations = 0;
 
 private:
-  enum BackgroundMode { BLACK, PROCEDUAL_SKY, CUBEMAP, HDRMAP } backgroundMode = PROCEDUAL_SKY;
+  enum BackgroundMode { BLACK, PROCEDURAL_SKY, CUBEMAP, HDRMAP } backgroundMode = PROCEDURAL_SKY;
 
   bool sceneInitialized = false;
   void initSceneGeometry(const Scene &scene);
@@ -110,7 +110,7 @@ public:
 
   void setHdrmap(std::string const &map);
   inline void setBlackBackground() { backgroundMode = BLACK; };
-  inline void setProcedualSkyBackground() { backgroundMode = PROCEDUAL_SKY; };
+  inline void setProceduralSkyBackground() { backgroundMode = PROCEDURAL_SKY; };
 };
 
 } // namespace Optifuser
