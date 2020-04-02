@@ -17,20 +17,8 @@ namespace fs = std::experimental::filesystem;
 
 GLFWwindow *window;
 
-void loadPartNetModel(Optifuser::Scene &scene) {
-  auto files = fs::directory_iterator("../assets/7128/textured_objs");
-  for (auto &f : files) {
-    if (f.path().extension() == ".obj") {
-      auto objects = Optifuser::LoadObj(f.path().u8string());
-      for (auto &obj : objects) {
-        scene.addObject(std::move(obj));
-      }
-    }
-  }
-}
-
 void loadSponza(Optifuser::Scene &scene) {
-  auto objects = Optifuser::LoadObj("../scenes/sponza/sponza.obj", true, {0, 0, 1}, {1, 0, 0});
+  auto objects = Optifuser::LoadObj("/home/fx/Scenes/McGuire_sponza/sponza.obj", true, {0, 0, 1}, {1, 0, 0});
   for (auto &obj : objects) {
     obj->scale = glm::vec3(0.003f);
     obj->position *= 0.003f;
@@ -42,6 +30,13 @@ Optifuser::Object* loadDragon(Optifuser::Scene &scene) {
   auto objects = Optifuser::LoadObj("../assets/dragon.obj", true, {0,0,1}, {1,0,0});
   auto obj = objects[0].get();
   scene.addObject(std::move(objects[0]));
+  return obj;
+}
+
+Optifuser::Object* loadCube(Optifuser::Scene &scene) {
+  auto cube = Optifuser::NewFlatCube();
+  auto obj = cube.get();
+  scene.addObject(std::move(cube));
   return obj;
 }
 
@@ -57,20 +52,41 @@ int main() {
   cam.setUp({0, 0, 1});
   cam.setForward({1, 0, 0});
 
-  cam.position = {-1, 0, 0};
+  cam.position = {-3, 0, 2};
   cam.fovy = glm::radians(45.f);
   cam.aspect = w / (float)h;
   cam.setRotation(cam.getRotation0());
 
-  auto dragon = loadDragon(scene);
-  dragon->pbrMaterial->kd = {0.85, 0.56, 0.34,1};
-  dragon->pbrMaterial->roughness = 0.01f;
-  dragon->pbrMaterial->ks = {0.85, 0.56, 0.34};
+  loadSponza(scene);
+  // auto dragon = loadDragon(scene);
+  // dragon->pbrMaterial->kd = {0.85, 0.46, 0.34,1};
+  // dragon->pbrMaterial->roughness = 0.1f;
+  // dragon->pbrMaterial->ks = 0.8f;
+  // dragon->pbrMaterial->metallic = 1.f;
 
-  // scene.addPointLight({ {0,0,1}, {1,0.9, 0.5} });
-  // scene.addDirectionalLight({glm::vec3(0, -1, 0.1), glm::vec3(1, 1, 1)});
+  // dragon = loadDragon(scene);
+  // dragon->pbrMaterial->kd = {0.85, 0.46, 0.34,1};
+  // dragon->pbrMaterial->roughness = 0.1f;
+  // dragon->pbrMaterial->ks = 0.8f;
+  // dragon->pbrMaterial->metallic = 0.f;
+  // dragon->position = {1, 0, 0};
+
+  // auto dragon = loadCube(scene);
+  // dragon->pbrMaterial->kd = {1,0,0,1};
+  // dragon->pbrMaterial->roughness = 1.f;
+  // dragon->pbrMaterial->metallic = 0.f;
+  // dragon->pbrMaterial->metallic = 0.f;
+
+  // dragon = loadCube(scene);
+  // dragon->pbrMaterial->kd = {1,0,0,1};
+  // dragon->pbrMaterial->roughness = 0.1f;
+  // dragon->pbrMaterial->metallic = 1.f;
+  // dragon->position = {2.5, 0, 0};
+
+  scene.addPointLight({ {0,0,1}, {1,1,1} } );
+  // scene.addDirectionalLight({glm::vec3(0.1, 0, -1), glm::vec3(.5, .5, .5)});
   // scene.setAmbientLight(glm::vec3(0.05, 0.05, 0.05));
-  // scene.addParalleloGramLight({{-5, 5, 3}, {10, 0, 0}, {0, -10, 0}, {0, 0, -1}, {0, 1, 1}});
+  // scene.addParalleloGramLight({{-5, 5, 3}, {10, 0, 0}, {0, -10, 0}, {0, 0, -1}, {1, 1, 1}});
 
   globalContext.initGui();
   globalContext.showWindow();
@@ -81,7 +97,8 @@ int main() {
   optixContext->renderer.setBlackBackground();
   optixContext->renderer.numRays = 4;
   optixContext->renderer.max_iterations = 100000;
-  optixContext->renderer.setHdrmap("/home/fx/textures/artist_workshop_4k.hdr");
+  // optixContext->renderer.setHdrmap("../assets/railway_bridge_02_4k.hdr");
+  optixContext->renderer.setProceduralSkyBackground();
 
   while (true) {
     globalContext.processEvents();

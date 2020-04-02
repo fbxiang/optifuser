@@ -1,4 +1,5 @@
 #pragma once
+#include "material.h"
 #include "shader.h"
 #include <memory>
 #include <string>
@@ -29,20 +30,6 @@ struct Material {
   float exp = 1.f;
 };
 
-struct PBRMaterial {
-  std::string name = "";
-  std::shared_ptr<Texture> kd_map = std::make_shared<Texture>();  // diffuse color
-  std::shared_ptr<Texture> ks_map = std::make_shared<Texture>();  // specular color
-  std::shared_ptr<Texture> normal_map = std::make_shared<Texture>();
-
-  glm::vec4 kd = glm::vec4(0, 0, 0, 1);
-  glm::vec3 ks = glm::vec3(0);
-
-  float roughness = 1;
-  int fresnel_type = 0;  // 0 for schlick, 1 for metallic
-  float metal_fresnel_parallel = 0;
-  float metal_fresnel_perpendicular = 0;
-};
 
 class Object {
 protected:
@@ -59,7 +46,7 @@ protected:
 public:
   std::shared_ptr<Shader> shader;
   Material material;
-  std::shared_ptr<PBRMaterial> pbrMaterial;
+  std::shared_ptr<PBRMaterial> pbrMaterial = std::make_shared<PBRMaterial>();
   std::string name;
   glm::vec3 position;
   glm::vec3 scale;

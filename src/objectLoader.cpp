@@ -12,6 +12,16 @@ namespace fs = std::experimental::filesystem;
 
 namespace Optifuser {
 
+float shininessToRoughness(float ns) {
+  if (ns <= 5.f) {
+    return 1.f;
+  }
+  if (ns >= 1605.f) {
+    return 0.f;
+  }
+  return 1.f - (std::sqrt(ns-5.f) * 0.025f);
+}
+
 std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignoreRootTransform,
                                              glm::vec3 upAxis, glm::vec3 forwardAxis) {
   if (!fs::exists(file)) {
@@ -59,6 +69,7 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
     auto *m = scene->mMaterials[i];
     aiColor3D color = aiColor3D(0, 0, 0);
     float alpha = 1;
+    float shininess = 0;
     m->Get(AI_MATKEY_OPACITY, alpha);
     m->Get(AI_MATKEY_COLOR_AMBIENT, color);
     mats[i].ka = glm::vec3(color.r, color.g, color.b);
@@ -66,8 +77,10 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
     mats[i].kd = glm::vec4(color.r, color.g, color.b, alpha);
     pbrMats[i]->kd = glm::vec4(color.r, color.g, color.b, alpha);  // kd and transmission for diffuse
     m->Get(AI_MATKEY_COLOR_SPECULAR, color);
-    mats[i].ks = glm::vec3(color.r, color.g, color.b);
-    pbrMats[i]->ks = glm::vec3(color.r, color.g, color.b);  // specular color for metal
+    mats[i].ks = glm::vec3(color.r, color.g, color.b); 
+    pbrMats[i]->ks = (color.r + color.g + color.b) / 3.f;;  // specular color for metal
+    m->Get(AI_MATKEY_SHININESS, shininess);
+    pbrMats[i]->roughness = shininessToRoughness(shininess);
     std::string parentdir = file.substr(0, file.find_last_of('/')) + "/";
 
     aiString path;
@@ -79,6 +92,13 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
       auto tex = LoadTexture(fullPath, 0);
       mats[i].kd_map = tex;
       pbrMats[i]->kd_map = tex;
+      spdlog::info("{}: Diffuse texture {}", tex->getId(), fullPath);
+
+      auto err = glGetError();
+      if (err != GL_NO_ERROR) {
+        spdlog::critical("Loading failed: {0:x}", err);
+        throw std::runtime_error("Loading failed");
+      }
     }
 
     if (m->GetTextureCount(aiTextureType_SPECULAR) > 0 &&
@@ -89,7 +109,12 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
       auto tex = LoadTexture(fullPath, 0);
       mats[i].ks_map = tex;
       mats[i].ks_map = tex;
-      printf("Specular texture found at %s\n", fullPath.c_str());
+      spdlog::info("{}: Specular texture {}", tex->getId(), fullPath);
+      auto err = glGetError();
+      if (err != GL_NO_ERROR) {
+        spdlog::critical("Loading failed: {0:x}", err);
+        throw std::runtime_error("Loading failed");
+      }
     }
 
     if (m->GetTextureCount(aiTextureType_HEIGHT) > 0 &&
@@ -100,7 +125,12 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
       auto tex = LoadTexture(fullPath, 0);
       mats[i].height_map = tex;
       // TODO: height map for pbr material
-      printf("Height texture found at %s\n", fullPath.c_str());
+      spdlog::info("{}: Height texture {}", tex->getId(), fullPath);
+      auto err = glGetError();
+      if (err != GL_NO_ERROR) {
+        spdlog::critical("Loading failed: {0:x}", err);
+        throw std::runtime_error("Loading failed");
+      }
     }
 
     if (m->GetTextureCount(aiTextureType_NORMALS) > 0 &&
@@ -111,7 +141,12 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
       auto tex = LoadTexture(fullPath, 0);
       mats[i].normal_map = tex;
       pbrMats[i]->normal_map = tex;
-      printf("Normal texture found at %s\n", fullPath.c_str());
+      spdlog::info("{}: Normal texture {}", tex->getId(), fullPath);
+      auto err = glGetError();
+      if (err != GL_NO_ERROR) {
+        spdlog::critical("Loading failed: {0:x}", err);
+        throw std::runtime_error("Loading failed");
+      }
     }
   }
 

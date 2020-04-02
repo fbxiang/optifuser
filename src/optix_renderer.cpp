@@ -245,10 +245,10 @@ optix::Transform OptixRenderer::getObjectTransform(const Object *obj) {
       mat->setAnyHitProgram(1, _material_shadow_any_hit);
       mat["kd"]->setFloat(obj->pbrMaterial->kd.x, obj->pbrMaterial->kd.y, obj->pbrMaterial->kd.z,
                           obj->pbrMaterial->kd.w);
-      mat["ks"]->setFloat(obj->pbrMaterial->ks.x,
-                          obj->pbrMaterial->ks.y,
-                          obj->pbrMaterial->ks.z,
-                          obj->pbrMaterial->roughness);
+      mat["ks"]->setFloat(obj->pbrMaterial->ks);
+      mat["roughness"]->setFloat(obj->pbrMaterial->roughness);
+      mat["ks"]->setFloat(obj->pbrMaterial->ks);
+      mat["metallic"]->setFloat(obj->pbrMaterial->metallic);
       if (obj->pbrMaterial->kd_map->getId()) {
         mat["has_kd_map"]->setInt(1);
         mat["kd_map"]->setTextureSampler(getTextureSampler(obj->pbrMaterial->kd_map.get()));

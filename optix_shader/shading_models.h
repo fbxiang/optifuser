@@ -25,11 +25,6 @@ static __host__ __device__ __inline__ void SampleDiffuse(float3 wo, float3 norma
 // ================================================================================
 // GGX
 
-// float3 SchlickFresnel(float3 r0, float radians) {
-//   float exp = powf(1.f - radians, 5.f);
-//   return r0 + (1.f - r0) * exp;
-// }
-
 static __host__ __device__ __inline__ float SmithGGXMaskingShadowing(float3 wi, float3 wo,
                                                                      float3 normal, float a2)
 {
@@ -42,10 +37,10 @@ static __host__ __device__ __inline__ float SmithGGXMaskingShadowing(float3 wi, 
   return 2.0f * dotNL * dotNV / (denomA + denomB);
 }
 
-static __host__ __device__ __inline__ void SampleGGX_ImpD(float3 wo, float3 normal, float roughness,
+static __host__ __device__ __inline__ void SampleGGX_ImpD(float3 wo, float3 normal, float roughness, float ks,
                                                           float3 color, float3& wi, float3& reflectance,
-                                                          unsigned int& seed)
-{
+                                                          unsigned int& seed) {
+  float F0 = ks;
   float a2 = roughness * roughness;
 
   // sample microfacet normal direction
@@ -65,32 +60,35 @@ static __host__ __device__ __inline__ void SampleGGX_ImpD(float3 wo, float3 norm
   // -- system BsdfNDot(wi) simply returns wi.y
   if(dot(normal, wi) > 0.0f && dot(wi, wm) > 0.0f) {
 
-    float dotWiWm = dot(wi, wm);
-
     // -- calculate the reflectance to multiply by the energy
     // -- retrieved in direction wi
-    float3 F = fresnel_schlick(dotWiWm, 5.f, color, make_float3(1.f));
+    // float F = fresnel_schlick(dot(wi, wm), 5.f, F0, 1.f);
+    float F = F0;
     float G = SmithGGXMaskingShadowing(wi, wo, normal, a2);
     float weight = fabsf(dot(wo, wm))
                    / (dot(normal, wo) * dot(normal, wm));
 
-    reflectance = F * G * weight;
+    reflectance = color * F * G * weight;
   } else {
     reflectance = make_float3(0.f);
   }
 }
 
 static __host__ __device__ __inline__ float3 ForwardGGX(float3 wi, float3 wo, float3 normal, float roughness,
-                                                      float3 color)
+                                                        float ks, float3 color)
 {
+  float F0 = ks;
   float a2 = roughness * roughness;
 
-  float3 wm = (wi + wo) / 2;
-
-  float3 F = fresnel_schlick(dot(wi, wm), 5.f, color, make_float3(1.f));
-  float G = SmithGGXMaskingShadowing(wi, wo, normal, a2);
-  float D_d = dot(normal, wm) * dot(normal, wm) * (a2 - 1) + 1;
-  float D = a2 / (M_PIf * D_d * D_d);
-
-  return F * G * D / (4 * dot(wi, normal) * dot(wo, normal));
+  if (dot(wi, normal) > 0 && dot(wo, normal) > 0) {
+    float3 wm = normalize((wi + wo) / 2);
+    // float F = fresnel_schlick(dot(wi, wm), 5.f, F0, 1);
+    float F = F0;
+    float G = SmithGGXMaskingShadowing(wi, wo, normal, a2);
+    float D_d = dot(normal, wm) * dot(normal, wm) * (a2 - 1) + 1;
+    float D = a2 / (M_PIf * D_d * D_d);
+    return color * F * G * D / (4 * dot(wi, normal) * dot(wo, normal));
+  } else {
+    return make_float3(0.f);
+  }
 }

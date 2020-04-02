@@ -17,11 +17,14 @@ rtBuffer<ParallelogramLight> parallelogram_lights;
 
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
 rtDeclareVariable(float4, kd, , );
-rtDeclareVariable(float4, ks, , );
+rtDeclareVariable(float, ks, , );
 rtDeclareVariable(int, has_kd_map, , );
 rtDeclareVariable(int, has_ks_map, , );
 rtDeclareVariable(float3, texcoord, attribute texcoord, );
 rtDeclareVariable(float3, hit_point, attribute hit_point, );
+
+rtDeclareVariable(float, roughness, , );
+rtDeclareVariable(float, metallic, , );
 
 rtDeclareVariable(int, use_shadow, , );
 
@@ -38,7 +41,8 @@ RT_PROGRAM void closest_hit() {
   float3 world_shading_normal = normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, shading_normal));
   float3 world_geometric_normal =
       normalize(rtTransformNormal(RT_OBJECT_TO_WORLD, geometric_normal));
-  float3 ffnormal = faceforward(world_shading_normal, -ray.direction, world_geometric_normal);
+  float3 wo = -ray.direction;
+  float3 ffnormal = faceforward(world_shading_normal, wo, world_geometric_normal);
   float3 hitpoint = rtTransformPoint(RT_OBJECT_TO_WORLD, hit_point);
 
   current_prd.max_depth_override = 0;
@@ -51,38 +55,49 @@ RT_PROGRAM void closest_hit() {
     transmission = texture_kd_val.w;
   }
 
-  float3 ks_val = make_float3(ks);
-  float roughness = ks.w;
+  float ks_val = ks;
   if (has_ks_map) {
     float4 texture_ks_val = tex2D(ks_map, texcoord.x, texcoord.y);
-    ks_val = make_float3(texture_ks_val);
-    roughness = texture_ks_val.w;
+    ks_val = texture_ks_val.x;
   }
 
   float3 result = make_float3(0.f);
+  // if (rnd(current_prd.seed) < transmission) {
   if (rnd(current_prd.seed) < transmission) {
     current_prd.origin = hitpoint;
 
-    float kd_l = luminance(kd_val);
-    float ks_l = luminance(ks_val);
+    float kd_l = fmaxf(0.f, luminance(kd_val));
+    float ks_l = fmaxf(0.f, fminf(ks_val, 1.f));
 
     float3 wi, reflectance;
-    if (rnd(current_prd.seed) < kd_l / (kd_l + ks_l)) {
-      // lambertian
-      SampleDiffuse(-ray.direction, ffnormal, kd_val, wi, reflectance, current_prd.seed);
+
+    if (rnd(current_prd.seed) < metallic) {
+      // metal
+      SampleGGX_ImpD(wo, ffnormal, roughness, 1.f, kd_val, wi, reflectance, current_prd.seed);
     } else {
-      // GGX
-      SampleGGX_ImpD(-ray.direction, ffnormal, roughness, ks_val, wi, reflectance, current_prd.seed);
+      float pd = kd_l / fmaxf(kd_l + ks_l, 0.001);
+      // normal material
+      if (rnd(current_prd.seed) < pd) {
+        // Lambertian
+        SampleDiffuse(wo, ffnormal, kd_val, wi, reflectance, current_prd.seed);
+        reflectance /= pd;  // importance sampling
+      } else {
+        // GGX
+        SampleGGX_ImpD(wo, ffnormal, roughness, ks_val, make_float3(1.f), wi, reflectance, current_prd.seed);
+        reflectance /= (1 - pd);  // importance sampling
+      }
     }
+
     current_prd.direction = wi;
     current_prd.attenuation *= reflectance;
 
     for (int i = 0; i < directional_lights.size(); i++) {
       DirectionalLight light = directional_lights[i];
       const float3 L = -light.direction;
-      float3 reflectance = ForwardDiffuse(L, -ray.direction, ffnormal, kd_val) +
-                           ForwardGGX(L, -ray.direction, ffnormal, roughness, ks_val);
-      if (reflectance.x > 0.f && reflectance.y > 0.f && reflectance.z > 0.f) {
+      float3 reflectance = (1 - metallic) * (ForwardDiffuse(L, wo, ffnormal, kd_val) +
+                           ForwardGGX(L, wo, ffnormal, roughness, ks_val, make_float3(1.f)))
+                           + metallic * ForwardGGX(L, wo, ffnormal, roughness, 1.f, kd_val);
+      if (reflectance.x > 0.f || reflectance.y > 0.f || reflectance.z > 0.f) {
         PerRayData_shadow shadow_prd;
         shadow_prd.attenuation = make_float3(1.0f);
         shadow_prd.inShadow = false;
@@ -100,9 +115,10 @@ RT_PROGRAM void closest_hit() {
       PointLight light = point_lights[i];
       const float Ldist = length(light.position - hitpoint);
       const float3 L = normalize(light.position - hitpoint);
-      float3 reflectance = ForwardDiffuse(L, -ray.direction, ffnormal, kd_val) +
-                           ForwardGGX(L, -ray.direction, ffnormal, roughness, ks_val);
-      if (reflectance.x > 0.f && reflectance.y > 0.f && reflectance.z > 0.f) {
+      float3 reflectance = (1 - metallic) * (ForwardDiffuse(L, wo, ffnormal, kd_val) +
+                                             ForwardGGX(L, wo, ffnormal, roughness, ks_val, make_float3(1.f)))
+                           + metallic * ForwardGGX(L, wo, ffnormal, roughness, 1.f, kd_val);
+      if (reflectance.x > 0.f || reflectance.y > 0.f || reflectance.z > 0.f) {
         PerRayData_shadow shadow_prd;
         shadow_prd.attenuation = make_float3(1.0f);
         shadow_prd.inShadow = false;
@@ -128,9 +144,10 @@ RT_PROGRAM void closest_hit() {
       const float lnDl = dot(light.normal, L); // light normal dot light direction
 
       if (lnDl < 0.f) {
-        float3 reflectance = ForwardDiffuse(L, -ray.direction, ffnormal, kd_val) +
-                             ForwardGGX(L, -ray.direction, ffnormal, roughness, ks_val);
-        if (reflectance.x > 0.f && reflectance.y > 0.f && reflectance.z > 0.f) {
+        float3 reflectance = (1 - metallic) * (ForwardDiffuse(L, wo, ffnormal, kd_val) +
+                                               ForwardGGX(L, wo, ffnormal, roughness, ks_val, make_float3(1.f)))
+                             + metallic * ForwardGGX(L, wo, ffnormal, roughness, 1.f, kd_val);
+        if (reflectance.x > 0.f || reflectance.y > 0.f || reflectance.z > 0.f) {
           PerRayData_shadow shadow_prd;
           shadow_prd.attenuation = make_float3(1.0f);
           shadow_prd.inShadow = false;
