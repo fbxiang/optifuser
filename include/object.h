@@ -45,7 +45,6 @@ protected:
 
 public:
   std::shared_ptr<Shader> shader;
-  Material material;
   std::shared_ptr<PBRMaterial> pbrMaterial = std::make_shared<PBRMaterial>();
   std::string name;
   glm::vec3 position;

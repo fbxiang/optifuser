@@ -262,17 +262,17 @@ std::unique_ptr<Object> NewAxes() {
   auto x = NewCube();
   x->scale = {1, 0.01, 0.01};
   x->position = {1, 0, 0};
-  x->material.kd = {1, 0, 0, 1};
+  x->pbrMaterial->kd = {1, 0, 0, 1};
 
   auto y = NewCube();
   y->scale = {0.01, 1, 0.01};
   y->position = {0, 1, 0};
-  y->material.kd = {0, 1, 0, 1};
+  y->pbrMaterial->kd = {0, 1, 0, 1};
 
   auto z = NewCube();
   z->scale = {0.01, 0.01, 1};
   z->position = {0, 0, 1};
-  z->material.kd = {0, 0, 1, 1};
+  z->pbrMaterial->kd = {0, 0, 1, 1};
 
   auto axes = NewObject<Object>();
   axes->addChild(std::move(x));

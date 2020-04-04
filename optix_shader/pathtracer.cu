@@ -62,9 +62,10 @@ RT_PROGRAM void camera() {
     prd.max_depth_override = 0;
 
     for(;;) {
+      float3 attenuation = prd.attenuation;
       Ray ray = make_Ray(ray_origin, ray_direction, pathtrace_ray_type, scene_epsilon, RT_DEFAULT_MAX);
       rtTrace(top_object, ray, prd);
-      prd.result += prd.radiance * prd.attenuation;
+      prd.result += prd.radiance * attenuation;
 
       if (prd.done) {
         break;

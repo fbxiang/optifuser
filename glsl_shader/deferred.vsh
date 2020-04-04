@@ -1,4 +1,5 @@
-#version 450
+#version 130
+#extension GL_ARB_explicit_attrib_location : enable
 
 in vec2 vpos;
 out vec2 texcoord;

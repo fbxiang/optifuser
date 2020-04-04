@@ -60,7 +60,6 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
   spdlog::info("Loaded {} meshes, {} materials, {} textures.", scene->mNumMeshes,
                scene->mNumMaterials, scene->mNumTextures);
 
-  std::vector<Material> mats(scene->mNumMaterials);
   std::vector<std::shared_ptr<PBRMaterial>> pbrMats(scene->mNumMaterials);
   for (auto &mat : pbrMats) {
     mat = std::make_shared<PBRMaterial>();
@@ -72,12 +71,9 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
     float shininess = 0;
     m->Get(AI_MATKEY_OPACITY, alpha);
     m->Get(AI_MATKEY_COLOR_AMBIENT, color);
-    mats[i].ka = glm::vec3(color.r, color.g, color.b);
     m->Get(AI_MATKEY_COLOR_DIFFUSE, color);
-    mats[i].kd = glm::vec4(color.r, color.g, color.b, alpha);
     pbrMats[i]->kd = glm::vec4(color.r, color.g, color.b, alpha);  // kd and transmission for diffuse
     m->Get(AI_MATKEY_COLOR_SPECULAR, color);
-    mats[i].ks = glm::vec3(color.r, color.g, color.b); 
     pbrMats[i]->ks = (color.r + color.g + color.b) / 3.f;;  // specular color for metal
     m->Get(AI_MATKEY_SHININESS, shininess);
     pbrMats[i]->roughness = shininessToRoughness(shininess);
@@ -90,7 +86,6 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
       std::string fullPath = parentdir + p;
 
       auto tex = LoadTexture(fullPath, 0);
-      mats[i].kd_map = tex;
       pbrMats[i]->kd_map = tex;
       spdlog::info("{}: Diffuse texture {}", tex->getId(), fullPath);
 
@@ -107,8 +102,6 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
       std::string fullPath = parentdir + p;
 
       auto tex = LoadTexture(fullPath, 0);
-      mats[i].ks_map = tex;
-      mats[i].ks_map = tex;
       spdlog::info("{}: Specular texture {}", tex->getId(), fullPath);
       auto err = glGetError();
       if (err != GL_NO_ERROR) {
@@ -123,8 +116,7 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
       std::string fullPath = parentdir + p;
 
       auto tex = LoadTexture(fullPath, 0);
-      mats[i].height_map = tex;
-      // TODO: height map for pbr material
+      pbrMats[i]->height_map = tex;
       spdlog::info("{}: Height texture {}", tex->getId(), fullPath);
       auto err = glGetError();
       if (err != GL_NO_ERROR) {
@@ -139,7 +131,6 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
       std::string fullPath = parentdir + p;
 
       auto tex = LoadTexture(fullPath, 0);
-      mats[i].normal_map = tex;
       pbrMats[i]->normal_map = tex;
       spdlog::info("{}: Normal texture {}", tex->getId(), fullPath);
       auto err = glGetError();
@@ -191,7 +182,6 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
     }
     auto m = std::make_shared<TriangleMesh>(vertices, indices);
     objects.push_back(NewObject<Object>(m));
-    objects.back()->material = mats[mesh->mMaterialIndex];
     objects.back()->pbrMaterial = pbrMats[mesh->mMaterialIndex];
   }
   return objects;

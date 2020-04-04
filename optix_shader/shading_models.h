@@ -9,7 +9,7 @@ using namespace optix;
 // ================================================================================
 // Diffuse
 static __host__ __device__ __inline__ float3 ForwardDiffuse(float3 wi, float3 wo, float3 normal, float3 color) {
-  return color * fmaxf(dot(wi, normal), 0.f);
+  return color * fmaxf(dot(wi, normal), 0.f) / M_PIf;
 }
 
 static __host__ __device__ __inline__ void SampleDiffuse(float3 wo, float3 normal, float3 color,
@@ -25,16 +25,25 @@ static __host__ __device__ __inline__ void SampleDiffuse(float3 wo, float3 norma
 // ================================================================================
 // GGX
 
-static __host__ __device__ __inline__ float SmithGGXMaskingShadowing(float3 wi, float3 wo,
-                                                                     float3 normal, float a2)
-{
-  float dotNL = dot(normal, wi);
-  float dotNV = dot(normal, wo);
+// static __host__ __device__ __inline__ float SmithGGXMaskingShadowing(float3 wi, float3 wo,
+//                                                                      float3 normal, float a2)
+// {
+//   float dotNL = dot(normal, wi);
+//   float dotNV = dot(normal, wo);
 
-  float denomA = dotNV * sqrtf(a2 + (1.0f - a2) * dotNL * dotNL);
-  float denomB = dotNL * sqrtf(a2 + (1.0f - a2) * dotNV * dotNV);
+//   float denomA = dotNV * sqrtf(a2 + (1.0f - a2) * dotNL * dotNL);
+//   float denomB = dotNL * sqrtf(a2 + (1.0f - a2) * dotNV * dotNV);
 
-  return 2.0f * dotNL * dotNV / (denomA + denomB);
+//   return 2.0f * dotNL * dotNV / (denomA + denomB);
+// }
+
+static __host__ __device__ __inline__ float SmithG1(float3 v, float3 normal, float a2) {
+  float dotNV = dot(v, normal);
+  return 2 * dotNV / (dotNV + sqrtf(a2 + (1-a2) * dotNV * dotNV));
+}
+
+static __host__ __device__ __inline__ float SmithGGXMasking(float3 wi, float3 wo, float3 normal, float a2) {
+  return SmithG1(wi, normal, a2) * SmithG1(wo, normal, a2);
 }
 
 static __host__ __device__ __inline__ void SampleGGX_ImpD(float3 wo, float3 normal, float roughness, float ks,
@@ -64,9 +73,8 @@ static __host__ __device__ __inline__ void SampleGGX_ImpD(float3 wo, float3 norm
     // -- retrieved in direction wi
     // float F = fresnel_schlick(dot(wi, wm), 5.f, F0, 1.f);
     float F = F0;
-    float G = SmithGGXMaskingShadowing(wi, wo, normal, a2);
-    float weight = fabsf(dot(wo, wm))
-                   / (dot(normal, wo) * dot(normal, wm));
+    float G = SmithGGXMasking(wi, wo, normal, a2);
+    float weight = fabsf(dot(wo, wm)) / (dot(normal, wo) * dot(normal, wm));
 
     reflectance = color * F * G * weight;
   } else {
@@ -77,17 +85,17 @@ static __host__ __device__ __inline__ void SampleGGX_ImpD(float3 wo, float3 norm
 static __host__ __device__ __inline__ float3 ForwardGGX(float3 wi, float3 wo, float3 normal, float roughness,
                                                         float ks, float3 color)
 {
-  float F0 = ks;
   float a2 = roughness * roughness;
-
+  float F0 = ks;
   if (dot(wi, normal) > 0 && dot(wo, normal) > 0) {
-    float3 wm = normalize((wi + wo) / 2);
+    float3 wm = normalize(wi + wo);
+    float dotMN = dot(wm, normal);
     // float F = fresnel_schlick(dot(wi, wm), 5.f, F0, 1);
     float F = F0;
-    float G = SmithGGXMaskingShadowing(wi, wo, normal, a2);
-    float D_d = dot(normal, wm) * dot(normal, wm) * (a2 - 1) + 1;
-    float D = a2 / (M_PIf * D_d * D_d);
-    return color * F * G * D / (4 * dot(wi, normal) * dot(wo, normal));
+    float G = SmithGGXMasking(wi, wo, normal, a2);
+    float D2 = dotMN * dotMN * (a2 - 1) + 1; D2 = D2 * D2;
+    float D = a2 / (M_PIf * D2);
+    return color * F * G * D;
   } else {
     return make_float3(0.f);
   }

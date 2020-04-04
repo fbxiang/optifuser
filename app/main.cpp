@@ -60,7 +60,7 @@ int main() {
   scene.setAmbientLight(glm::vec3(0.05, 0.05, 0.05));
 
   auto dragon = loadDragon(scene);
-  dragon->material.kd = {1, 0, 0, 1};
+  dragon->pbrMaterial->kd = {1, 0, 0, 1};
   // scene.setEnvironmentMap("../assets/ame_desert/desertsky_ft.tga",
   //                          "../assets/ame_desert/desertsky_bk.tga",
   //                          "../assets/ame_desert/desertsky_up.tga",
