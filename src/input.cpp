@@ -59,9 +59,9 @@ void Input::getCursor(int &x, int &y) {
   // https://github.com/ocornut/imgui/issues/1676
   x = (int)lastX;
   y = (int)lastY;
-#ifdef MACOSX
+#ifdef _USE_MACOSX
   x *= 2;
-  y *= 2
+  y *= 2;
 #endif
 }
 

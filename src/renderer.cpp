@@ -168,7 +168,7 @@ void Renderer::init() {
   display_pass.setFbo(m_fbo[FBO_TYPE::DISPLAY]);
   initialized = true;
 
-#ifdef MACOSX
+#ifdef _USE_MACOSX
   scaling = 2;
 #endif
 }
