@@ -130,6 +130,12 @@ void Shader::setMatrix(const std::string &name, const glm::mat4 &mat, bool trans
     glUniformMatrix4fv(variableId, 1, transpose, &mat[0][0]);
 }
 
+void Shader::setVec2(const std::string &name, const glm::vec2 &vec) const {
+  GLint variableId = glGetUniformLocation(Id, name.c_str());
+  if (variableId != -1)
+    glUniform2f(variableId, vec[0], vec[1]);
+}
+
 void Shader::setVec3(const std::string &name, const glm::vec3 &vec) const {
   GLint variableId = glGetUniformLocation(Id, name.c_str());
   if (variableId != -1)

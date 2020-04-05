@@ -40,22 +40,18 @@ void LightingPass::setAttachment(GLuint texture, int width, int height) {
   // bind texture
   glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
   glBindTexture(GL_TEXTURE_2D, texture);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                         texture, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
   GLuint attachments[1] = {GL_COLOR_ATTACHMENT0};
   glDrawBuffers(1, attachments);
 }
 
-void LightingPass::setInputTextures(int count, GLuint *colortex,
-                                    GLuint depthtex) {
+void LightingPass::setInputTextures(int count, GLuint *colortex, GLuint depthtex) {
   m_colorTextures.resize(0);
   m_colorTextures.insert(m_colorTextures.begin(), colortex, colortex + count);
   m_depthTexture = depthtex;
 }
 
-void LightingPass::setShadowTexture(GLuint shadowtex) {
-  m_shadowtex = shadowtex;
-}
+void LightingPass::setShadowTexture(GLuint shadowtex) { m_shadowtex = shadowtex; }
 
 void LightingPass::render(const Scene &scene, const CameraSpec &camera) const {
   glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
@@ -72,12 +68,8 @@ void LightingPass::render(const Scene &scene, const CameraSpec &camera) const {
   m_shader->setMatrix("gbufferProjectionMatrix", projMat);
   m_shader->setMatrix("gbufferProjectionMatrixInverse", glm::inverse(projMat));
   m_shader->setMatrix("environmentViewMatrix", viewMat);
-  m_shader->setMatrix("environmentViewMatrixInverse",
-                      glm::inverse(viewMat));
-  m_shader->setVec3("cameraPosition", camera.position);
+  m_shader->setMatrix("environmentViewMatrixInverse", glm::inverse(viewMat));
   m_shader->setVec3("ambientLight", scene.getAmbientLight());
-  m_shader->setFloat("near", camera.near);
-  m_shader->setFloat("far", camera.far);
 
   // point lights
   const auto &pointLights = scene.getPointLights();
@@ -102,8 +94,7 @@ void LightingPass::render(const Scene &scene, const CameraSpec &camera) const {
   }
   m_shader->setTexture("depthtex0", m_depthTexture, m_colorTextures.size());
   if (auto envmap = scene.getEnvironmentMap()) {
-    m_shader->setCubemap("skybox", scene.getEnvironmentMap()->getId(),
-                         m_colorTextures.size() + 1);
+    m_shader->setCubemap("skybox", scene.getEnvironmentMap()->getId(), m_colorTextures.size() + 1);
   }
 
   if (m_shadowtex && directionalLights.size()) {
@@ -112,8 +103,7 @@ void LightingPass::render(const Scene &scene, const CameraSpec &camera) const {
 
     glm::mat4 w2c = camera.getViewMat();
     glm::vec3 csLightDir = w2c * glm::vec4(dir, 0);
-    glm::mat4 c2l =
-        glm::lookAt(glm::vec3(0, 0, 0), csLightDir, glm::vec3(0, 1, 0));
+    glm::mat4 c2l = glm::lookAt(glm::vec3(0, 0, 0), csLightDir, glm::vec3(0, 1, 0));
 
     float v = 100.f;
     glm::mat4 lsProj = glm::ortho(-v, v, -v, v, -v, camera.far);

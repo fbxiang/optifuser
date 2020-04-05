@@ -25,8 +25,6 @@ void Scene::removeObjectsByName(std::string name) {
                 objects.end());
 }
 
-const std::vector<std::unique_ptr<Object>> &Scene::getObjects() const { return objects; }
-
 void Scene::setAmbientLight(glm::vec3 light) { ambientLight = light; }
 void Scene::addPointLight(PointLight light) { pointLights.push_back(light); }
 void Scene::addDirectionalLight(DirectionalLight light) { directionalLights.push_back(light); }
@@ -47,4 +45,29 @@ void Scene::setEnvironmentMap(const std::string &front, const std::string &back,
                               int filtering) {
   environmentMap = LoadCubeMapTexture(front, back, top, bottom, left, right, wrapping, filtering);
 }
+
+static void prepareObjectTree(Object *obj, const glm::mat4 &parentModelMat,
+                              std::vector<Object *> &opaque, std::vector<Object *> &transparent) {
+  obj->globalModelMatrix = parentModelMat * obj->getModelMat();
+  if (obj->getMesh() && obj->visible) {
+    if (obj->pbrMaterial->forceTransparency ||
+        (!obj->pbrMaterial->kd_map->getId() && obj->pbrMaterial->kd.a < 1)) {
+      transparent.push_back(obj);
+    } else {
+      opaque.push_back(obj);
+    }
+  }
+  for (auto &c : obj->getChildren()) {
+    prepareObjectTree(c.get(), obj->globalModelMatrix, opaque, transparent);
+  }
+}
+
+void Scene::prepareObjects() {
+  opaque_objects.clear();
+  transparent_objects.clear();
+  for (auto &obj : objects) {
+    prepareObjectTree(obj.get(), glm::mat4(1.f), opaque_objects, transparent_objects);
+  }
+}
+
 } // namespace Optifuser

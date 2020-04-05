@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include <spdlog/spdlog.h>
 #include "debug.h"
 #include <iostream>
 namespace Optifuser {
@@ -23,6 +24,9 @@ void Renderer::deleteTextures() {
     colortex[n] = 0;
   }
 
+  glDeleteTextures(1, &lightingtex);
+  lightingtex = 0;
+
   glDeleteTextures(1, &outputtex);
   outputtex = 0;
 
@@ -36,6 +40,7 @@ void Renderer::deleteTextures() {
 }
 
 void Renderer::enableAxisPass(bool enable) { axisPassEnabled = enable; }
+void Renderer::enableDisplayPass(bool enable) { displayPassEnabled = enable; }
 
 void Renderer::enableGlobalAxes(bool enable) {
   axis_pass.globalAxes = enable;
@@ -80,7 +85,15 @@ void Renderer::initTextures() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   LABEL_TEXTURE(usertex[0], "User Texture 0");
 
-  // outputtex
+  // lightingtex
+  glGenTextures(1, &lightingtex);
+  glBindTexture(GL_TEXTURE_2D, lightingtex);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  LABEL_TEXTURE(lightingtex, "lighting");
+
+  // displaytex 
   glGenTextures(1, &outputtex);
   glBindTexture(GL_TEXTURE_2D, outputtex);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
@@ -128,6 +141,12 @@ void Renderer::setDeferredShader(const std::string &vs, const std::string &fs) {
 void Renderer::setShadowShader(const std::string &vs, const std::string &fs) {
   shadow_pass.setShader(vs, fs);
 }
+void Renderer::setTransparencyShader(const std::string &vs, const std::string &fs) {
+  transparency_pass.setShader(vs, fs);
+}
+void Renderer::setDisplayShader(const std::string &vs, const std::string &fs) {
+  display_pass.setShader(vs, fs);
+}
 
 void Renderer::init() {
   glEnable(GL_CULL_FACE);
@@ -138,11 +157,15 @@ void Renderer::init() {
   lighting_pass.init();
   shadow_pass.init();
   axis_pass.init();
+  transparency_pass.init();
+  display_pass.init();
 
   gbuffer_pass.setFbo(m_fbo[FBO_TYPE::GBUFFER]);
   lighting_pass.setFbo(m_fbo[FBO_TYPE::LIGHTING]);
   shadow_pass.setFbo(m_fbo[FBO_TYPE::SHADOW]);
   axis_pass.setFbo(m_fbo[FBO_TYPE::AXIS]);
+  transparency_pass.setFbo(m_fbo[FBO_TYPE::TRANSPARENCY]);
+  display_pass.setFbo(m_fbo[FBO_TYPE::DISPLAY]);
   initialized = true;
 }
 
@@ -153,7 +176,7 @@ void Renderer::exit() {
 }
 
 void Renderer::rebindTextures() {
-  GLuint tex[N_COLORTEX + 4];
+  GLuint tex[N_COLORTEX + 4 + 1];
   int n_tex = N_COLORTEX;
   for (int n = 0; n < N_COLORTEX; ++n) {
     tex[n] = colortex[n];
@@ -169,12 +192,21 @@ void Renderer::rebindTextures() {
   gbuffer_pass.setDepthAttachment(depthtex);
   gbuffer_pass.bindAttachments();
 
-  lighting_pass.setAttachment(outputtex, m_width, m_height);
+  lighting_pass.setAttachment(lightingtex, m_width, m_height);
   lighting_pass.setInputTextures(N_COLORTEX, colortex, depthtex);
 
-  axis_pass.setColorAttachments(1, &outputtex, m_width, m_height);
+  tex[N_COLORTEX + 4] = lightingtex;
+  transparency_pass.setColorAttachments(n_tex + 1, tex, m_width, m_height);
+  transparency_pass.setDepthAttachment(depthtex);
+  transparency_pass.bindAttachments();
+
+  axis_pass.setColorAttachments(1, &lightingtex, m_width, m_height);
   axis_pass.setDepthAttachment(depthtex);
   axis_pass.bindAttachments();
+
+  // display_pass.setInputTextures(n_tex + 1, tex, depthtex);
+  display_pass.setAttachment(outputtex, m_width, m_height);
+  display_pass.setInputTextures(N_COLORTEX, colortex, depthtex);
 }
 
 void Renderer::resize(GLuint w, GLuint h) {
@@ -187,12 +219,13 @@ void Renderer::resize(GLuint w, GLuint h) {
 
 void Renderer::reloadShaders() { std::cerr << "Not implemented" << std::endl; }
 
-void Renderer::renderScene(const Scene &scene, const CameraSpec &camera) {
+void Renderer::renderScene(Scene &scene, const CameraSpec &camera) {
   if (!initialized) {
     fprintf(stderr, "Renderer is not initialized\n");
     return;
   }
   auto &lights = scene.getDirectionalLights();
+  scene.prepareObjects();
   if (lights.size()) {
     shadow_pass.render(scene, camera);
     lighting_pass.setShadowTexture(shadowtex);
@@ -202,15 +235,23 @@ void Renderer::renderScene(const Scene &scene, const CameraSpec &camera) {
   if (axisPassEnabled) {
     axis_pass.render(scene, camera);
   }
+  transparency_pass.render(scene, camera, true);
+
+  if (displayPassEnabled) {
+    display_pass.render();
+  }
 
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
 
+
 void Renderer::displayLighting(GLuint fbo) const {
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo[FBO_TYPE::COPY]);
+  glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, lightingtex, 0);
+
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo[FBO_TYPE::LIGHTING]);
   glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height, GL_COLOR_BUFFER_BIT,
                     GL_NEAREST);
 
@@ -251,11 +292,25 @@ void Renderer::displaySegmentation(GLuint fbo) const {
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
 
+void Renderer::display(GLuint fbo) const {
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo[FBO_TYPE::COPY]);
+  glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, outputtex, 0);
+
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+
+  glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height, GL_COLOR_BUFFER_BIT,
+                    GL_NEAREST);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+}
+
 void Renderer::setObjectIdForAxis(int id) { axis_pass.setObjectId(id); }
 
 void Renderer::saveLighting(const std::string &file, bool raw) {
   if (raw) {
-    writeTextureRGBAFloat32Raw(outputtex, m_width, m_height, file);
+    writeTextureRGBAFloat32Raw(lightingtex, m_width, m_height, file);
   } else {
     std::cerr << "Saving texture without raw is not supported" << std::endl;
   }
@@ -278,7 +333,7 @@ void Renderer::saveDepth(const std::string &file, bool raw) {
 }
 
 std::vector<float> Renderer::getLighting() {
-  return getRGBAFloat32Texture(outputtex, m_width, m_height);
+  return getRGBAFloat32Texture(lightingtex, m_width, m_height);
 }
 std::vector<float> Renderer::getAlbedo() {
   return getRGBAFloat32Texture(colortex[0], m_width, m_height);

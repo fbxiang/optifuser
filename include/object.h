@@ -50,8 +50,9 @@ public:
   glm::vec3 position;
   glm::vec3 scale;
   bool visible;
-
   uint32_t showAxis = 0; // used for showing axis
+
+  glm::mat4 globalModelMatrix;  // cached at render time
 
 protected:
   glm::quat rotation;

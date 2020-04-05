@@ -18,6 +18,7 @@ struct PBRMaterial {
   float ks = 0.f;
   float roughness = 0.85f;
   float metallic = 0.f;
+  bool forceTransparency = false;
 };
 
 }

@@ -34,17 +34,13 @@ void ShadowPass::bindAttachments() const {
 }
 
 // helper method for rendering an object tree
-void renderObjectTree(const Object &obj, const glm::mat4 &parentModelMat,
-                      Shader *shader) {
+void renderObjectTree(const Object &obj, Shader *shader) {
 
-  glm::mat4 modelMat = parentModelMat * obj.getModelMat();
+  glm::mat4 modelMat = obj.globalModelMatrix;
   auto mesh = obj.getMesh();
   if (mesh && obj.visible) {
     shader->setMatrix("gbufferModelMatrix", modelMat);
     mesh->draw();
-    for (auto &child : obj.getChildren()) {
-      renderObjectTree(*child, modelMat, shader);
-    }
   }
 }
 
@@ -75,8 +71,8 @@ void ShadowPass::render(const Scene &scene, const CameraSpec &camera) const {
 
   m_shader->setMatrix("lightSpaceMatrix", lightSpaceMatrix);
 
-  for (const auto &obj : scene.getObjects()) {
-    renderObjectTree(*obj, glm::mat4(1.f), m_shader.get());
+  for (const auto &obj : scene.getOpaqueObjects()) {
+    renderObjectTree(*obj, m_shader.get());
   }
 }
 

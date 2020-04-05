@@ -1,10 +1,10 @@
 #include "camera_spec.h"
 #include "objectLoader.h"
 #include "optifuser.h"
+#include "partnet_loader.hpp"
 #include "renderer.h"
 #include "scene.h"
 #include <experimental/filesystem>
-#include "partnet_loader.hpp"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -14,12 +14,10 @@ using std::cout;
 using std::endl;
 namespace fs = std::experimental::filesystem;
 
-enum RenderMode {
-  LIGHTING, ALBEDO, NORMAL, DEPTH, SEGMENTATION
-};
+enum RenderMode { LIGHTING, ALBEDO, NORMAL, DEPTH, SEGMENTATION };
 
 void loadSponza(Optifuser::Scene &scene) {
-  auto objects = Optifuser::LoadObj("../scenes/sponza/sponza.obj", true, {0,0,1}, {0,1,0});
+  auto objects = Optifuser::LoadObj("../scenes/sponza/sponza.obj", true, {0, 0, 1}, {0, 1, 0});
   for (auto &obj : objects) {
     obj->scale = glm::vec3(0.003f);
     obj->position *= 0.003f;
@@ -27,7 +25,7 @@ void loadSponza(Optifuser::Scene &scene) {
   }
 }
 
-Optifuser::Object* loadDragon(Optifuser::Scene &scene) {
+Optifuser::Object *loadDragon(Optifuser::Scene &scene) {
   auto objects = Optifuser::LoadObj("../assets/dragon.obj");
   auto obj = objects[0].get();
   scene.addObject(std::move(objects[0]));
@@ -37,8 +35,7 @@ Optifuser::Object* loadDragon(Optifuser::Scene &scene) {
 int main() {
   int w = 1080;
   int h = 720;
-  Optifuser::GLFWRenderContext &context =
-      Optifuser::GLFWRenderContext::Get(w, h);
+  Optifuser::GLFWRenderContext &context = Optifuser::GLFWRenderContext::Get(w, h);
   context.initGui();
 
   Optifuser::Scene scene;
@@ -68,14 +65,15 @@ int main() {
   //                          "../assets/ame_desert/desertsky_lf.tga",
   //                          "../assets/ame_desert/desertsky_rt.tga");
 
-  context.renderer.setShadowShader("../glsl_shader/shadow.vsh",
-                                   "../glsl_shader/shadow.fsh");
+  context.renderer.setShadowShader("../glsl_shader/shadow.vsh", "../glsl_shader/shadow.fsh");
   context.renderer.setGBufferShader("../glsl_shader/gbuffer.vsh",
                                     "../glsl_shader/gbuffer_segmentation.fsh");
-  context.renderer.setDeferredShader("../glsl_shader/deferred.vsh",
-                                     "../glsl_shader/deferred.fsh");
-  context.renderer.setAxisShader("../glsl_shader/axes.vsh",
-                                 "../glsl_shader/axes.fsh");
+  context.renderer.setDeferredShader("../glsl_shader/deferred.vsh", "../glsl_shader/deferred.fsh");
+  context.renderer.setAxisShader("../glsl_shader/axes.vsh", "../glsl_shader/axes.fsh");
+  context.renderer.setTransparencyShader("../glsl_shader/transparency.vsh",
+                                         "../glsl_shader/transparency.fsh");
+  context.renderer.setDisplayShader("../glsl_shader/display.vsh", "../glsl_shader/display_normal.fsh");
+  context.renderer.enableDisplayPass();
 
   context.showWindow();
 
@@ -96,42 +94,37 @@ int main() {
       cam.moveForwardRight(0, dt);
     }
 
-    if (Optifuser::getInput().getMouseButton(GLFW_MOUSE_BUTTON_RIGHT) ==
-        GLFW_PRESS) {
+    if (Optifuser::getInput().getMouseButton(GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
       double dx, dy;
       Optifuser::getInput().getCursorDelta(dx, dy);
       cam.rotateYawPitch(-dx / 1000.f, -dy / 1000.f);
     }
     context.renderer.renderScene(scene, cam);
-    if (renderMode != SEGMENTATION) {
+    if (renderMode == LIGHTING) {
       context.renderer.displayLighting();
-    } else {
+    } else if (renderMode == SEGMENTATION) {
       context.renderer.displaySegmentation();
+    } else {
+      context.renderer.display();
     }
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::Begin("Render Options"); 
+    ImGui::Begin("Render Options");
     {
-      if (ImGui::CollapsingHeader("Render Mode",
-                                  ImGuiTreeNodeFlags_DefaultOpen)) {
+      if (ImGui::CollapsingHeader("Render Mode", ImGuiTreeNodeFlags_DefaultOpen)) {
         if (ImGui::RadioButton("Lighting", &renderMode, RenderMode::LIGHTING)) {
-          context.renderer.setDeferredShader("../glsl_shader/deferred.vsh",
-                                             "../glsl_shader/deferred.fsh");
         };
         if (ImGui::RadioButton("Albedo", &renderMode, RenderMode::ALBEDO)) {
-          context.renderer.setDeferredShader("../glsl_shader/deferred.vsh",
-                                             "../glsl_shader/deferred_albedo.fsh");
+          context.renderer.setDisplayShader("../glsl_shader/display.vsh", "../glsl_shader/display_albedo.fsh");
         }
         if (ImGui::RadioButton("Normal", &renderMode, RenderMode::NORMAL)) {
-          context.renderer.setDeferredShader("../glsl_shader/deferred.vsh",
-                                             "../glsl_shader/deferred_normal.fsh");
+          context.renderer.setDisplayShader("../glsl_shader/display.vsh", "../glsl_shader/display_normal.fsh");
         }
         if (ImGui::RadioButton("Depth", &renderMode, RenderMode::DEPTH)) {
-          context.renderer.setDeferredShader("../glsl_shader/deferred.vsh",
-                                             "../glsl_shader/deferred_depth.fsh");
+          context.renderer.setDisplayShader("../glsl_shader/display.vsh", "../glsl_shader/display_depth.fsh");
         }
         ImGui::RadioButton("Segmentation", &renderMode, RenderMode::SEGMENTATION);
       }
@@ -140,13 +133,12 @@ int main() {
         ImGui::Text("Position");
         ImGui::Text("%-4.3f %-4.3f %-4.3f", cam.position.x, cam.position.y, cam.position.z);
         ImGui::Text("Forward");
-        auto forward = cam.getRotation() * glm::vec3(0,0,-1);
+        auto forward = cam.getRotation() * glm::vec3(0, 0, -1);
         ImGui::Text("%-4.3f %-4.3f %-4.3f", forward.x, forward.y, forward.z);
       }
 
       if (ImGui::CollapsingHeader("Stats", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::Text("Frame Time: %.3f ms/frame (%.1f FPS)",
-                    1000.0f / ImGui::GetIO().Framerate,
+        ImGui::Text("Frame Time: %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
                     ImGui::GetIO().Framerate);
       }
     }

@@ -10,6 +10,8 @@ public:
 
 private:
   std::vector<std::unique_ptr<Object>> objects;
+  std::vector<Object *> opaque_objects;
+  std::vector<Object *> transparent_objects;
 
   std::vector<PointLight> pointLights;
   std::vector<DirectionalLight> directionalLights;
@@ -32,7 +34,12 @@ public:
   void addObject(std::unique_ptr<Object> obj);
   void removeObject(Object *obj);
   void removeObjectsByName(std::string name);
-  const std::vector<std::unique_ptr<Object>> &getObjects() const;
+
+  void prepareObjects();
+
+  inline const std::vector<std::unique_ptr<Object>> &getObjects() const { return objects; }
+  inline const std::vector<Object *> &getOpaqueObjects() const { return opaque_objects; }
+  inline const std::vector<Object *> &getTransparentObjects() const { return transparent_objects; }
 
   void setAmbientLight(glm::vec3 light);
   void setShadowLight(DirectionalLight light);

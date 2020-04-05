@@ -70,6 +70,8 @@ int main() {
                                      "../glsl_shader/deferred.fsh");
   context.renderer.setAxisShader("../glsl_shader/axes.vsh",
                                  "../glsl_shader/axes.fsh");
+  context.renderer.setTransparencyShader("../glsl_shader/transparency.vsh",
+                                         "../glsl_shader/transparency.fsh");
 
 
   while (true) {

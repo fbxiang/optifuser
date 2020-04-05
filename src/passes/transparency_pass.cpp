@@ -1,9 +1,5 @@
-#include "passes/gbuffer_pass.h"
-#include "debug.h"
-#include <glm/glm.hpp>
+#include "passes/transparency_pass.h"
 #include <iostream>
-
-namespace Optifuser {
 
 constexpr int COLOR_TABLE_SIZE = 60;
 static glm::vec3 colortable[COLOR_TABLE_SIZE] = {
@@ -20,62 +16,43 @@ static glm::vec3 colortable[COLOR_TABLE_SIZE] = {
     {0.69, 0.24, 0.8}, {0.8, 0.4, 0.76},  {0.8, 0.32, 0.75}, {0.8, 0.24, 0.74}, {0.8, 0.4, 0.64},
     {0.8, 0.32, 0.61}, {0.8, 0.24, 0.58}, {0.8, 0.4, 0.52},  {0.8, 0.32, 0.46}, {0.8, 0.24, 0.41}};
 
-GBufferPass::GBufferPass()
-    : m_fbo(0), m_depthtex(0), m_width(0), m_height(0), m_initialized(false) {}
+namespace Optifuser {
+TransparencyPass::TransparencyPass()
+    : m_fbo(0), m_depthtex(0), m_shadowtex(0), m_width(0), m_height(0), m_initialized(false) {}
 
-void GBufferPass::init() { m_initialized = true; }
+void TransparencyPass::init() { m_initialized = true; }
 
-void GBufferPass::setShader(const std::string &vs, const std::string &fs) {
+void TransparencyPass::setShader(const std::string &vs, const std::string &fs) {
   m_vertFile = vs;
   m_fragFile = fs;
   m_shader = std::make_shared<Shader>(vs.c_str(), fs.c_str());
   if (!m_shader) {
-    std::cerr << "GBuffer Shader Creation Failed." << std::endl;
+    std::cerr << "Transparency Pass Shader Creation Failed." << std::endl;
   }
 }
 
-void GBufferPass::setFbo(GLuint fbo) {
-  m_fbo = fbo;
-  LABEL_FRAMEBUFFER(fbo, "GBuffer FBO");
-}
+void TransparencyPass::setFbo(GLuint fbo) { m_fbo = fbo; }
 
-void GBufferPass::setColorAttachments(int num, GLuint *tex, int width, int height) {
+void TransparencyPass::setShadowTexture(GLuint shadowtex) { m_shadowtex = shadowtex; }
+
+void TransparencyPass::setColorAttachments(int num, GLuint *tex, int width, int height) {
   m_width = width;
   m_height = height;
   m_colortex.resize(0);
   m_colortex.insert(m_colortex.begin(), tex, tex + num);
 }
 
-void GBufferPass::setDepthAttachment(GLuint depthtex, bool clear) {
-  m_depthtex = depthtex;
-  m_clearDepth = clear;
-}
+void TransparencyPass::setDepthAttachment(GLuint depthtex) { m_depthtex = depthtex; }
 
-// helper method for rendering an object tree
-static void renderObjectTree(const Object &obj, const glm::mat4 &viewMat,
-                             const glm::mat4 &viewMatInv, const glm::mat4 &projMat,
-                             const glm::mat4 &projMatInv, Shader *defaultShader,
-                             bool renderSegmentation) {
+static void renderObjectTree(const Object &obj, Shader *shader, bool renderSegmentation) {
 
   glm::mat4 modelMat = obj.globalModelMatrix;
   auto mesh = obj.getMesh();
-  auto shader = obj.shader.get();
-  if (shader) {
-    shader->use();
-  } else {
-    shader = defaultShader;
-    shader->use();
-  }
   if (renderSegmentation) {
     shader->setInt("segmentation", obj.getSegmentId());
     shader->setInt("segmentation2", obj.getObjId());
     shader->setVec3("segmentation_color", colortable[obj.getSegmentId() % COLOR_TABLE_SIZE]);
   }
-
-  shader->setMatrix("gbufferViewMatrix", viewMat);
-  shader->setMatrix("gbufferViewMatrixInverse", viewMatInv);
-  shader->setMatrix("gbufferProjectionMatrix", projMat);
-  shader->setMatrix("gbufferProjectionMatrixInverse", projMatInv);
 
   shader->setMatrix("gbufferModelMatrix", modelMat);
   shader->setMatrix("gbufferModelMatrixInverse", glm::inverse(modelMat));
@@ -97,8 +74,10 @@ static void renderObjectTree(const Object &obj, const glm::mat4 &viewMat,
   mesh->draw();
 }
 
-void GBufferPass::render(const Scene &scene, const CameraSpec &camera,
-                         bool renderSegmentation) const {
+void TransparencyPass::render(const Scene &scene, const CameraSpec &camera,
+                              bool renderSegmentation) const {
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
   glViewport(0, 0, m_width, m_height);
 
@@ -106,25 +85,67 @@ void GBufferPass::render(const Scene &scene, const CameraSpec &camera,
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
   }
-  glClear(GL_COLOR_BUFFER_BIT);
-  if (m_clearDepth) {
-    glClear(GL_DEPTH_BUFFER_BIT);
-  }
+
   glm::mat4 viewMat = camera.getViewMat();
   glm::mat4 viewMatInv = glm::inverse(viewMat);
   glm::mat4 projMat = camera.getProjectionMat();
-
   glm::mat4 projMatInv = glm::inverse(projMat);
 
-  for (const auto &obj : scene.getOpaqueObjects()) {
-    renderObjectTree(*obj, viewMat, viewMatInv, projMat, projMatInv, m_shader.get(),
-                     renderSegmentation);
+  m_shader->use();
+  m_shader->setMatrix("gbufferViewMatrix", viewMat);
+  m_shader->setMatrix("gbufferViewMatrixInverse", viewMatInv);
+  m_shader->setMatrix("gbufferProjectionMatrix", projMat);
+  m_shader->setMatrix("gbufferProjectionMatrixInverse", projMatInv);
+  m_shader->setMatrix("environmentViewMatrix", viewMat);
+  m_shader->setMatrix("environmentViewMatrixInverse", viewMatInv);
+  m_shader->setVec3("ambientLight", scene.getAmbientLight());
+
+  // point lights
+  const auto &pointLights = scene.getPointLights();
+  for (size_t i = 0; i < pointLights.size(); i++) {
+    std::string p = "pointLights[" + std::to_string(i) + "].position";
+    std::string e = "pointLights[" + std::to_string(i) + "].emission";
+    m_shader->setVec3(p, pointLights[i].position);
+    m_shader->setVec3(e, pointLights[i].emission);
   }
+
+  // directional lights
+  const auto &directionalLights = scene.getDirectionalLights();
+  for (size_t i = 0; i < directionalLights.size(); i++) {
+    std::string d = "directionalLights[" + std::to_string(i) + "].direction";
+    std::string e = "directionalLights[" + std::to_string(i) + "].emission";
+    m_shader->setVec3(d, directionalLights[i].direction);
+    m_shader->setVec3(e, directionalLights[i].emission);
+  }
+
+  // shadow map
+  if (m_shadowtex && directionalLights.size()) {
+    glm::vec3 dir = directionalLights[0].direction;
+    glm::vec3 em = directionalLights[0].emission;
+
+    glm::mat4 w2c = camera.getViewMat();
+    glm::vec3 csLightDir = w2c * glm::vec4(dir, 0);
+    glm::mat4 c2l = glm::lookAt(glm::vec3(0, 0, 0), csLightDir, glm::vec3(0, 1, 0));
+
+    float v = 100.f;
+    glm::mat4 lsProj = glm::ortho(-v, v, -v, v, -v, camera.far);
+
+    m_shader->setTexture("shadowtex", m_shadowtex, 4);
+    m_shader->setMatrix("cameraToShadowMatrix", c2l);
+    m_shader->setMatrix("shadowProjectionMatrix", lsProj);
+    m_shader->setVec3("shadowLightDirection", dir);
+    m_shader->setVec3("shadowLightEmission", em);
+  }
+
+  for (const auto &obj : scene.getTransparentObjects()) {
+    renderObjectTree(*obj, m_shader.get(), renderSegmentation);
+  }
+  glDisable(GL_BLEND);
 }
 
-int GBufferPass::numColorAttachments() const { return m_colortex.size(); }
+int TransparencyPass::numColorAttachments() const { return m_colortex.size(); }
 
-void GBufferPass::bindAttachments() const {
+void TransparencyPass::bindAttachments() const {
   glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
   int count = numColorAttachments();
   GLuint attachments[count];

@@ -4,6 +4,8 @@
 #include "passes/gbuffer_pass.h"
 #include "passes/lighting_pass.h"
 #include "passes/shadow_pass.h"
+#include "passes/transparency_pass.h"
+#include "passes/composite_pass.h"
 #include "scene.h"
 #include "shader.h"
 #include <GL/glew.h>
@@ -17,7 +19,9 @@ enum FBO_TYPE {
   SHADOW,
   GBUFFER,
   LIGHTING,
+  TRANSPARENCY,
   AXIS,
+  DISPLAY,
   COPY,
 
   COUNT
@@ -29,13 +33,17 @@ private:
   GBufferPass gbuffer_pass;
   LightingPass lighting_pass;
   AxisPass axis_pass;
+  TransparencyPass transparency_pass;
+  CompositePass display_pass;
 
   bool axisPassEnabled = false;
+  bool displayPassEnabled = false;
 
 public:
   GLuint colortex[N_COLORTEX];
   GLuint depthtex = 0;
   GLuint outputtex = 0;
+  GLuint lightingtex = 0;
   GLuint segtex[3];
   GLuint usertex[1];
   GLuint shadowtex = 0;
@@ -61,6 +69,7 @@ public:
   int pickObjectId(int x, int y);
   void enablePicking();
   void enableAxisPass(bool enable = true);
+  void enableDisplayPass(bool enable = true);
   void enableGlobalAxes(bool enable = true);
 
 public:
@@ -72,6 +81,8 @@ public:
   void setGBufferShader(const std::string &vs, const std::string &fs);
   void setDeferredShader(const std::string &vs, const std::string &fs);
   void setShadowShader(const std::string &vs, const std::string &fs);
+  void setTransparencyShader(const std::string &vs, const std::string &fs);
+  void setDisplayShader(const std::string &vs, const std::string &fs);
 
   void setObjectIdForAxis(int id);
 
@@ -86,10 +97,11 @@ public:
   inline GLuint getHeight() const { return m_height; }
 
 public:
-  void renderScene(const Scene &scene, const CameraSpec &camera);
+  void renderScene(Scene &scene, const CameraSpec &camera);
   void displayLighting(GLuint fbo = 0) const;
   void displaySegmentation(GLuint fbo = 0) const;
   void displayUserTexture(GLuint fbo = 0) const;
+  void display(GLuint fbo = 0) const;
 
   void saveLighting(const std::string &file, bool raw = true);
   void saveNormal(const std::string &file, bool raw = true);
