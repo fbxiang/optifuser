@@ -167,6 +167,10 @@ void Renderer::init() {
   transparency_pass.setFbo(m_fbo[FBO_TYPE::TRANSPARENCY]);
   display_pass.setFbo(m_fbo[FBO_TYPE::DISPLAY]);
   initialized = true;
+
+#ifdef MACOSX
+  scaling = 2;
+#endif
 }
 
 void Renderer::exit() {
@@ -210,8 +214,8 @@ void Renderer::rebindTextures() {
 }
 
 void Renderer::resize(GLuint w, GLuint h) {
-  m_width = w;
-  m_height = h;
+  m_width = w * scaling;
+  m_height = h * scaling;
 
   initTextures();
   rebindTextures();

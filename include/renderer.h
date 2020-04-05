@@ -39,6 +39,9 @@ private:
   bool axisPassEnabled = false;
   bool displayPassEnabled = false;
 
+  // Screen-specific factor, depending on DPI setting
+  uint8_t scaling = 1;
+
 public:
   GLuint colortex[N_COLORTEX];
   GLuint depthtex = 0;

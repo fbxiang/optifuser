@@ -27,6 +27,12 @@ void ensureGlobalContext() {
     fprintf(stderr, "error: Could not initialize GLFW\n");
     exit(1);
   }
+#ifdef MACOSX
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
   glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
   mainWindow = glfwCreateWindow(1, 1, "opengl", NULL, NULL);
   glEnable(GL_DEPTH_TEST);

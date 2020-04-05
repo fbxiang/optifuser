@@ -49,8 +49,20 @@ void Input::wheelCallback(double x, double y) {
 }
 
 void Input::getCursor(int &x, int &y) {
+  // Same as the resize function in renderer.cpp, scaling the size of input by 2
+  // Start from 2012, all Macbook Pro use retina screen with high DPI
+  // More information can be found:
+  // https://support.apple.com/en-us/HT202471
+  // It leads to the discrepency between pixel position and real position
+  // IMGUI have already solve this problem, so don't worry for their code
+  // More discussion can be found:
+  // https://github.com/ocornut/imgui/issues/1676
   x = (int)lastX;
   y = (int)lastY;
+#ifdef MACOSX
+  x *= 2;
+  y *= 2
+#endif
 }
 
 void Input::getCursorDelta(double &dx, double &dy) {
