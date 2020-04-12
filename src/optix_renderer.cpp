@@ -1,5 +1,6 @@
 #include "optix_renderer.h"
 #include "texture.h"
+#include <cstring>
 
 namespace Optifuser {
 const std::string ACCEL = "Trbvh";
