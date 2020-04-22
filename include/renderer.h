@@ -64,7 +64,7 @@ public:
 
 public:
   Renderer();
-  void init();
+  void init(float scaling = 1);
   void exit();
   void resize(GLuint w, GLuint h);
 

@@ -69,7 +69,12 @@ GLFWRenderContext::GLFWRenderContext(int w, int h) {
   tex = 0;
 
   init(width, height);
+
+#ifdef _USE_MACOSX
+  renderer.init(2);
+#else
   renderer.init();
+#endif
   renderer.resize(w, h);
 }
 

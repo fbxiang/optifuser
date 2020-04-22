@@ -148,7 +148,7 @@ void Renderer::setDisplayShader(const std::string &vs, const std::string &fs) {
   display_pass.setShader(vs, fs);
 }
 
-void Renderer::init() {
+void Renderer::init(float s) {
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
 
@@ -169,7 +169,7 @@ void Renderer::init() {
   initialized = true;
 
 #ifdef _USE_MACOSX
-  scaling = 2;
+  scaling = s;
 #endif
 }
 
