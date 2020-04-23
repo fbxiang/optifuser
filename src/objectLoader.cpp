@@ -24,8 +24,9 @@ float shininessToRoughness(float ns) {
 
 std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignoreRootTransform,
                                              glm::vec3 upAxis, glm::vec3 forwardAxis) {
+  auto logger = spdlog::get("Optifuser");
   if (!fs::exists(file)) {
-    spdlog::warn("No mesh file found: {}.", file);
+    logger->warn("No mesh file found: {}.", file);
     return {};
   }
 
@@ -48,16 +49,16 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
   const aiScene *scene = importer.ReadFile(file, flags);
 
   if (!scene) {
-    spdlog::warn("Cannot load scene from file: {}. Error: {}", file, importer.GetErrorString());
+    logger->warn("Cannot load scene from file: {}. Error: {}", file, importer.GetErrorString());
     return {};
   }
 
   if (scene->mRootNode->mMetaData) {
-    spdlog::error("Mesh file has unsupported metadata: {}.", file);
+    logger->error("Mesh file has unsupported metadata: {}.", file);
     exit(1);
   }
 
-  spdlog::info("Loaded {} meshes, {} materials, {} textures.", scene->mNumMeshes,
+  logger->info("Loaded {} meshes, {} materials, {} textures.", scene->mNumMeshes,
                scene->mNumMaterials, scene->mNumTextures);
 
   std::vector<std::shared_ptr<PBRMaterial>> pbrMats(scene->mNumMaterials);
@@ -87,11 +88,11 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
 
       auto tex = LoadTexture(fullPath, 0);
       pbrMats[i]->kd_map = tex;
-      spdlog::info("{}: Diffuse texture {}", tex->getId(), fullPath);
+      logger->info("{}: Diffuse texture {}", tex->getId(), fullPath);
 
       auto err = glGetError();
       if (err != GL_NO_ERROR) {
-        spdlog::critical("Loading failed: {0:x}", err);
+        logger->critical("Loading failed: {0:x}", err);
         throw std::runtime_error("Loading failed");
       }
     }
@@ -102,10 +103,10 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
       std::string fullPath = parentdir + p;
 
       auto tex = LoadTexture(fullPath, 0);
-      spdlog::info("{}: Specular texture {}", tex->getId(), fullPath);
+      logger->info("{}: Specular texture {}", tex->getId(), fullPath);
       auto err = glGetError();
       if (err != GL_NO_ERROR) {
-        spdlog::critical("Loading failed: {0:x}", err);
+        logger->critical("Loading failed: {0:x}", err);
         throw std::runtime_error("Loading failed");
       }
     }
@@ -117,10 +118,10 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
 
       auto tex = LoadTexture(fullPath, 0);
       pbrMats[i]->height_map = tex;
-      spdlog::info("{}: Height texture {}", tex->getId(), fullPath);
+      logger->info("{}: Height texture {}", tex->getId(), fullPath);
       auto err = glGetError();
       if (err != GL_NO_ERROR) {
-        spdlog::critical("Loading failed: {0:x}", err);
+        logger->critical("Loading failed: {0:x}", err);
         throw std::runtime_error("Loading failed");
       }
     }
@@ -132,10 +133,10 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
 
       auto tex = LoadTexture(fullPath, 0);
       pbrMats[i]->normal_map = tex;
-      spdlog::info("{}: Normal texture {}", tex->getId(), fullPath);
+      logger->info("{}: Normal texture {}", tex->getId(), fullPath);
       auto err = glGetError();
       if (err != GL_NO_ERROR) {
-        spdlog::critical("Loading failed: {0:x}", err);
+        logger->critical("Loading failed: {0:x}", err);
         throw std::runtime_error("Loading failed");
       }
     }

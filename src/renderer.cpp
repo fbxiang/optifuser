@@ -1,5 +1,4 @@
 #include "renderer.h"
-#include <spdlog/spdlog.h>
 #include "debug.h"
 #include <iostream>
 namespace Optifuser {

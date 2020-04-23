@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include <spdlog/spdlog.h>
 
 namespace Optifuser {
 
@@ -56,6 +57,10 @@ void ensureGlobalContext() {
 }
 
 GLFWRenderContext &GLFWRenderContext::Get(int w, int h) {
+  if (!spdlog::get("Optifuser")) {
+    auto logger = std::make_shared<spdlog::logger>("Optifuser");
+    spdlog::register_logger(logger);
+  }
   static GLFWRenderContext Instance;
   Instance.init(w, h);
   return Instance;
