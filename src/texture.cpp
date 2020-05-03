@@ -1,6 +1,7 @@
 #include "texture.h"
 #include "debug.h"
 #include <iostream>
+#include <random>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -33,11 +34,53 @@ void Texture::load(const std::string &filename, int mipmap, int wrapping, int mi
 
   stbi_image_free(data);
   LABEL_TEXTURE(id, filename);
+
+  mWidth = width;
+  mHeight = height;
+}
+
+void Texture::loadFloat(std::vector<float> const &data, int width, int height, int wrapping,
+                        int minFilter, int magFilter) {
+  if (id)
+    destroy();
+
+  glActiveTexture(GL_TEXTURE0);
+  glGenTextures(1, &id);
+  glBindTexture(GL_TEXTURE_2D, id);
+  glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, width, height);
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RED, GL_FLOAT, data.data());
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapping);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapping);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+
+  mWidth = width;
+  mHeight = height;
 }
 
 void Texture::destroy() {
   glDeleteTextures(1, &id);
   id = 0;
+  mWidth = 0;
+  mHeight = 0;
+}
+
+std::shared_ptr<Texture> CreateRandomTexture(int width, int height, int seed) {
+  auto tex = std::make_shared<Texture>();
+  glActiveTexture(GL_TEXTURE0);
+
+  std::mt19937 mt(seed);
+  std::uniform_real_distribution<float> dist(0, 1);
+
+  std::vector<float> r(width * height);
+  for (int i = 0; i < width * height; ++i) {
+    r[i] = dist(mt);
+  }
+
+  tex->loadFloat(r, width, height);
+
+  return tex;
 }
 
 std::shared_ptr<Texture> LoadTexture(const std::string &filename, int mipmap, int wrapping,

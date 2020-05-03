@@ -5,6 +5,10 @@ namespace Optifuser {
 
 void ShadowPass::init() { m_initialized = true; }
 
+void ShadowPass::setFrustumSize(int size) {
+  m_frustum_size = size;
+}
+
 void ShadowPass::setFbo(GLuint fbo) {
   m_fbo = fbo;
   LABEL_FRAMEBUFFER(fbo, "Shadow FBO");
@@ -56,14 +60,14 @@ void ShadowPass::render(const Scene &scene, const CameraSpec &camera) const {
   }
 
   glm::vec3 dir = scene.getDirectionalLights()[0].direction;
-  glm::mat4 w2c = camera.getViewMat();
+  // glm::mat4 w2c  = camera.getViewMat();
+  glm::mat4 w2c = glm::translate(glm::mat4(1), -camera.position);
+
   glm::vec3 csLightDir = w2c * glm::vec4(dir, 0);
   glm::mat4 c2l =
       glm::lookAt(glm::vec3(0, 0, 0), csLightDir, glm::vec3(0, 1, 0));
-  // TODO: tune this with view frustum
-  float v = 100.f;
-  // glm::mat4 lsProj = glm::ortho(-v, v, -v, v, -v, v);
-  // float v = 10.f;
+
+  float v = m_frustum_size;
   glm::mat4 lsProj = glm::ortho(-v, v, -v, v, -v, camera.far);
 
   glm::mat4 w2l = c2l * w2c;

@@ -19,8 +19,11 @@ private:
 
   bool m_initialized;
 
+  int m_frustum_size = 10.f;
+
 public:
   void init();
+  void setFrustumSize(int size);
   void setFbo(GLuint fbo);
   void setShader(const std::string &vs, const std::string &fs);
   void setDepthAttachment(GLuint depthtex, int with, int height);

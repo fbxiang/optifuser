@@ -160,8 +160,8 @@ std::unique_ptr<Object> NewSphere() {
   std::vector<Vertex> vertices;
   std::vector<GLuint> indices;
 
-  int stacks = 20;
-  int slices = 20;
+  uint32_t stacks = 20;
+  uint32_t slices = 20;
   float radius = 1.f;
 
   for (uint32_t i = 1; i < stacks; ++i) {

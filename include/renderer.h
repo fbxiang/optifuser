@@ -28,6 +28,12 @@ enum FBO_TYPE {
 };
 
 class Renderer {
+  struct Options {
+    int shadowMapSize = 2048;
+    float shadowFrustumSize = 10.f;
+    float scaling = 1.f;
+  };
+
 private:
   ShadowPass shadow_pass;
   GBufferPass gbuffer_pass;
@@ -55,6 +61,8 @@ public:
 
   GLuint pickingFbo = 0;
 
+  std::shared_ptr<Texture> randomtex;
+
   void deleteTextures();
   void initTextures();
   void rebindTextures();
@@ -64,6 +72,7 @@ public:
 
 public:
   Renderer();
+  void init(Options const & options);
   void init(float scaling = 1);
   void exit();
   void resize(GLuint w, GLuint h);
@@ -92,8 +101,8 @@ public:
 protected:
   GLuint m_width, m_height;
 
-  GLuint shadowWidth = 8192;
-  GLuint shadowHeight = 8192;
+  GLuint shadowSize = 8192;
+  GLuint shadowFrustumSize = 10.f;
 
 public:
   inline GLuint getWidth() const { return m_width; }

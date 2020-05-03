@@ -46,6 +46,8 @@ void Renderer::enableGlobalAxes(bool enable) {
 }
 
 void Renderer::initTextures() {
+  randomtex = CreateRandomTexture(64, 64, 0);
+
   deleteTextures();
 
   // colortex
@@ -122,7 +124,7 @@ void Renderer::initTextures() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, shadowWidth, shadowHeight, 0,
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, shadowSize, shadowSize, 0,
                GL_DEPTH_COMPONENT, GL_FLOAT, 0);
   LABEL_TEXTURE(shadowtex, "shadow map");
 }
@@ -147,9 +149,12 @@ void Renderer::setDisplayShader(const std::string &vs, const std::string &fs) {
   display_pass.setShader(vs, fs);
 }
 
-void Renderer::init(float s) {
+void Renderer::init(Options const & options) {
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
+
+  shadowSize = options.shadowMapSize;
+  shadowFrustumSize = options.shadowFrustumSize;
 
   glGenFramebuffers(FBO_TYPE::COUNT, m_fbo);
   gbuffer_pass.init();
@@ -167,9 +172,19 @@ void Renderer::init(float s) {
   display_pass.setFbo(m_fbo[FBO_TYPE::DISPLAY]);
   initialized = true;
 
+  shadow_pass.setFrustumSize(shadowFrustumSize);
+  lighting_pass.setShadowFrustumSize(shadowFrustumSize);
+
 #ifdef _USE_MACOSX
-  scaling = s;
+  scaling = options.scaling;
 #endif
+}
+
+void Renderer::init(float s) {
+  Options options;
+  options.scaling = s;
+
+  init(options);
 }
 
 void Renderer::exit() {
@@ -189,7 +204,7 @@ void Renderer::rebindTextures() {
   tex[N_COLORTEX + 2] = segtex[2];
   tex[N_COLORTEX + 3] = usertex[0];
   n_tex = N_COLORTEX + 4;
-  shadow_pass.setDepthAttachment(shadowtex, shadowWidth, shadowHeight);
+  shadow_pass.setDepthAttachment(shadowtex, shadowSize, shadowSize);
 
   gbuffer_pass.setColorAttachments(n_tex, tex, m_width, m_height);
   gbuffer_pass.setDepthAttachment(depthtex);
@@ -197,6 +212,7 @@ void Renderer::rebindTextures() {
 
   lighting_pass.setAttachment(lightingtex, m_width, m_height);
   lighting_pass.setInputTextures(N_COLORTEX, colortex, depthtex);
+  lighting_pass.setRandomTexture(randomtex->getId(), randomtex->getWidth(), randomtex->getHeight());
 
   tex[N_COLORTEX + 4] = lightingtex;
   transparency_pass.setColorAttachments(n_tex + 1, tex, m_width, m_height);
@@ -231,7 +247,7 @@ void Renderer::renderScene(Scene &scene, const CameraSpec &camera) {
   scene.prepareObjects();
   if (lights.size()) {
     shadow_pass.render(scene, camera);
-    lighting_pass.setShadowTexture(shadowtex);
+    lighting_pass.setShadowTexture(shadowtex, shadowSize);
   }
   gbuffer_pass.render(scene, camera, true);
   lighting_pass.render(scene, camera);

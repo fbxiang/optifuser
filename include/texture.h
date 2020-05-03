@@ -12,6 +12,8 @@ std::tuple<std::vector<float>, int, int, int> load_hdr(std::string const &filena
 class Texture {
 private:
   GLuint id = 0;
+  int mWidth = 0;
+  int mHeight = 0;
 
 public:
   Texture() {}
@@ -19,12 +21,19 @@ public:
 
   void load(const std::string &filename, int mipmap = 0, int wrapping = GL_REPEAT,
             int minFilter = GL_NEAREST_MIPMAP_LINEAR, int magFilter = GL_LINEAR);
+  void loadFloat(std::vector<float> const &data, int width, int height, int wrapping = GL_REPEAT,
+                 int minFilter = GL_NEAREST_MIPMAP_LINEAR, int magFilter = GL_LINEAR);
   void destroy();
   inline GLuint getId() const { return id; };
+
+  inline int getWidth() const { return mWidth; }
+  inline int getHeight() const { return mHeight; }
 
 public:
   static const Texture Empty;
 };
+
+std::shared_ptr<Texture> CreateRandomTexture(int width, int height, int seed);
 
 std::shared_ptr<Texture> LoadTexture(const std::string &filename, int mipmap = 0,
                                      int wrapping = GL_REPEAT,
