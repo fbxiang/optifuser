@@ -26,8 +26,14 @@ void Renderer::deleteTextures() {
   glDeleteTextures(1, &lightingtex);
   lightingtex = 0;
 
+  glDeleteTextures(1, &lightingtex2);
+  lightingtex2 = 0;
+
   glDeleteTextures(1, &outputtex);
   outputtex = 0;
+
+  glDeleteTextures(1, &aotex);
+  aotex = 0;
 
   glDeleteTextures(3, segtex);
   segtex[0] = segtex[1] = segtex[2] = 0;
@@ -38,15 +44,55 @@ void Renderer::deleteTextures() {
   glDeleteTextures(1, &shadowtex);
 }
 
-void Renderer::enableAxisPass(bool enable) { axisPassEnabled = enable; }
-void Renderer::enableDisplayPass(bool enable) { displayPassEnabled = enable; }
+void Renderer::enableShadowPass(bool enable, int shadowmapSize, float shadowFrustumSize) {
+  shadowPassEnabled = enable;
+  m_shadowSize = shadowmapSize;
+  m_shadowFrustumSize = shadowFrustumSize;
+  if (initialized) {
+    exit();
+    init(scaling);
+    initTextures();
+    rebindTextures();
+  }
+}
+
+void Renderer::enableAOPass(bool enable) {
+  aoPassEnabled = true;
+  if (initialized) {
+    exit();
+    init(scaling);
+    initTextures();
+    rebindTextures();
+  }
+}
+
+void Renderer::enableAxisPass(bool enable) {
+  axisPassEnabled = enable;
+  if (initialized) {
+    exit();
+    init(scaling);
+    initTextures();
+    rebindTextures();
+  }
+}
+void Renderer::enableDisplayPass(bool enable) {
+  displayPassEnabled = enable;
+  if (initialized) {
+    exit();
+    init(scaling);
+    initTextures();
+    rebindTextures();
+  }
+}
 
 void Renderer::enableGlobalAxes(bool enable) {
-  axis_pass.globalAxes = enable;
+  if (axisPassEnabled) {
+    axis_pass->globalAxes = enable;
+  }
 }
 
 void Renderer::initTextures() {
-  randomtex = CreateRandomTexture(64, 64, 0);
+  randomtex = CreateRandomTexture(256, 256, 0);
 
   deleteTextures();
 
@@ -58,6 +104,15 @@ void Renderer::initTextures() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     LABEL_TEXTURE(colortex[n], "colortex" + std::to_string(n));
+  }
+
+  if (aoPassEnabled) {
+    glGenTextures(1, &aotex);
+    glBindTexture(GL_TEXTURE_2D, aotex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, m_width, m_height, 0, GL_RED, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    LABEL_TEXTURE(aotex, "aotex");
   }
 
   glGenTextures(3, segtex);
@@ -94,7 +149,15 @@ void Renderer::initTextures() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   LABEL_TEXTURE(lightingtex, "lighting");
 
-  // displaytex 
+  // alternative lighting tex for compositing
+  glGenTextures(1, &lightingtex2);
+  glBindTexture(GL_TEXTURE_2D, lightingtex2);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  LABEL_TEXTURE(lightingtex2, "lighting2");
+
+  // displaytex
   glGenTextures(1, &outputtex);
   glBindTexture(GL_TEXTURE_2D, outputtex);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
@@ -117,74 +180,161 @@ void Renderer::initTextures() {
   // GLfloat color[4] = {1.f, 1.f, 1.f, 1.f};
   // glTextureParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
 
-  // shadowtex
-  glGenTextures(1, &shadowtex);
-  glBindTexture(GL_TEXTURE_2D, shadowtex);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, shadowSize, shadowSize, 0,
-               GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-  LABEL_TEXTURE(shadowtex, "shadow map");
+  if (shadowPassEnabled) {
+    // shadowtex
+    glGenTextures(1, &shadowtex);
+    glBindTexture(GL_TEXTURE_2D, shadowtex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, m_shadowSize, m_shadowSize, 0,
+                 GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    LABEL_TEXTURE(shadowtex, "shadow map");
+  }
 }
 
 void Renderer::setAxisShader(const std::string &vs, const std::string &fs) {
-  axis_pass.setShader(vs, fs);
+  if (!initialized) {
+    throw std::runtime_error("Initialization required before setting shader");
+  }
+  if (axisPassEnabled) {
+    axis_pass->setShader(vs, fs);
+  }
 }
 
 void Renderer::setGBufferShader(const std::string &vs, const std::string &fs) {
-  gbuffer_pass.setShader(vs, fs);
+  if (!initialized) {
+    throw std::runtime_error("Initialization required before setting shader");
+  }
+  gbuffer_pass->setShader(vs, fs);
 }
+
+void Renderer::setAOShader(const std::string &vs, const std::string &fs) {
+  if (!initialized) {
+    throw std::runtime_error("Initialization required before setting shader");
+  }
+  if (aoPassEnabled) {
+    ao_pass->setShader(vs, fs);
+  }
+}
+
 void Renderer::setDeferredShader(const std::string &vs, const std::string &fs) {
-  lighting_pass.setShader(vs, fs);
+  if (!initialized) {
+    throw std::runtime_error("Initialization required before setting shader");
+  }
+  lighting_pass->setShader(vs, fs);
 }
+
 void Renderer::setShadowShader(const std::string &vs, const std::string &fs) {
-  shadow_pass.setShader(vs, fs);
+  if (!initialized) {
+    throw std::runtime_error("Initialization required before setting shader");
+  }
+  if (shadowPassEnabled) {
+    shadow_pass->setShader(vs, fs);
+  }
 }
+
 void Renderer::setTransparencyShader(const std::string &vs, const std::string &fs) {
-  transparency_pass.setShader(vs, fs);
+  if (!initialized) {
+    throw std::runtime_error("Initialization required before setting shader");
+  }
+  transparency_pass->setShader(vs, fs);
 }
+
+void Renderer::setCompositeShader(const std::string &vs, const std::string &fs) {
+  if (!initialized) {
+    throw std::runtime_error("Initialization required before setting shader");
+  }
+  composite_pass->setShader(vs, fs);
+}
+
 void Renderer::setDisplayShader(const std::string &vs, const std::string &fs) {
-  display_pass.setShader(vs, fs);
-}
-
-void Renderer::init(Options const & options) {
-  glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK);
-
-  shadowSize = options.shadowMapSize;
-  shadowFrustumSize = options.shadowFrustumSize;
-
-  glGenFramebuffers(FBO_TYPE::COUNT, m_fbo);
-  gbuffer_pass.init();
-  lighting_pass.init();
-  shadow_pass.init();
-  axis_pass.init();
-  transparency_pass.init();
-  display_pass.init();
-
-  gbuffer_pass.setFbo(m_fbo[FBO_TYPE::GBUFFER]);
-  lighting_pass.setFbo(m_fbo[FBO_TYPE::LIGHTING]);
-  shadow_pass.setFbo(m_fbo[FBO_TYPE::SHADOW]);
-  axis_pass.setFbo(m_fbo[FBO_TYPE::AXIS]);
-  transparency_pass.setFbo(m_fbo[FBO_TYPE::TRANSPARENCY]);
-  display_pass.setFbo(m_fbo[FBO_TYPE::DISPLAY]);
-  initialized = true;
-
-  shadow_pass.setFrustumSize(shadowFrustumSize);
-  lighting_pass.setShadowFrustumSize(shadowFrustumSize);
-
-#ifdef _USE_MACOSX
-  scaling = options.scaling;
-#endif
+  if (!initialized) {
+    throw std::runtime_error("Initialization required before setting shader");
+  }
+  if (displayPassEnabled) {
+    display_pass->setShader(vs, fs);
+  }
 }
 
 void Renderer::init(float s) {
-  Options options;
-  options.scaling = s;
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
 
-  init(options);
+  glGenFramebuffers(FBO_TYPE::COUNT, m_fbo);
+
+  if (!gbuffer_pass) {
+    gbuffer_pass = std::make_unique<GBufferPass>();
+    gbuffer_pass->init();
+  }
+  gbuffer_pass->setFbo(m_fbo[FBO_TYPE::GBUFFER]);
+
+  if (!aoPassEnabled) {
+    ao_pass = nullptr;
+  } else {
+    if (!ao_pass) {
+      ao_pass = std::make_unique<AOPass>();
+      ao_pass->init();
+    }
+    ao_pass->setFbo(m_fbo[FBO_TYPE::AO]);
+  }
+
+  if (!lighting_pass) {
+    lighting_pass = std::make_unique<LightingPass>();
+    lighting_pass->init();
+  }
+  lighting_pass->setFbo(m_fbo[FBO_TYPE::LIGHTING]);
+
+  if (!shadowPassEnabled) {
+    shadow_pass = nullptr;
+  } else {
+    if (!shadow_pass) {
+      shadow_pass = std::make_unique<ShadowPass>();
+      shadow_pass->init();
+    }
+    shadow_pass->setFbo(m_fbo[FBO_TYPE::SHADOW]);
+    shadow_pass->setFrustumSize(m_shadowFrustumSize);
+    lighting_pass->setShadowFrustumSize(m_shadowFrustumSize);
+  }
+
+  if (!axisPassEnabled) {
+    axis_pass = nullptr;
+  } else {
+    if (!axis_pass) {
+      axis_pass = std::make_unique<AxisPass>();
+      axis_pass->init();
+    }
+    axis_pass->setFbo(m_fbo[FBO_TYPE::AXIS]);
+  }
+
+  if (!transparency_pass) {
+    transparency_pass = std::make_unique<TransparencyPass>();
+    transparency_pass->init();
+  }
+  transparency_pass->setFbo(m_fbo[FBO_TYPE::TRANSPARENCY]);
+
+  if (!composite_pass) {
+    composite_pass = std::make_unique<CompositePass>();
+    composite_pass->init();
+  }
+  composite_pass->setFbo(m_fbo[FBO_TYPE::COMPOSITE]);
+
+  if (!displayPassEnabled) {
+    display_pass = nullptr;
+  } else {
+    if (!display_pass) {
+      display_pass = std::make_unique<CompositePass>();
+      display_pass->init();
+    }
+    display_pass->setFbo(m_fbo[FBO_TYPE::DISPLAY]);
+  }
+
+  initialized = true;
+
+#ifdef _USE_MACOSX
+  scaling = s;
+#endif
 }
 
 void Renderer::exit() {
@@ -204,28 +354,49 @@ void Renderer::rebindTextures() {
   tex[N_COLORTEX + 2] = segtex[2];
   tex[N_COLORTEX + 3] = usertex[0];
   n_tex = N_COLORTEX + 4;
-  shadow_pass.setDepthAttachment(shadowtex, shadowSize, shadowSize);
+  if (shadowPassEnabled) {
+    shadow_pass->setDepthAttachment(shadowtex, m_shadowSize, m_shadowSize);
+    lighting_pass->setShadowTexture(shadowtex, m_shadowSize);
+  }
 
-  gbuffer_pass.setColorAttachments(n_tex, tex, m_width, m_height);
-  gbuffer_pass.setDepthAttachment(depthtex);
-  gbuffer_pass.bindAttachments();
+  gbuffer_pass->setColorAttachments(n_tex, tex, m_width, m_height);
+  gbuffer_pass->setDepthAttachment(depthtex);
+  gbuffer_pass->bindAttachments();
 
-  lighting_pass.setAttachment(lightingtex, m_width, m_height);
-  lighting_pass.setInputTextures(N_COLORTEX, colortex, depthtex);
-  lighting_pass.setRandomTexture(randomtex->getId(), randomtex->getWidth(), randomtex->getHeight());
+  if (aoPassEnabled) {
+    ao_pass->setAttachment(aotex, m_width, m_height);
+    ao_pass->setInputTextures(N_COLORTEX, colortex, depthtex);
+    ao_pass->setRandomTexture(randomtex->getId(), randomtex->getWidth(), randomtex->getHeight());
+  }
+
+  lighting_pass->setAttachment(lightingtex, m_width, m_height);
+  lighting_pass->setInputTextures(N_COLORTEX, colortex, depthtex);
+  lighting_pass->setRandomTexture(randomtex->getId(), randomtex->getWidth(),
+                                  randomtex->getHeight());
+  lighting_pass->setAOTexture(aotex);
 
   tex[N_COLORTEX + 4] = lightingtex;
-  transparency_pass.setColorAttachments(n_tex + 1, tex, m_width, m_height);
-  transparency_pass.setDepthAttachment(depthtex);
-  transparency_pass.bindAttachments();
+  transparency_pass->setColorAttachments(n_tex + 1, tex, m_width, m_height);
+  transparency_pass->setDepthAttachment(depthtex);
+  transparency_pass->bindAttachments();
 
-  axis_pass.setColorAttachments(1, &lightingtex, m_width, m_height);
-  axis_pass.setDepthAttachment(depthtex);
-  axis_pass.bindAttachments();
+  if (axisPassEnabled) {
+    axis_pass->setColorAttachments(1, &lightingtex, m_width, m_height);
+    axis_pass->setDepthAttachment(depthtex);
+    axis_pass->bindAttachments();
+  }
 
-  // display_pass.setInputTextures(n_tex + 1, tex, depthtex);
-  display_pass.setAttachment(outputtex, m_width, m_height);
-  display_pass.setInputTextures(N_COLORTEX, colortex, depthtex);
+  composite_pass->setAttachment(lightingtex2, m_width, m_height);
+  composite_pass->setInputTextures(n_tex + 1, tex, depthtex);
+  composite_pass->setRandomTexture(randomtex->getId(), randomtex->getWidth(),
+                                   randomtex->getHeight());
+
+  tex[N_COLORTEX + 4] = lightingtex2;
+
+  if (displayPassEnabled) {
+    display_pass->setAttachment(outputtex, m_width, m_height);
+    display_pass->setInputTextures(n_tex + 1, tex, depthtex);
+  }
 }
 
 void Renderer::resize(GLuint w, GLuint h) {
@@ -245,19 +416,22 @@ void Renderer::renderScene(Scene &scene, const CameraSpec &camera) {
   }
   auto &lights = scene.getDirectionalLights();
   scene.prepareObjects();
-  if (lights.size()) {
-    shadow_pass.render(scene, camera);
-    lighting_pass.setShadowTexture(shadowtex, shadowSize);
+  if (lights.size() && shadowPassEnabled) {
+    shadow_pass->render(scene, camera);
   }
-  gbuffer_pass.render(scene, camera, true);
-  lighting_pass.render(scene, camera);
+  gbuffer_pass->render(scene, camera, true);
+  if (aoPassEnabled) {
+    ao_pass->render(camera);
+  }
+  lighting_pass->render(scene, camera);
   if (axisPassEnabled) {
-    axis_pass.render(scene, camera);
+    axis_pass->render(scene, camera);
   }
-  transparency_pass.render(scene, camera, true);
+  transparency_pass->render(scene, camera, true);
+  composite_pass->render();
 
   if (displayPassEnabled) {
-    display_pass.render();
+    display_pass->render();
   }
 
   glBindTexture(GL_TEXTURE_2D, 0);
@@ -265,10 +439,10 @@ void Renderer::renderScene(Scene &scene, const CameraSpec &camera) {
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
 
-
 void Renderer::displayLighting(GLuint fbo) const {
   glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo[FBO_TYPE::COPY]);
-  glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, lightingtex, 0);
+  glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, lightingtex2,
+                         0);
 
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
   glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height, GL_COLOR_BUFFER_BIT,
@@ -325,34 +499,10 @@ void Renderer::display(GLuint fbo) const {
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
 
-void Renderer::setObjectIdForAxis(int id) { axis_pass.setObjectId(id); }
-
-void Renderer::saveLighting(const std::string &file, bool raw) {
-  if (raw) {
-    writeTextureRGBAFloat32Raw(lightingtex, m_width, m_height, file);
-  } else {
-    std::cerr << "Saving texture without raw is not supported" << std::endl;
-  }
-}
-
-void Renderer::saveNormal(const std::string &file, bool raw) {
-  if (raw) {
-    writeTextureRGBAFloat32Raw(colortex[2], m_width, m_height, file);
-  } else {
-    std::cerr << "Saving texture without raw is not supported" << std::endl;
-  }
-}
-
-void Renderer::saveDepth(const std::string &file, bool raw) {
-  if (raw) {
-    writeTextureDepthFloat32Raw(depthtex, m_width, m_height, file);
-  } else {
-    std::cerr << "Saving texture without raw is not supported" << std::endl;
-  }
-}
+void Renderer::setObjectIdForAxis(int id) { axis_pass->setObjectId(id); }
 
 std::vector<float> Renderer::getLighting() {
-  return getRGBAFloat32Texture(lightingtex, m_width, m_height);
+  return getRGBAFloat32Texture(lightingtex2, m_width, m_height);
 }
 std::vector<float> Renderer::getAlbedo() {
   return getRGBAFloat32Texture(colortex[0], m_width, m_height);

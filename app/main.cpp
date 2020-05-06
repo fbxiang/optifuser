@@ -56,8 +56,9 @@ int main() {
   scene.addDirectionalLight({glm::vec3(0, 0, -1), glm::vec3(0.5, 0.5, 0.5)});
   scene.setAmbientLight(glm::vec3(0.05, 0.05, 0.05));
 
-  auto dragon = loadDragon(scene);
-  dragon->pbrMaterial->kd = {1, 0, 0, 1};
+  loadSponza(scene);
+  // auto dragon = loadDragon(scene);
+  // dragon->pbrMaterial->kd = {1, 0, 0, 1};
   // scene.setEnvironmentMap("../assets/ame_desert/desertsky_ft.tga",
   //                          "../assets/ame_desert/desertsky_bk.tga",
   //                          "../assets/ame_desert/desertsky_up.tga",
@@ -65,15 +66,21 @@ int main() {
   //                          "../assets/ame_desert/desertsky_lf.tga",
   //                          "../assets/ame_desert/desertsky_rt.tga");
 
+  context.renderer.enableDisplayPass();
+  // context.renderer.enableAOPass();
+  // context.renderer.enableShadowPass();
+
   context.renderer.setShadowShader("../glsl_shader/shadow.vsh", "../glsl_shader/shadow.fsh");
   context.renderer.setGBufferShader("../glsl_shader/gbuffer.vsh",
                                     "../glsl_shader/gbuffer_segmentation.fsh");
+  context.renderer.setAOShader("../glsl_shader/ssao.vsh",
+                                    "../glsl_shader/ssao.fsh");
   context.renderer.setDeferredShader("../glsl_shader/deferred.vsh", "../glsl_shader/deferred.fsh");
   context.renderer.setAxisShader("../glsl_shader/axes.vsh", "../glsl_shader/axes.fsh");
   context.renderer.setTransparencyShader("../glsl_shader/transparency.vsh",
                                          "../glsl_shader/transparency.fsh");
   context.renderer.setDisplayShader("../glsl_shader/display.vsh", "../glsl_shader/display_normal.fsh");
-  context.renderer.enableDisplayPass();
+  context.renderer.setCompositeShader("../glsl_shader/composite.vsh", "../glsl_shader/composite.fsh");
 
   context.showWindow();
 

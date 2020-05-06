@@ -22,6 +22,10 @@ private:
 
   int m_width, m_height;
 
+  GLuint m_randomtex = 0;
+  int m_randomtexWidth;
+  int m_randomtexHeight;
+
   std::string m_vertFile;
   std::string m_fragFile;
   std::shared_ptr<Shader> m_shader;
@@ -33,6 +37,7 @@ public:
 
   void setFbo(GLuint fbo);
   void setInputTextures(int count, GLuint *colortex, GLuint depthtex);
+  void setRandomTexture(GLuint randomtex, int width, int height);
   void render() const;
 };
 

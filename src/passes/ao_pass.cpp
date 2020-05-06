@@ -1,15 +1,15 @@
-#include "passes/composite_pass.h"
+#include "passes/ao_pass.h"
 #include <iostream>
 
 namespace Optifuser {
 
-CompositePass::CompositePass() {}
-CompositePass::~CompositePass() {
+AOPass::AOPass() {}
+AOPass::~AOPass() {
   glDeleteBuffers(1, &m_quadVbo);
   glDeleteVertexArrays(1, &m_quadVao);
 }
 
-void CompositePass::init() {
+void AOPass::init() {
   m_initialized = true;
   glGenVertexArrays(1, &m_quadVao);
   glBindVertexArray(m_quadVao);
@@ -21,7 +21,7 @@ void CompositePass::init() {
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
 }
 
-void CompositePass::setShader(const std::string &vs, const std::string &fs) {
+void AOPass::setShader(const std::string &vs, const std::string &fs) {
   m_vertFile = vs;
   m_fragFile = fs;
   m_shader = std::make_shared<Shader>(vs.c_str(), fs.c_str());
@@ -31,11 +31,11 @@ void CompositePass::setShader(const std::string &vs, const std::string &fs) {
 }
 
 
-void CompositePass::setFbo(GLuint fbo) {
+void AOPass::setFbo(GLuint fbo) {
   m_fbo = fbo;
 }
 
-void CompositePass::setAttachment(GLuint texture, int width, int height) {
+void AOPass::setAttachment(GLuint texture, int width, int height) {
   m_width = width;
   m_height = height;
 
@@ -46,19 +46,19 @@ void CompositePass::setAttachment(GLuint texture, int width, int height) {
   glDrawBuffers(1, attachments);
 }
 
-void CompositePass::setInputTextures(int count, GLuint *colortex, GLuint depthtex) {
+void AOPass::setInputTextures(int count, GLuint *colortex, GLuint depthtex) {
   m_colorTextures.resize(0);
   m_colorTextures.insert(m_colorTextures.begin(), colortex, colortex + count);
   m_depthTexture = depthtex;
 }
 
-void CompositePass::setRandomTexture(GLuint randomtex, int width, int height) {
+void AOPass::setRandomTexture(GLuint randomtex, int width, int height) {
   m_randomtex = randomtex;
   m_randomtexWidth = width;
   m_randomtexHeight = height;
 }
 
-void CompositePass::render() const {
+void AOPass::render(const CameraSpec &camera) const {
   glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
   glViewport(0, 0, m_width, m_height);
   glDisable(GL_DEPTH_TEST);
@@ -76,6 +76,10 @@ void CompositePass::render() const {
   }
   m_shader->setInt("viewWidth", m_width);
   m_shader->setInt("viewHeight", m_height);
+
+  glm::mat4 projMat = camera.getProjectionMat();
+  m_shader->setMatrix("gbufferProjectionMatrix", projMat);
+  m_shader->setMatrix("gbufferProjectionMatrixInverse", glm::inverse(projMat));
 
   // render quad
   glBindVertexArray(m_quadVao);

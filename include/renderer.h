@@ -1,11 +1,12 @@
 #pragma once
 #include "camera_spec.h"
+#include "passes/ao_pass.h"
 #include "passes/axis_pass.h"
+#include "passes/composite_pass.h"
 #include "passes/gbuffer_pass.h"
 #include "passes/lighting_pass.h"
 #include "passes/shadow_pass.h"
 #include "passes/transparency_pass.h"
-#include "passes/composite_pass.h"
 #include "scene.h"
 #include "shader.h"
 #include <GL/glew.h>
@@ -18,9 +19,11 @@ namespace Optifuser {
 enum FBO_TYPE {
   SHADOW,
   GBUFFER,
+  AO,
   LIGHTING,
   TRANSPARENCY,
   AXIS,
+  COMPOSITE,
   DISPLAY,
   COPY,
 
@@ -28,20 +31,19 @@ enum FBO_TYPE {
 };
 
 class Renderer {
-  struct Options {
-    int shadowMapSize = 2048;
-    float shadowFrustumSize = 10.f;
-    float scaling = 1.f;
-  };
 
 private:
-  ShadowPass shadow_pass;
-  GBufferPass gbuffer_pass;
-  LightingPass lighting_pass;
-  AxisPass axis_pass;
-  TransparencyPass transparency_pass;
-  CompositePass display_pass;
+  std::unique_ptr<ShadowPass> shadow_pass = nullptr;
+  std::unique_ptr<GBufferPass> gbuffer_pass = nullptr;
+  std::unique_ptr<AOPass> ao_pass = nullptr;
+  std::unique_ptr<LightingPass> lighting_pass = nullptr;
+  std::unique_ptr<AxisPass> axis_pass = nullptr;
+  std::unique_ptr<TransparencyPass> transparency_pass = nullptr;
+  std::unique_ptr<CompositePass> composite_pass = nullptr;
+  std::unique_ptr<CompositePass> display_pass = nullptr;
 
+  bool shadowPassEnabled = false;
+  bool aoPassEnabled = false;
   bool axisPassEnabled = false;
   bool displayPassEnabled = false;
 
@@ -50,9 +52,13 @@ private:
 
 public:
   GLuint colortex[N_COLORTEX];
+  GLuint aotex = 0;
   GLuint depthtex = 0;
   GLuint outputtex = 0;
   GLuint lightingtex = 0;
+
+  GLuint lightingtex2 = 0; // use for composite
+
   GLuint segtex[3];
   GLuint usertex[1];
   GLuint shadowtex = 0;
@@ -68,11 +74,7 @@ public:
   void rebindTextures();
 
 public:
-  int debug = 0;
-
-public:
   Renderer();
-  void init(Options const & options);
   void init(float scaling = 1);
   void exit();
   void resize(GLuint w, GLuint h);
@@ -84,6 +86,9 @@ public:
   void enableDisplayPass(bool enable = true);
   void enableGlobalAxes(bool enable = true);
 
+  void enableShadowPass(bool enable = true, int shadowmapSize = 2048, float shadowFrustumSize = 10.f);
+  void enableAOPass(bool enable = true);
+
 public:
   bool initialized;
 
@@ -91,18 +96,19 @@ public:
 public:
   void setAxisShader(const std::string &vs, const std::string &fs);
   void setGBufferShader(const std::string &vs, const std::string &fs);
+  void setAOShader(const std::string &vs, const std::string &fs);
   void setDeferredShader(const std::string &vs, const std::string &fs);
   void setShadowShader(const std::string &vs, const std::string &fs);
   void setTransparencyShader(const std::string &vs, const std::string &fs);
+  void setCompositeShader(const std::string &vs, const std::string &fs);
   void setDisplayShader(const std::string &vs, const std::string &fs);
 
   void setObjectIdForAxis(int id);
 
 protected:
   GLuint m_width, m_height;
-
-  GLuint shadowSize = 8192;
-  GLuint shadowFrustumSize = 10.f;
+  GLuint m_shadowSize = 0;
+  float m_shadowFrustumSize = 10.f;
 
 public:
   inline GLuint getWidth() const { return m_width; }
@@ -114,11 +120,6 @@ public:
   void displaySegmentation(GLuint fbo = 0) const;
   void displayUserTexture(GLuint fbo = 0) const;
   void display(GLuint fbo = 0) const;
-
-  void saveLighting(const std::string &file, bool raw = true);
-  void saveNormal(const std::string &file, bool raw = true);
-  void saveDepth(const std::string &file, bool raw = true);
-  // void saveSegmentation(const std::string &file);
 
   std::vector<float> getLighting();
   std::vector<float> getAlbedo();

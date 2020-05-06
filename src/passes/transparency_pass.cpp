@@ -33,7 +33,10 @@ void TransparencyPass::setShader(const std::string &vs, const std::string &fs) {
 
 void TransparencyPass::setFbo(GLuint fbo) { m_fbo = fbo; }
 
-void TransparencyPass::setShadowTexture(GLuint shadowtex) { m_shadowtex = shadowtex; }
+void TransparencyPass::setShadowTexture(GLuint shadowtex, int size) {
+  m_shadowtex = shadowtex;
+  m_shadowtex_size = size;
+}
 
 void TransparencyPass::setColorAttachments(int num, GLuint *tex, int width, int height) {
   m_width = width;
@@ -118,21 +121,36 @@ void TransparencyPass::render(const Scene &scene, const CameraSpec &camera,
     m_shader->setVec3(e, directionalLights[i].emission);
   }
 
+  // randomtex
+  m_shader->setTexture("randomtex", m_randomtex, 5);
+  m_shader->setInt("randomtexWidth", m_randomtex_width);
+  m_shader->setInt("randomtexHeight", m_randomtex_height);
+  m_shader->setInt("viewWidth", m_width);
+  m_shader->setInt("viewHeight", m_height);
+
   // shadow map
   if (m_shadowtex && directionalLights.size()) {
     glm::vec3 dir = directionalLights[0].direction;
-    glm::vec3 em = directionalLights[0].emission;
 
-    glm::mat4 w2c = camera.getViewMat();
+    glm::mat4 w2c = glm::translate(glm::mat4(1), -camera.position);
     glm::vec3 csLightDir = w2c * glm::vec4(dir, 0);
     glm::mat4 c2l = glm::lookAt(glm::vec3(0, 0, 0), csLightDir, glm::vec3(0, 1, 0));
 
-    float v = 100.f;
+    float v = m_shadow_frustum_size;
     glm::mat4 lsProj = glm::ortho(-v, v, -v, v, -v, camera.far);
 
     m_shader->setTexture("shadowtex", m_shadowtex, 4);
-    m_shader->setMatrix("cameraToShadowMatrix", c2l);
+    m_shader->setMatrix("cameraToShadowMatrix", c2l * glm::toMat4(camera.getRotation()));
     m_shader->setMatrix("shadowProjectionMatrix", lsProj);
+    m_shader->setBool("shadowLightEnabled", true);
+    m_shader->setInt("shadowtexSize", m_shadowtex_size);
+  } else {
+    m_shader->setBool("shadowLightEnabled", false);
+  }
+
+  if (directionalLights.size()) {
+    glm::vec3 dir = directionalLights[0].direction;
+    glm::vec3 em = directionalLights[0].emission;
     m_shader->setVec3("shadowLightDirection", dir);
     m_shader->setVec3("shadowLightEmission", em);
   }
@@ -160,5 +178,13 @@ void TransparencyPass::bindAttachments() const {
   glBindTexture(GL_TEXTURE_2D, m_depthtex);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthtex, 0);
 }
+
+void TransparencyPass::setRandomTexture(GLuint randomtex, GLuint width, GLuint height) {
+  m_randomtex = randomtex;
+  m_randomtex_width = width;
+  m_randomtex_height = height;
+}
+
+void TransparencyPass::setShadowFrustumSize(int size) { m_shadow_frustum_size = size; }
 
 } // namespace Optifuser
