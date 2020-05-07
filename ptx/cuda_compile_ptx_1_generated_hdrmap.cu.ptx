@@ -12,8 +12,8 @@
 
 	// .globl	_Z4missv
 .global .texref envmap;
-.global .align 4 .b8 current_prd[76];
-.global .align 4 .b8 _ZN21rti_internal_typeinfo11current_prdE[8] = {82, 97, 121, 0, 76, 0, 0, 0};
+.global .align 4 .b8 current_prd[100];
+.global .align 4 .b8 _ZN21rti_internal_typeinfo11current_prdE[8] = {82, 97, 121, 0, 100, 0, 0, 0};
 .global .align 8 .u64 _ZN21rti_internal_register20reg_bitness_detectorE;
 .global .align 8 .u64 _ZN21rti_internal_register24reg_exception_64_detail0E;
 .global .align 8 .u64 _ZN21rti_internal_register24reg_exception_64_detail1E;
@@ -58,9 +58,9 @@
 
 
 	mov.u64 	%SPL, __local_depot0;
-	ld.global.f32 	%f25, [current_prd+52];
+	ld.global.f32 	%f25, [current_prd+76];
 	neg.f32 	%f26, %f25;
-	ld.global.f32 	%f27, [current_prd+48];
+	ld.global.f32 	%f27, [current_prd+72];
 	neg.f32 	%f28, %f27;
 	abs.f32 	%f1, %f28;
 	abs.f32 	%f2, %f26;
@@ -130,7 +130,7 @@ BB0_2:
 	selp.f32	%f113, %f54, %f53, %p9;
 
 BB0_5:
-	ld.global.f32 	%f55, [current_prd+56];
+	ld.global.f32 	%f55, [current_prd+80];
 	abs.f32 	%f56, %f55;
 	mov.f32 	%f57, 0f3F800000;
 	sub.f32 	%f58, %f57, %f56;
@@ -341,11 +341,11 @@ BB0_28:
 	add.f32 	%f107, %f113, 0f40490FDB;
 	mul.f32 	%f108, %f107, 0f3E22F983;
 	tex.2d.v4.f32.f32	{%f109, %f110, %f111, %f112}, [envmap, {%f108, %f106}];
-	st.global.f32 	[current_prd+12], %f109;
-	st.global.f32 	[current_prd+16], %f110;
-	st.global.f32 	[current_prd+20], %f111;
+	st.global.f32 	[current_prd+36], %f109;
+	st.global.f32 	[current_prd+40], %f110;
+	st.global.f32 	[current_prd+44], %f111;
 	mov.u32 	%r93, 1;
-	st.global.u32 	[current_prd+68], %r93;
+	st.global.u32 	[current_prd+92], %r93;
 	ret;
 }
 

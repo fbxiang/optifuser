@@ -12,9 +12,9 @@
 
 	// .globl	_Z4missv
 .global .align 4 .u32 envmapId;
-.global .align 4 .b8 current_prd[76];
+.global .align 4 .b8 current_prd[100];
 .global .align 4 .b8 _ZN21rti_internal_typeinfo8envmapIdE[8] = {82, 97, 121, 0, 4, 0, 0, 0};
-.global .align 4 .b8 _ZN21rti_internal_typeinfo11current_prdE[8] = {82, 97, 121, 0, 76, 0, 0, 0};
+.global .align 4 .b8 _ZN21rti_internal_typeinfo11current_prdE[8] = {82, 97, 121, 0, 100, 0, 0, 0};
 .global .align 8 .u64 _ZN21rti_internal_register20reg_bitness_detectorE;
 .global .align 8 .u64 _ZN21rti_internal_register24reg_exception_64_detail0E;
 .global .align 8 .u64 _ZN21rti_internal_register24reg_exception_64_detail1E;
@@ -57,21 +57,21 @@
 
 
 	ld.global.u32 	%r1, [envmapId];
-	ld.global.f32 	%f8, [current_prd+52];
+	ld.global.f32 	%f8, [current_prd+76];
 	neg.f32 	%f5, %f8;
-	ld.global.f32 	%f6, [current_prd+56];
-	ld.global.f32 	%f9, [current_prd+48];
+	ld.global.f32 	%f6, [current_prd+80];
+	ld.global.f32 	%f9, [current_prd+72];
 	neg.f32 	%f7, %f9;
 	mov.u32 	%r2, 6;
 	mov.u32 	%r3, 0;
 	// inline asm
 	call (%f1, %f2, %f3, %f4), _rt_texture_get_base_id, (%r1, %r2, %f5, %f6, %f7, %r3);
 	// inline asm
-	st.global.f32 	[current_prd+12], %f1;
-	st.global.f32 	[current_prd+16], %f2;
-	st.global.f32 	[current_prd+20], %f3;
+	st.global.f32 	[current_prd+36], %f1;
+	st.global.f32 	[current_prd+40], %f2;
+	st.global.f32 	[current_prd+44], %f3;
 	mov.u32 	%r4, 1;
-	st.global.u32 	[current_prd+68], %r4;
+	st.global.u32 	[current_prd+92], %r4;
 	ret;
 }
 

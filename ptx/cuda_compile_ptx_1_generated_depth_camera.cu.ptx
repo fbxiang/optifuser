@@ -26,7 +26,7 @@
 .global .align 4 .b8 V[12];
 .global .align 4 .b8 W[12];
 .global .align 4 .b8 ray[36];
-.global .align 4 .b8 current_prd[76];
+.global .align 4 .b8 current_prd[100];
 .global .align 4 .b8 _ZN21rti_internal_typeinfo13scene_epsilonE[8] = {82, 97, 121, 0, 4, 0, 0, 0};
 .global .align 4 .b8 _ZN21rti_internal_typeinfo12launch_indexE[8] = {82, 97, 121, 0, 8, 0, 0, 0};
 .global .align 4 .b8 _ZN21rti_internal_typeinfo10top_objectE[8] = {82, 97, 121, 0, 4, 0, 0, 0};
@@ -41,7 +41,7 @@
 .global .align 4 .b8 _ZN21rti_internal_typeinfo1VE[8] = {82, 97, 121, 0, 12, 0, 0, 0};
 .global .align 4 .b8 _ZN21rti_internal_typeinfo1WE[8] = {82, 97, 121, 0, 12, 0, 0, 0};
 .global .align 4 .b8 _ZN21rti_internal_typeinfo3rayE[8] = {82, 97, 121, 0, 36, 0, 0, 0};
-.global .align 4 .b8 _ZN21rti_internal_typeinfo11current_prdE[8] = {82, 97, 121, 0, 76, 0, 0, 0};
+.global .align 4 .b8 _ZN21rti_internal_typeinfo11current_prdE[8] = {82, 97, 121, 0, 100, 0, 0, 0};
 .global .align 8 .u64 _ZN21rti_internal_register20reg_bitness_detectorE;
 .global .align 8 .u64 _ZN21rti_internal_register24reg_exception_64_detail0E;
 .global .align 8 .u64 _ZN21rti_internal_register24reg_exception_64_detail1E;
@@ -131,7 +131,7 @@
 
 )
 {
-	.local .align 4 .b8 	__local_depot0[76];
+	.local .align 4 .b8 	__local_depot0[100];
 	.reg .b64 	%SP;
 	.reg .b64 	%SPL;
 	.reg .pred 	%p<10>;
@@ -424,7 +424,7 @@
 	bra.uni 	BB0_1;
 
 BB0_9:
-	ld.local.u32 	%r308, [%rd12+72];
+	ld.local.u32 	%r308, [%rd12+96];
 	ld.global.u32 	%r307, [iterations];
 
 BB0_1:
@@ -502,52 +502,52 @@ BB0_5:
 	add.u64 	%rd11, %SP, 0;
 	add.u64 	%rd12, %SPL, 0;
 	mov.u32 	%r279, 0;
-	st.local.u32 	[%rd12+12], %r279;
-	st.local.u32 	[%rd12+20], %r279;
-	st.local.u32 	[%rd12+16], %r279;
+	st.local.u32 	[%rd12+36], %r279;
+	st.local.u32 	[%rd12+44], %r279;
+	st.local.u32 	[%rd12+40], %r279;
 	st.local.u32 	[%rd12], %r279;
 	st.local.u32 	[%rd12+4], %r279;
 	st.local.u32 	[%rd12+8], %r279;
 	mov.u32 	%r280, 1065353216;
-	st.local.u32 	[%rd12+24], %r280;
-	st.local.u32 	[%rd12+28], %r280;
-	st.local.u32 	[%rd12+32], %r280;
-	st.local.u32 	[%rd12+68], %r279;
-	st.local.u32 	[%rd12+72], %r308;
+	st.local.u32 	[%rd12+48], %r280;
+	st.local.u32 	[%rd12+52], %r280;
+	st.local.u32 	[%rd12+56], %r280;
+	st.local.u32 	[%rd12+92], %r279;
+	st.local.u32 	[%rd12+96], %r308;
 	mov.u64 	%rd13, 0;
-	st.local.u32 	[%rd12+64], %rd13;
-	st.local.u32 	[%rd12+60], %rd13;
+	st.local.u32 	[%rd12+88], %rd13;
+	st.local.u32 	[%rd12+84], %rd13;
 	bra.uni 	BB0_6;
 
 BB0_11:
-	ld.local.f32 	%f135, [%rd12+36];
-	ld.local.f32 	%f136, [%rd12+40];
-	ld.local.f32 	%f137, [%rd12+44];
-	ld.local.f32 	%f132, [%rd12+48];
-	ld.local.f32 	%f133, [%rd12+52];
-	ld.local.f32 	%f134, [%rd12+56];
+	ld.local.f32 	%f135, [%rd12+60];
+	ld.local.f32 	%f136, [%rd12+64];
+	ld.local.f32 	%f137, [%rd12+68];
+	ld.local.f32 	%f132, [%rd12+72];
+	ld.local.f32 	%f133, [%rd12+76];
+	ld.local.f32 	%f134, [%rd12+80];
 
 BB0_6:
 	ld.global.u32 	%r282, [pathtrace_ray_type];
 	ld.global.f32 	%f90, [scene_epsilon];
 	ld.global.u32 	%r281, [top_object];
 	mov.u32 	%r283, 255;
-	mov.u32 	%r285, 76;
+	mov.u32 	%r285, 100;
 	mov.f32 	%f91, 0f6C4ECB8F;
 	// inline asm
 	call _rt_trace_mask_flags_64, (%r281, %f135, %f136, %f137, %f132, %f133, %f134, %r282, %f90, %f91, %r283, %r279, %rd11, %r285);
 	// inline asm
-	ld.local.f32 	%f92, [%rd12+24];
-	ld.local.f32 	%f93, [%rd12+12];
-	ld.local.f32 	%f94, [%rd12+28];
-	ld.local.f32 	%f95, [%rd12+16];
-	ld.local.f32 	%f96, [%rd12+32];
-	ld.local.f32 	%f97, [%rd12+20];
+	ld.local.f32 	%f92, [%rd12+48];
+	ld.local.f32 	%f93, [%rd12+36];
+	ld.local.f32 	%f94, [%rd12+52];
+	ld.local.f32 	%f95, [%rd12+40];
+	ld.local.f32 	%f96, [%rd12+56];
+	ld.local.f32 	%f97, [%rd12+44];
 	ld.local.f32 	%f98, [%rd12];
 	fma.rn.f32 	%f30, %f93, %f92, %f98;
 	ld.local.f32 	%f99, [%rd12+4];
 	ld.local.f32 	%f100, [%rd12+8];
-	ld.local.u32 	%r286, [%rd12+68];
+	ld.local.u32 	%r286, [%rd12+92];
 	st.local.f32 	[%rd12], %f30;
 	fma.rn.f32 	%f31, %f95, %f94, %f99;
 	st.local.f32 	[%rd12+4], %f31;
@@ -556,10 +556,10 @@ BB0_6:
 	setp.ne.s32	%p5, %r286, 0;
 	@%p5 bra 	BB0_8;
 
-	ld.local.u32 	%r287, [%rd12+60];
+	ld.local.u32 	%r287, [%rd12+84];
 	add.s32 	%r288, %r287, 1;
-	st.local.u32 	[%rd12+60], %r288;
-	ld.local.u32 	%r289, [%rd12+64];
+	st.local.u32 	[%rd12+84], %r288;
+	ld.local.u32 	%r289, [%rd12+88];
 	setp.lt.s32	%p6, %r288, %r289;
 	ld.global.u32 	%r290, [n_rays];
 	setp.lt.u32	%p7, %r288, %r290;

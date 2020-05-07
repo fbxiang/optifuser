@@ -12,9 +12,9 @@
 
 	// .globl	_Z4missv
 .global .align 4 .b8 bg_color[12];
-.global .align 4 .b8 current_prd[76];
+.global .align 4 .b8 current_prd[100];
 .global .align 4 .b8 _ZN21rti_internal_typeinfo8bg_colorE[8] = {82, 97, 121, 0, 12, 0, 0, 0};
-.global .align 4 .b8 _ZN21rti_internal_typeinfo11current_prdE[8] = {82, 97, 121, 0, 76, 0, 0, 0};
+.global .align 4 .b8 _ZN21rti_internal_typeinfo11current_prdE[8] = {82, 97, 121, 0, 100, 0, 0, 0};
 .global .align 8 .u64 _ZN21rti_internal_register20reg_bitness_detectorE;
 .global .align 8 .u64 _ZN21rti_internal_register24reg_exception_64_detail0E;
 .global .align 8 .u64 _ZN21rti_internal_register24reg_exception_64_detail1E;
@@ -59,11 +59,11 @@
 	ld.global.f32 	%f1, [bg_color+4];
 	ld.global.f32 	%f2, [bg_color+8];
 	ld.global.f32 	%f3, [bg_color];
-	st.global.f32 	[current_prd+12], %f3;
-	st.global.f32 	[current_prd+20], %f2;
-	st.global.f32 	[current_prd+16], %f1;
+	st.global.f32 	[current_prd+36], %f3;
+	st.global.f32 	[current_prd+44], %f2;
+	st.global.f32 	[current_prd+40], %f1;
 	mov.u32 	%r1, 1;
-	st.global.u32 	[current_prd+68], %r1;
+	st.global.u32 	[current_prd+92], %r1;
 	ret;
 }
 

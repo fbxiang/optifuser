@@ -11,8 +11,8 @@
 .address_size 64
 
 	// .globl	_Z4missv
-.global .align 4 .b8 current_prd[76];
-.global .align 4 .b8 _ZN21rti_internal_typeinfo11current_prdE[8] = {82, 97, 121, 0, 76, 0, 0, 0};
+.global .align 4 .b8 current_prd[100];
+.global .align 4 .b8 _ZN21rti_internal_typeinfo11current_prdE[8] = {82, 97, 121, 0, 100, 0, 0, 0};
 .global .align 8 .u64 _ZN21rti_internal_register20reg_bitness_detectorE;
 .global .align 8 .u64 _ZN21rti_internal_register24reg_exception_64_detail0E;
 .global .align 8 .u64 _ZN21rti_internal_register24reg_exception_64_detail1E;
@@ -52,7 +52,7 @@
 	.reg .f64 	%fd<3>;
 
 
-	ld.global.f32 	%f1, [current_prd+56];
+	ld.global.f32 	%f1, [current_prd+80];
 	abs.f32 	%f2, %f1;
 	mov.f32 	%f3, 0f3F800000;
 	sub.f32 	%f4, %f3, %f2;
@@ -115,11 +115,11 @@
 	fma.rn.f32 	%f53, %f48, %f46, %f35;
 	fma.rn.f32 	%f54, %f50, %f46, %f36;
 	fma.rn.f32 	%f55, %f52, %f46, %f37;
-	st.global.f32 	[current_prd+12], %f53;
-	st.global.f32 	[current_prd+16], %f54;
-	st.global.f32 	[current_prd+20], %f55;
+	st.global.f32 	[current_prd+36], %f53;
+	st.global.f32 	[current_prd+40], %f54;
+	st.global.f32 	[current_prd+44], %f55;
 	mov.u32 	%r5, 1;
-	st.global.u32 	[current_prd+68], %r5;
+	st.global.u32 	[current_prd+92], %r5;
 	ret;
 }
 
