@@ -12,6 +12,10 @@
 namespace Optifuser {
 
 class OptixRenderer {
+ private:
+  bool useDenoiser = 0;
+  uint32_t denoiseFrequency = 1;
+
 public:
   OptixRenderer(std::string const &ptxDir);
   ~OptixRenderer();
@@ -20,6 +24,8 @@ public:
 
   void invalidateCamera() { iterations = 0; };
   uint32_t max_iterations = 64;
+
+  void enableDenoiser(bool enable = true, uint32_t frequency = 1);
 
 private:
   std::string mPtxDir;
@@ -32,6 +38,9 @@ private:
   std::map<const Texture *, optix::TextureSampler> _texture_sampler;
   optix::TextureSampler _empty_sampler = 0;
 
+  optix::CommandList _command_list_no_denoising;
+  optix::CommandList _command_list_denoising;
+
   optix::Program _dmesh_intersect = 0;
   optix::Program _dmesh_bounds = 0;
 
@@ -43,9 +52,10 @@ private:
   optix::Program _material_fluid_closest_hit = 0;
   optix::Program _material_fluid_any_hit = 0;
   optix::Program _material_fluid_shadow_any_hit = 0;
-  optix::Program _material_mirror_closest_hit = 0;
-  optix::Program _material_mirror_any_hit = 0;
-  optix::Program _material_mirror_shadow_any_hit = 0;
+
+  optix::PostprocessingStage _tone_map_stage = 0;
+  optix::PostprocessingStage _denoise_stage = 0;
+  optix::Variable _tone_map_output_variable = 0;
 
   optix::Transform getObjectTransform(const Object *obj);
   optix::Geometry getMeshGeometry(const TriangleMesh *mesh);
@@ -103,7 +113,6 @@ public:
   void renderScene(const Scene &scene, const CameraSpec &camera);
   void display();
   std::vector<float> getResult();
-  void renderSceneToFile(const Scene &scene, const CameraSpec &cam, std::string filename);
   // void renderCurrentToFile(std::string filename);
   void setCubemap(std::string const &front, std::string const &back, std::string const &top,
                   std::string const &bottom, std::string const &left, std::string const &right);

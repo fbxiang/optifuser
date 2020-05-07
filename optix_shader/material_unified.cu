@@ -81,20 +81,25 @@ RT_PROGRAM void closest_hit() {
         // diffuse
         SampleDiffuse(wo, ffnormal, kd_val, wi, reflectance, current_prd.seed);
       }
-      reflectance /= pd;  // importance sampling
+      reflectance /= pd; // importance sampling
     } else {
       // sample specular
-      SampleGGX_ImpD(wo, ffnormal, roughness, ks_val, make_float3(1.f), wi, reflectance, current_prd.seed);
-      reflectance /= (1 - pd);  // importance sampling
+      SampleGGX_ImpD(wo, ffnormal, roughness, ks_val, make_float3(1.f), wi, reflectance,
+                     current_prd.seed);
+      reflectance /= (1 - pd); // importance sampling
     }
 
+    if (current_prd.depth == 0) {
+      current_prd.albedo = kd_val;
+      current_prd.normal = ffnormal;
+    }
     current_prd.direction = wi;
     current_prd.attenuation *= reflectance;
 
     for (int i = 0; i < directional_lights.size(); i++) {
       DirectionalLight light = directional_lights[i];
       const float3 L = -normalize(light.direction);
-      float3 reflectance = (1-metallic) * ForwardDiffuse(L, wo, ffnormal, kd_val);
+      float3 reflectance = (1 - metallic) * ForwardDiffuse(L, wo, ffnormal, kd_val);
       reflectance += metallic * ForwardGGX(L, wo, ffnormal, roughness, 1.f, kd_val);
       reflectance += ForwardGGX(L, wo, ffnormal, roughness, ks_val, make_float3(1.f));
 
@@ -116,7 +121,7 @@ RT_PROGRAM void closest_hit() {
       PointLight light = point_lights[i];
       const float Ldist = length(light.position - hitpoint);
       const float3 L = normalize(light.position - hitpoint);
-      float3 reflectance = (1-metallic) * ForwardDiffuse(L, wo, ffnormal, kd_val);
+      float3 reflectance = (1 - metallic) * ForwardDiffuse(L, wo, ffnormal, kd_val);
       reflectance += metallic * ForwardGGX(L, wo, ffnormal, roughness, 1.f, kd_val);
       reflectance += ForwardGGX(L, wo, ffnormal, roughness, ks_val, make_float3(1.f));
 
@@ -146,7 +151,7 @@ RT_PROGRAM void closest_hit() {
       const float lnDl = dot(light.normal, L); // light normal dot light direction
 
       if (lnDl < 0.f) {
-        float3 reflectance = (1-metallic) * ForwardDiffuse(L, wo, ffnormal, kd_val);
+        float3 reflectance = (1 - metallic) * ForwardDiffuse(L, wo, ffnormal, kd_val);
         reflectance += metallic * ForwardGGX(L, wo, ffnormal, roughness, 1.f, kd_val);
         reflectance += ForwardGGX(L, wo, ffnormal, roughness, ks_val, make_float3(1.f));
         if (reflectance.x > 0.f || reflectance.y > 0.f || reflectance.z > 0.f) {
@@ -154,14 +159,13 @@ RT_PROGRAM void closest_hit() {
           shadow_prd.attenuation = make_float3(1.0f);
           shadow_prd.inShadow = false;
           const float area = length(cross(light.v1, light.v2));
-          Ray shadow_ray =
-              make_Ray(hitpoint, L, pathtrace_shadow_ray_type, scene_epsilon, Ldist - scene_epsilon);
+          Ray shadow_ray = make_Ray(hitpoint, L, pathtrace_shadow_ray_type, scene_epsilon,
+                                    Ldist - scene_epsilon);
           rtTrace(top_shadower, shadow_ray, shadow_prd);
 
           if (!shadow_prd.inShadow) {
-            radiance +=  reflectance
-                      * (-lnDl) * area // visible area
-                      * light.emission / Ldist / Ldist * shadow_prd.attenuation;
+            radiance += reflectance * (-lnDl) * area // visible area
+                        * light.emission / Ldist / Ldist * shadow_prd.attenuation;
           }
         }
       }

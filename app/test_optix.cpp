@@ -57,20 +57,20 @@ int main() {
   cam.aspect = w / (float)h;
   cam.setRotation(cam.getRotation0());
 
-  // loadSponza(scene);
+  loadSponza(scene);
 
-  auto dragon = loadDragon(scene);
-  dragon->pbrMaterial->kd = {0.85, 0.46, 0.34,1};
-  dragon->pbrMaterial->roughness = 0.1f;
-  dragon->pbrMaterial->ks = 0.8f;
-  dragon->pbrMaterial->metallic = 1.f;
+  // auto dragon = loadDragon(scene);
+  // dragon->pbrMaterial->kd = {0.85, 0.46, 0.34,1};
+  // dragon->pbrMaterial->roughness = 0.1f;
+  // dragon->pbrMaterial->ks = 0.8f;
+  // dragon->pbrMaterial->metallic = 1.f;
 
-  dragon = loadDragon(scene);
-  dragon->pbrMaterial->kd = {0.85, 0.46, 0.34,1};
-  dragon->pbrMaterial->roughness = 0.1f;
-  dragon->pbrMaterial->ks = 0.8f;
-  dragon->pbrMaterial->metallic = 0.f;
-  dragon->position = {1, 0, 0};
+  // dragon = loadDragon(scene);
+  // dragon->pbrMaterial->kd = {0.85, 0.46, 0.34,1};
+  // dragon->pbrMaterial->roughness = 0.1f;
+  // dragon->pbrMaterial->ks = 0.8f;
+  // dragon->pbrMaterial->metallic = 0.f;
+  // dragon->position = {1, 0, 0};
 
   // auto dragon = loadCube(scene);
   // dragon->pbrMaterial->kd = {1,0,0,1};
@@ -95,6 +95,7 @@ int main() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 
+  optixContext->renderer.enableDenoiser(true, 1);
   optixContext->renderer.setBlackBackground();
   optixContext->renderer.numRays = 4;
   optixContext->renderer.max_iterations = 100000;

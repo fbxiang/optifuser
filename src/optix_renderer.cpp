@@ -13,6 +13,20 @@ OptixRenderer::OptixRenderer(std::string const &ptxDir) : mPtxDir(ptxDir) {}
 
 OptixRenderer::~OptixRenderer() { exit(); }
 
+void OptixRenderer::enableDenoiser(bool enable, uint32_t freqneucy) {
+  denoiseFrequency = freqneucy;
+  if (enable != useDenoiser) {
+    useDenoiser = enable;
+    if (initialized) {
+      if (enable) {
+        _tone_map_output_variable->set(context["tone_map_buffer"]->getBuffer());
+      } else {
+        _tone_map_output_variable->set(context["final_buffer"]->getBuffer());
+      }
+    }
+  }
+}
+
 void OptixRenderer::exit() {
   if (initialized) {
     context->destroy();
@@ -55,14 +69,64 @@ void OptixRenderer::init(uint32_t w, uint32_t h) {
   glBufferData(GL_ARRAY_BUFFER, 16 * width * height, 0, GL_STREAM_DRAW);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-  optix::Buffer output_buffer = context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, screenVbo);
+  optix::Buffer output_buffer = context->createBuffer(RT_BUFFER_INPUT_OUTPUT);
   output_buffer->setFormat(RT_FORMAT_FLOAT4);
   output_buffer->setSize(width, height);
   context["output_buffer"]->set(output_buffer);
 
+  optix::Buffer tone_map_buffer = context->createBuffer(RT_BUFFER_INPUT_OUTPUT);
+  tone_map_buffer->setFormat(RT_FORMAT_FLOAT4);
+  tone_map_buffer->setSize(width, height);
+  context["tone_map_buffer"]->set(tone_map_buffer);
+
+  optix::Buffer final_buffer = context->createBufferFromGLBO(RT_BUFFER_INPUT_OUTPUT, screenVbo);
+  final_buffer->setFormat(RT_FORMAT_FLOAT4);
+  final_buffer->setSize(width, height);
+  context["final_buffer"]->set(final_buffer);
+
+  // TODO: denoise buffer
+  optix::Buffer albedo_buffer = context->createBuffer(RT_BUFFER_INPUT_OUTPUT);
+  albedo_buffer->setFormat(RT_FORMAT_FLOAT4);
+  albedo_buffer->setSize(width, height);
+  context["albedo_buffer"]->set(albedo_buffer);
+
+  optix::Buffer normal_buffer = context->createBuffer(RT_BUFFER_INPUT_OUTPUT);
+  normal_buffer->setFormat(RT_FORMAT_FLOAT4);
+  normal_buffer->setSize(width, height);
+  context["normal_buffer"]->set(normal_buffer);
+
   std::string ptxFile = getPtxFilename("pathtracer");
   context->setExceptionProgram(0, context->createProgramFromPTXFile(ptxFile, "exception"));
   context->setRayGenerationProgram(0, context->createProgramFromPTXFile(ptxFile, "camera"));
+
+  _tone_map_stage = context->createBuiltinPostProcessingStage("TonemapperSimple");
+  _tone_map_stage->declareVariable("input_buffer")->set(output_buffer);
+  _tone_map_output_variable = _tone_map_stage->declareVariable("output_buffer");
+  if (useDenoiser) {
+    _tone_map_output_variable->set(tone_map_buffer);
+  } else {
+    _tone_map_output_variable->set(final_buffer);
+  }
+  _tone_map_stage->declareVariable("exposure")->setFloat(1.f);
+  _tone_map_stage->declareVariable("gamma")->setFloat(2.2f);
+
+  _denoise_stage = context->createBuiltinPostProcessingStage("DLDenoiser");
+  _denoise_stage->declareVariable("input_buffer")->set(tone_map_buffer);
+  _denoise_stage->declareVariable("output_buffer")->set(final_buffer);
+  _denoise_stage->declareVariable("blend")->setFloat(0.f);
+  _denoise_stage->declareVariable("input_albedo_buffer")->set(albedo_buffer);
+  _denoise_stage->declareVariable("input_normal_buffer")->set(normal_buffer);
+
+  _command_list_no_denoising = context->createCommandList();
+  _command_list_no_denoising->appendLaunch(0, width, height);
+  _command_list_no_denoising->appendPostprocessingStage(_tone_map_stage, width, height);
+  _command_list_no_denoising->finalize();
+
+  _command_list_denoising = context->createCommandList();
+  _command_list_denoising->appendLaunch(0, width, height);
+  _command_list_denoising->appendPostprocessingStage(_tone_map_stage, width, height);
+  _command_list_denoising->appendPostprocessingStage(_denoise_stage, width, height);
+  _command_list_denoising->finalize();
 
   glGenTextures(1, &outputTex);
   glBindTexture(GL_TEXTURE_2D, outputTex);
@@ -213,33 +277,7 @@ optix::Transform OptixRenderer::getObjectTransform(const Object *obj) {
       _material_shadow_any_hit = context->createProgramFromPTXFile(ptxFile, "shadow_any_hit");
       _material_any_hit = context->createProgramFromPTXFile(ptxFile, "any_hit");
     }
-    if (!_material_fluid_closest_hit) {
-      std::string ptxFile = getPtxFilename("material_transparent");
 
-      _material_fluid_closest_hit = context->createProgramFromPTXFile(ptxFile, "closest_hit");
-      _material_fluid_shadow_any_hit =
-          context->createProgramFromPTXFile(ptxFile, "shadow_any_hit");
-      _material_fluid_any_hit = context->createProgramFromPTXFile(ptxFile, "any_hit");
-    }
-    if (!_material_mirror_closest_hit) {
-      std::string ptxFile = getPtxFilename("material_mirror");
-
-      _material_mirror_closest_hit = context->createProgramFromPTXFile(ptxFile, "closest_hit");
-      _material_mirror_shadow_any_hit =
-          context->createProgramFromPTXFile(ptxFile, "shadow_any_hit");
-      _material_mirror_any_hit = context->createProgramFromPTXFile(ptxFile, "any_hit");
-    }
-
-    // if (obj->material.type == Optifuser::Material::Type::TRANSPARENT) {
-    //   mat->setClosestHitProgram(0, _material_fluid_closest_hit);
-    //   mat->setAnyHitProgram(0, _material_fluid_any_hit);
-    //   mat->setAnyHitProgram(1, _material_fluid_shadow_any_hit);
-    //   mat["tint"]->setFloat(obj->pbrMaterial->kd.x, obj->pbrMaterial->kd.y, obj->pbrMaterial->kd.z);
-    // } else if (obj->material.type == Optifuser::Material::Type::MIRROR) {
-    //   mat->setClosestHitProgram(0, _material_mirror_closest_hit);
-    //   mat->setAnyHitProgram(0, _material_mirror_any_hit);
-    //   mat->setAnyHitProgram(1, _material_mirror_shadow_any_hit);
-    // } else
     {
       mat->setClosestHitProgram(0, _material_closest_hit);
       mat->setAnyHitProgram(0, _material_any_hit);
@@ -486,6 +524,20 @@ void OptixRenderer::renderScene(const Scene &scene, const CameraSpec &camera) {
   glm::vec3 v = camera.getRotation() * glm::vec3(0, 1, 0);
   glm::vec3 w = camera.getRotation() * glm::vec3(0, 0, 1);
 
+  glm::mat3 m = glm::toMat3(camera.getRotation());
+  // normal_mat.T is the actual normal mat
+  float normal_mat[9];
+  // transpose is here
+  normal_mat[0] = m[0][0];
+  normal_mat[1] = m[0][1];
+  normal_mat[2] = m[0][2];
+  normal_mat[3] = m[1][0];
+  normal_mat[4] = m[1][1];
+  normal_mat[5] = m[1][2];
+  normal_mat[6] = m[2][0];
+  normal_mat[7] = m[2][1];
+  normal_mat[8] = m[2][2];
+
   optix::float3 W = -optix::make_float3(w.x, w.y, w.z);
   float vlen = tanf(0.5f * camera.getFovy());
   optix::float3 V = vlen * optix::make_float3(v.x, v.y, v.z);
@@ -501,6 +553,7 @@ void OptixRenderer::renderScene(const Scene &scene, const CameraSpec &camera) {
   context["iterations"]->setUint(iterations);
   context["n_rays"]->setUint(numRays);
   context["use_shadow"]->setInt(useShadow);
+  context["normal_matrix"]->setMatrix3x3fv(false, normal_mat);
 
   // update dynamic meshes
   for (auto mesh : _dmesh_geometry) {
@@ -517,16 +570,20 @@ void OptixRenderer::renderScene(const Scene &scene, const CameraSpec &camera) {
   }
   context["top_object"]->getGroup()->getAcceleration()->markDirty();
 
-  // ray trace
-  context->launch(0, width, height);
   iterations++;
+  // ray trace
+  if (useDenoiser && iterations % denoiseFrequency == 0) {
+    _command_list_denoising->execute();
+  } else {
+    _command_list_no_denoising->execute();
+  }
 }
 
 void OptixRenderer::display() {
   glClear(GL_COLOR_BUFFER_BIT);
 
   glBindTexture(GL_TEXTURE_2D, outputTex);
-  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, context["output_buffer"]->getBuffer()->getGLBOId());
+  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, context["final_buffer"]->getBuffer()->getGLBOId());
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
   glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
@@ -548,63 +605,63 @@ std::vector<float> OptixRenderer::getResult() {
 
   glBindTexture(GL_TEXTURE_2D, outputTex);
   glEnable(GL_TEXTURE_2D);
-  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, context["output_buffer"]->getBuffer()->getGLBOId());
+  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, context["tone_map_buffer"]->getBuffer()->getGLBOId());
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
   glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
   return getRGBAFloat32Texture(outputTex, width, height);
 }
 
-void OptixRenderer::renderSceneToFile(const Scene &scene, const CameraSpec &cam,
-                                      std::string filename) {
-  if (iterations >= max_iterations)
-    return;
+// void OptixRenderer::renderSceneToFile(const Scene &scene, const CameraSpec &cam,
+//                                       std::string filename) {
+//   if (iterations >= max_iterations)
+//     return;
 
-  // initialize scene
-  if (!sceneInitialized) {
-    printf("Initializing scene gemoetry...\n");
-    initSceneGeometry(scene);
-  }
+//   // initialize scene
+//   if (!sceneInitialized) {
+//     printf("Initializing scene gemoetry...\n");
+//     initSceneGeometry(scene);
+//   }
 
-  // update camera
-  glm::vec3 u = cam.getRotation() * glm::vec3(1, 0, 0);
-  glm::vec3 v = cam.getRotation() * glm::vec3(0, 1, 0);
-  glm::vec3 w = cam.getRotation() * glm::vec3(0, 0, 1);
+//   // update camera
+//   glm::vec3 u = cam.getRotation() * glm::vec3(1, 0, 0);
+//   glm::vec3 v = cam.getRotation() * glm::vec3(0, 1, 0);
+//   glm::vec3 w = cam.getRotation() * glm::vec3(0, 0, 1);
 
-  optix::float3 W = -optix::make_float3(w.x, w.y, w.z);
-  float vlen = tanf(0.5f * cam.getFovy());
-  optix::float3 V = vlen * optix::make_float3(v.x, v.y, v.z);
-  float ulen = vlen * cam.aspect;
-  optix::float3 U = ulen * optix::make_float3(u.x, u.y, u.z);
+//   optix::float3 W = -optix::make_float3(w.x, w.y, w.z);
+//   float vlen = tanf(0.5f * cam.getFovy());
+//   optix::float3 V = vlen * optix::make_float3(v.x, v.y, v.z);
+//   float ulen = vlen * cam.aspect;
+//   optix::float3 U = ulen * optix::make_float3(u.x, u.y, u.z);
 
-  context["eye"]->setFloat(cam.position.x, cam.position.y, cam.position.z);
-  context["U"]->setFloat(U);
-  context["V"]->setFloat(V);
-  context["W"]->setFloat(W);
-  context["near"]->setFloat(cam.near);
-  context["far"]->setFloat(cam.far);
-  context["iterations"]->setUint(iterations);
-  context["n_rays"]->setUint(numRays);
-  context["use_shadow"]->setInt(useShadow);
+//   context["eye"]->setFloat(cam.position.x, cam.position.y, cam.position.z);
+//   context["U"]->setFloat(U);
+//   context["V"]->setFloat(V);
+//   context["W"]->setFloat(W);
+//   context["near"]->setFloat(cam.near);
+//   context["far"]->setFloat(cam.far);
+//   context["iterations"]->setUint(iterations);
+//   context["n_rays"]->setUint(numRays);
+//   context["use_shadow"]->setInt(useShadow);
 
-  // ray trace
-  context->launch(0, width, height);
+//   // ray trace
+//   context->launch(0, width, height);
 
-  glClear(GL_COLOR_BUFFER_BIT);
+//   glClear(GL_COLOR_BUFFER_BIT);
 
-  // display
-  // sutil::displayBufferGL(context["output_buffer"]->getBuffer());
+//   // display
+//   // sutil::displayBufferGL(context["output_buffer"]->getBuffer());
 
-  glBindTexture(GL_TEXTURE_2D, outputTex);
-  glEnable(GL_TEXTURE_2D);
-  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, context["output_buffer"]->getBuffer()->getGLBOId());
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
-  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+//   glBindTexture(GL_TEXTURE_2D, outputTex);
+//   glEnable(GL_TEXTURE_2D);
+//   glBindBuffer(GL_PIXEL_UNPACK_BUFFER, context["output_buffer"]->getBuffer()->getGLBOId());
+//   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
+//   glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
-  writeToFile(outputTex, width, height, filename);
+//   writeToFile(outputTex, width, height, filename);
 
-  iterations++;
-}
+//   iterations++;
+// }
 
 // void OptixRenderer::renderCurrentToFile(std::string filename) {
 //   glBindTexture(GL_TEXTURE_2D, outputTex);
