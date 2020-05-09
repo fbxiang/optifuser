@@ -42,7 +42,7 @@ void renderObjectTree(const Object &obj, Shader *shader) {
 
   glm::mat4 modelMat = obj.globalModelMatrix;
   auto mesh = obj.getMesh();
-  if (mesh && obj.visible) {
+  if (mesh && obj.visibility > 0.f) {
     shader->setMatrix("gbufferModelMatrix", modelMat);
     mesh->draw();
   }

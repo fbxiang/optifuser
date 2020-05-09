@@ -72,6 +72,7 @@ static void renderObjectTree(const Object &obj, Shader *shader, bool renderSegme
   shader->setBool("material.has_height_map", obj.pbrMaterial->height_map->getId() != 0);
   shader->setTexture("material.normal_map", obj.pbrMaterial->normal_map->getId(), 3);
   shader->setBool("material.has_normal_map", obj.pbrMaterial->normal_map->getId() != 0);
+  shader->setFloat("opacity", obj.visibility);
   auto &userData = obj.getUserData();
   shader->setUserData("user_data", userData.size(), userData.data());
   mesh->draw();

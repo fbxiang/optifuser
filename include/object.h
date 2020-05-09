@@ -14,60 +14,39 @@
 namespace Optifuser {
 class Scene;
 
-struct Material {
-  enum Type { SOLID, TRANSPARENT, MIRROR } type = SOLID;
-
-  std::string name = "";
-
-  std::shared_ptr<Texture> kd_map = std::make_shared<Texture>();
-  std::shared_ptr<Texture> ks_map = std::make_shared<Texture>();
-  std::shared_ptr<Texture> height_map = std::make_shared<Texture>();
-  std::shared_ptr<Texture> normal_map = std::make_shared<Texture>();
-
-  glm::vec4 kd = glm::vec4(0, 0, 0, 1);
-  glm::vec3 ks = glm::vec3(0);
-  glm::vec3 ka = glm::vec3(0);
-  float exp = 1.f;
-};
-
-
 class Object {
 protected:
   std::shared_ptr<AbstractMeshBase> mesh;
-  Object *parent;
+  Object *parent = nullptr;
   std::vector<std::unique_ptr<Object>> children;
 
   uint32_t segmentId = 0; // used for rendering segmentation
   uint32_t objId = 0;     // used for rendering fine segmentation
 
-  std::vector<float> userData = {0, 0, 0, 0, 0, 0, 0, 0,
-                                 0, 0, 0, 0, 0, 0, 0, 0};
+  std::vector<float> userData = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 public:
-  std::shared_ptr<Shader> shader;
+  std::shared_ptr<Shader> shader = nullptr;
   std::shared_ptr<PBRMaterial> pbrMaterial = std::make_shared<PBRMaterial>();
   std::string name;
-  glm::vec3 position;
-  glm::vec3 scale;
-  bool visible;
+  glm::vec3 position = {0.f, 0.f, 0.f};
+  glm::vec3 scale = {1.f, 1.f, 1.f};
+  float visibility = 1.f;
   uint32_t showAxis = 0; // used for showing axis
 
-  glm::mat4 globalModelMatrix;  // cached at render time
+  glm::mat4 globalModelMatrix; // cached at render time
 
 protected:
-  glm::quat rotation;
-  Scene *scene;
+  glm::quat rotation = glm::quat(1, 0, 0, 0);
+  Scene *scene = nullptr;
+  bool toRemove = false;
 
 public:
-  Object(std::shared_ptr<AbstractMeshBase> m = nullptr)
-      : mesh(m), parent(nullptr), shader(nullptr), name(""), position(0.f),
-        scale(1.f), visible(true), rotation(1, 0, 0, 0), scene(nullptr) {}
+  Object(std::shared_ptr<AbstractMeshBase> m = nullptr) : mesh(m) {}
 
   virtual ~Object() {}
 
-  inline void setRotation(glm::quat const &rot) {
-    rotation = glm::normalize(rot);
-  }
+  inline void setRotation(glm::quat const &rot) { rotation = glm::normalize(rot); }
 
   inline glm::quat const &getRotation() const { return rotation; }
 
@@ -78,9 +57,7 @@ public:
   std::shared_ptr<AbstractMeshBase> getMesh() const;
 
   void addChild(std::unique_ptr<Object> child);
-  inline const std::vector<std::unique_ptr<Object>> &getChildren() const {
-    return children;
-  }
+  inline const std::vector<std::unique_ptr<Object>> &getChildren() const { return children; }
 
   inline void setObjId(uint32_t id) { objId = id; }
   inline uint32_t getObjId() const { return objId; }
@@ -88,19 +65,18 @@ public:
   inline uint32_t getSegmentId() const { return segmentId; }
   inline void setUserData(std::vector<float> const &data) { userData = data; }
   inline std::vector<float> const &getUserData() const { return userData; }
+  inline void markRemoved() { toRemove = true; }
+  inline bool isMarkedRemoved() { return toRemove; }
 };
 
-template <typename T>
-std::unique_ptr<T> NewObject(std::shared_ptr<AbstractMeshBase> mesh) {
-  static_assert(std::is_base_of<Object, T>::value,
-                "T must inherit from Obejct.");
+template <typename T> std::unique_ptr<T> NewObject(std::shared_ptr<AbstractMeshBase> mesh) {
+  static_assert(std::is_base_of<Object, T>::value, "T must inherit from Obejct.");
   auto obj = std::make_unique<T>(mesh);
   return obj;
 }
 
 template <typename T> std::unique_ptr<T> NewObject() {
-  static_assert(std::is_base_of<Object, T>::value,
-                "T must inherit from Obejct.");
+  static_assert(std::is_base_of<Object, T>::value, "T must inherit from Obejct.");
   auto obj = std::make_unique<T>();
   return obj;
 }

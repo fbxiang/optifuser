@@ -32,8 +32,12 @@ public:
 
 public:
   void addObject(std::unique_ptr<Object> obj);
+  /*  mark an object for removal */
   void removeObject(Object *obj);
+  /*  mark objects for removal */
   void removeObjectsByName(std::string name);
+  /* remove objects that are marked to be removed now */
+  void forceRemove();
 
   void prepareObjects();
 
