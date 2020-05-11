@@ -67,6 +67,7 @@ public:
   inline std::vector<float> const &getUserData() const { return userData; }
   inline void markRemoved() { toRemove = true; }
   inline bool isMarkedRemoved() { return toRemove; }
+  std::unique_ptr<Object> clone() const;
 };
 
 template <typename T> std::unique_ptr<T> NewObject(std::shared_ptr<AbstractMeshBase> mesh) {

@@ -26,9 +26,14 @@ else()
 endif()
 
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLEW)
-include_directories("3rd_party/imgui")
-include_directories("3rd_party/imgui/examples")
+include_directories(
+    "3rd_party/imgui"
+    "3rd_party/imgui/examples"
+    "3rd_party/ImGuizmo"
+    )
+include_directories()
 file(GLOB GUI_SRC "3rd_party/imgui/*.cpp"
+  "3rd_party/ImGuizmo/*.cpp"
   "3rd_party/imgui/examples/imgui_impl_glfw.cpp"
   "3rd_party/imgui/examples/imgui_impl_opengl3.cpp" )
 

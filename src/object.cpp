@@ -385,10 +385,21 @@ std::shared_ptr<PBRMaterial> loadDefaultMaterial(std::string const &name) {
     std::shared_ptr<PBRMaterial> mat;
     if (name == "aluminum") {
       materials["aluminum"] = std::make_shared<PBRMaterial>();
-
     }
     return mat;
   }
+}
+
+std::unique_ptr<Object> Object::clone() const {
+  auto obj = std::make_unique<Object>(mesh);
+  obj->shader = shader;
+  obj->pbrMaterial = pbrMaterial;
+  obj->name = name;
+  obj->position = position;
+  obj->scale = scale;
+  obj->setRotation(rotation);
+  obj->visibility = visibility;
+  return obj;
 }
 
 } // namespace Optifuser
