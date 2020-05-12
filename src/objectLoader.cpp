@@ -25,6 +25,13 @@ float shininessToRoughness(float ns) {
 std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignoreRootTransform,
                                              glm::vec3 upAxis, glm::vec3 forwardAxis) {
   auto logger = spdlog::get("Optifuser");
+
+  auto err = glGetError();
+  if (err != GL_NO_ERROR) {
+    logger->critical("OpenGL Error: {0:x}", err);
+    throw std::runtime_error("An OpenGL Error has occurred before object loading");
+  }
+
   if (!fs::exists(file)) {
     logger->warn("No mesh file found: {}.", file);
     return {};
