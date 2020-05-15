@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
 namespace Optifuser {
@@ -58,7 +59,8 @@ void ensureGlobalContext() {
 
 GLFWRenderContext &GLFWRenderContext::Get(int w, int h) {
   if (!spdlog::get("Optifuser")) {
-    auto logger = std::make_shared<spdlog::logger>("Optifuser");
+    std::shared_ptr<spdlog::logger> logger = std::make_shared<spdlog::logger>(
+        "Optifuser", std::make_shared<spdlog::sinks::stderr_color_sink_st>());
     spdlog::register_logger(logger);
   }
   static GLFWRenderContext Instance;

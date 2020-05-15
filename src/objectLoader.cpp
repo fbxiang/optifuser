@@ -5,6 +5,7 @@
 #include <assimp/scene.h>
 #include <experimental/filesystem>
 #include <iostream>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 #include <string>
 
@@ -19,12 +20,19 @@ float shininessToRoughness(float ns) {
   if (ns >= 1605.f) {
     return 0.f;
   }
-  return 1.f - (std::sqrt(ns-5.f) * 0.025f);
+  return 1.f - (std::sqrt(ns - 5.f) * 0.025f);
 }
 
 std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignoreRootTransform,
                                              glm::vec3 upAxis, glm::vec3 forwardAxis) {
-  auto logger = spdlog::get("Optifuser");
+  std::shared_ptr<spdlog::logger> logger;
+  if (!spdlog::get("Optifuser")) {
+    logger = std::make_shared<spdlog::logger>(
+        "Optifuser", std::make_shared<spdlog::sinks::stderr_color_sink_st>());
+    spdlog::register_logger(logger);
+  } else {
+    logger = spdlog::get("Optifuser");
+  }
 
   auto err = glGetError();
   if (err != GL_NO_ERROR) {
@@ -42,7 +50,6 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
   auto objects = std::vector<std::unique_ptr<Object>>();
 
   Assimp::Importer importer;
-
 
   uint32_t flags = aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_GenNormals |
                    aiProcess_FlipUVs | aiProcess_PreTransformVertices;
@@ -80,9 +87,11 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
     m->Get(AI_MATKEY_OPACITY, alpha);
     m->Get(AI_MATKEY_COLOR_AMBIENT, color);
     m->Get(AI_MATKEY_COLOR_DIFFUSE, color);
-    pbrMats[i]->kd = glm::vec4(color.r, color.g, color.b, alpha);  // kd and transmission for diffuse
+    pbrMats[i]->kd =
+        glm::vec4(color.r, color.g, color.b, alpha); // kd and transmission for diffuse
     m->Get(AI_MATKEY_COLOR_SPECULAR, color);
-    pbrMats[i]->ks = (color.r + color.g + color.b) / 3.f;;  // specular color for metal
+    pbrMats[i]->ks = (color.r + color.g + color.b) / 3.f;
+    ; // specular color for metal
     m->Get(AI_MATKEY_SHININESS, shininess);
     pbrMats[i]->roughness = shininessToRoughness(shininess);
     std::string parentdir = file.substr(0, file.find_last_of('/')) + "/";
@@ -181,7 +190,7 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
     for (uint32_t f = 0; f < mesh->mNumFaces; f++) {
       auto face = mesh->mFaces[f];
       if (face.mNumIndices != 3) {
-        fprintf(stderr, "A face with %d indices is found and ignored.", face.mNumIndices);
+        logger->warn("A face with {} indices is ignored", face.mNumIndices);
         continue;
       }
       indices.push_back(face.mIndices[0]);
