@@ -190,7 +190,7 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
     for (uint32_t f = 0; f < mesh->mNumFaces; f++) {
       auto face = mesh->mFaces[f];
       if (face.mNumIndices != 3) {
-        logger->warn("A face with {} indices is ignored", face.mNumIndices);
+        logger->warn("A face with {} indices is ignored in file: {}", face.mNumIndices, file);
         continue;
       }
       indices.push_back(face.mIndices[0]);
