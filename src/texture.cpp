@@ -3,7 +3,9 @@
 #include <iostream>
 #include <random>
 
+#ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
+#endif
 #include "stb_image.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION

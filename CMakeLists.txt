@@ -37,7 +37,7 @@ file(GLOB GUI_SRC "3rd_party/imgui/*.cpp"
   "3rd_party/imgui/examples/imgui_impl_glfw.cpp"
   "3rd_party/imgui/examples/imgui_impl_opengl3.cpp" )
 
-add_subdirectory("3rd_party/glfw")
+find_package(glfw3 REQUIRED)
 
 include_directories("include")
 
@@ -70,7 +70,7 @@ if(EXISTS ${OPTIX_HOME})
   endif()
 
   add_executable(test_optix app/test_optix.cpp ${GUI_SRC})
-  target_link_libraries(test_optix optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY}
+  target_link_libraries(test_optix optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} ${GLFW_LIBRARIES}
     pthread ${OPTIX_LIBRARY} stdc++fs)
   add_dependencies(test_optix ptx_dir)
 else()
@@ -79,12 +79,12 @@ else()
 endif()
 
 add_library(optifuser STATIC ${RENDER_SRC} ${GUI_SRC})
-target_link_libraries(optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLEW_LIBRARY}
+target_link_libraries(optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} ${GLFW_LIBRARIES}
   ${ASSIMP_LIBRARIES}
   pthread ${OPTIX_LIBRARY} ${SPDLOG_LIBRARIES})
 
 add_executable(test_optifuser app/main.cpp ${GUI_SRC})
-target_link_libraries(test_optifuser optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw ${GLFW_LIBRARY}
+target_link_libraries(test_optifuser optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} ${GLFW_LIBRARIES}
   pthread ${OPTIX_LIBRARY} stdc++fs)
 
 
