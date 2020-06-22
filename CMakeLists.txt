@@ -20,11 +20,6 @@ set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_RELEASE})
 set(OPTIX_HOME "NOT FOUND" CACHE FILEPATH "Home to OptiX")
 set(USE_PRECOMPILED_PTX FALSE CACHE BOOL "Whether to use pre-built OptiX shader files")
 
-if (GLFW_LIBRARY)
-else()
-  set(GLEW_LIBRARY GLEW)
-endif()
-
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLEW)
 include_directories(
     "3rd_party/imgui"
@@ -70,7 +65,7 @@ if(EXISTS ${OPTIX_HOME})
   endif()
 
   add_executable(test_optix app/test_optix.cpp ${GUI_SRC})
-  target_link_libraries(test_optix optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} ${GLFW_LIBRARIES}
+  target_link_libraries(test_optix optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} glfw3
     pthread ${OPTIX_LIBRARY} stdc++fs)
   add_dependencies(test_optix ptx_dir)
 else()
@@ -79,12 +74,12 @@ else()
 endif()
 
 add_library(optifuser STATIC ${RENDER_SRC} ${GUI_SRC})
-target_link_libraries(optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} ${GLFW_LIBRARIES}
+target_link_libraries(optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} GLEW glfw3
   ${ASSIMP_LIBRARIES}
   pthread ${OPTIX_LIBRARY} ${SPDLOG_LIBRARIES})
 
 add_executable(test_optifuser app/main.cpp ${GUI_SRC})
-target_link_libraries(test_optifuser optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} ${GLFW_LIBRARIES}
+target_link_libraries(test_optifuser optifuser ${CUDA_LIBRARIES} ${OPENGL_LIBRARY} GLEW glfw3
   pthread ${OPTIX_LIBRARY} stdc++fs)
 
 
