@@ -24,6 +24,9 @@ void Texture::load(const std::string &filename, int mipmap, int wrapping, int mi
 
   int width, height, nrChannels;
   unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
+  if (!data) {
+    return;
+  }
 
   glTexStorage2D(GL_TEXTURE_2D, 4, GL_RGBA8, width, height);
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -89,6 +92,9 @@ std::shared_ptr<Texture> LoadTexture(const std::string &filename, int mipmap, in
                                      int minFilter, int maxFilter) {
   auto tex = std::make_shared<Texture>();
   tex->load(filename, mipmap, wrapping, minFilter, maxFilter);
+  if (tex->getWidth() == 0) {
+    return nullptr;
+  }
   return tex;
 }
 

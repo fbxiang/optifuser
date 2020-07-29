@@ -91,7 +91,8 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
         glm::vec4(color.r, color.g, color.b, alpha); // kd and transmission for diffuse
     m->Get(AI_MATKEY_COLOR_SPECULAR, color);
     pbrMats[i]->ks = (color.r + color.g + color.b) / 3.f;
-    ; // specular color for metal
+
+    // specular color for metal
     m->Get(AI_MATKEY_SHININESS, shininess);
     pbrMats[i]->roughness = shininessToRoughness(shininess);
     std::string parentdir = file.substr(0, file.find_last_of('/')) + "/";
@@ -102,14 +103,22 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
       std::string p = std::string(path.C_Str());
       std::string fullPath = parentdir + p;
 
-      auto tex = LoadTexture(fullPath, 0);
-      pbrMats[i]->kd_map = tex;
-      logger->info("{}: Diffuse texture {}", tex->getId(), fullPath);
+      if (!fs::exists(fullPath)) {
+        logger->error("No texture file found: {}.", fullPath);
+      } else {
+        auto tex = LoadTexture(fullPath, 0);
+        if (!tex) {
+          logger->error("Failed to open texture: {}.", fullPath);
+        } else {
+          pbrMats[i]->kd_map = tex;
+          logger->info("{}: Diffuse texture {}", tex->getId(), fullPath);
 
-      auto err = glGetError();
-      if (err != GL_NO_ERROR) {
-        logger->critical("Loading failed: {0:x}", err);
-        throw std::runtime_error("Loading failed");
+          auto err = glGetError();
+          if (err != GL_NO_ERROR) {
+            logger->error("Diffuse texture loading failed: {0:x}", err);
+            // throw std::runtime_error("Diffuse texture loading failed");
+          }
+        }
       }
     }
 
@@ -118,12 +127,20 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
       std::string p = std::string(path.C_Str());
       std::string fullPath = parentdir + p;
 
-      auto tex = LoadTexture(fullPath, 0);
-      logger->info("{}: Specular texture {}", tex->getId(), fullPath);
-      auto err = glGetError();
-      if (err != GL_NO_ERROR) {
-        logger->critical("Loading failed: {0:x}", err);
-        throw std::runtime_error("Loading failed");
+      if (!fs::exists(fullPath)) {
+        logger->error("No texture file found: {}.", fullPath);
+      } else {
+        auto tex = LoadTexture(fullPath, 0);
+        if (!tex) {
+          logger->error("Failed to open texture: {}.", fullPath);
+        } else {
+          logger->info("{}: Specular texture {}", tex->getId(), fullPath);
+          auto err = glGetError();
+          if (err != GL_NO_ERROR) {
+            logger->error("Loading failed: {0:x}", err);
+            // throw std::runtime_error("Specular texture loading failed");
+          }
+        }
       }
     }
 
@@ -132,13 +149,21 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
       std::string p = std::string(path.C_Str());
       std::string fullPath = parentdir + p;
 
-      auto tex = LoadTexture(fullPath, 0);
-      pbrMats[i]->height_map = tex;
-      logger->info("{}: Height texture {}", tex->getId(), fullPath);
-      auto err = glGetError();
-      if (err != GL_NO_ERROR) {
-        logger->critical("Loading failed: {0:x}", err);
-        throw std::runtime_error("Loading failed");
+      if (!fs::exists(fullPath)) {
+        logger->error("No texture file found: {}.", fullPath);
+      } else {
+        auto tex = LoadTexture(fullPath, 0);
+        if (!tex) {
+          logger->error("Failed to open texture: {}.", fullPath);
+        } else {
+          pbrMats[i]->height_map = tex;
+          logger->info("{}: Height texture {}", tex->getId(), fullPath);
+          auto err = glGetError();
+          if (err != GL_NO_ERROR) {
+            logger->error("Loading failed: {0:x}", err);
+            // throw std::runtime_error("Height texture loading failed");
+          }
+        }
       }
     }
 
@@ -147,13 +172,21 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
       std::string p = std::string(path.C_Str());
       std::string fullPath = parentdir + p;
 
-      auto tex = LoadTexture(fullPath, 0);
-      pbrMats[i]->normal_map = tex;
-      logger->info("{}: Normal texture {}", tex->getId(), fullPath);
-      auto err = glGetError();
-      if (err != GL_NO_ERROR) {
-        logger->critical("Loading failed: {0:x}", err);
-        throw std::runtime_error("Loading failed");
+      if (!fs::exists(fullPath)) {
+        logger->error("No texture file found: {}.", fullPath);
+      } else {
+        auto tex = LoadTexture(fullPath, 0);
+        if (!tex) {
+          logger->error("Failed to open texture: {}.", fullPath);
+        } else {
+          pbrMats[i]->normal_map = tex;
+          logger->info("{}: Normal texture {}", tex->getId(), fullPath);
+          auto err = glGetError();
+          if (err != GL_NO_ERROR) {
+            logger->error("Loading failed: {0:x}", err);
+            // throw std::runtime_error("Normal texture loading failed");
+          }
+        }
       }
     }
   }
