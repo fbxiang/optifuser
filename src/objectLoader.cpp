@@ -13,6 +13,27 @@ namespace fs = std::experimental::filesystem;
 
 namespace Optifuser {
 
+// trim from start (in place)
+static inline void ltrim(std::string &s) {
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+    return !std::isspace(ch);
+  }));
+}
+
+// trim from end (in place)
+static inline void rtrim(std::string &s) {
+  s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+    return !std::isspace(ch);
+  }).base(), s.end());
+}
+
+// trim from both ends (in place)
+static inline void trim(std::string &s) {
+  ltrim(s);
+  rtrim(s);
+}
+
+
 float shininessToRoughness(float ns) {
   if (ns <= 5.f) {
     return 1.f;
@@ -102,6 +123,7 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
         m->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
       std::string p = std::string(path.C_Str());
       std::string fullPath = parentdir + p;
+      trim(fullPath);
 
       if (!fs::exists(fullPath)) {
         logger->error("No texture file found: {}.", fullPath);
@@ -126,6 +148,7 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
         m->GetTexture(aiTextureType_SPECULAR, 0, &path) == AI_SUCCESS) {
       std::string p = std::string(path.C_Str());
       std::string fullPath = parentdir + p;
+      trim(fullPath);
 
       if (!fs::exists(fullPath)) {
         logger->error("No texture file found: {}.", fullPath);
@@ -148,6 +171,7 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
         m->GetTexture(aiTextureType_HEIGHT, 0, &path) == AI_SUCCESS) {
       std::string p = std::string(path.C_Str());
       std::string fullPath = parentdir + p;
+      trim(fullPath);
 
       if (!fs::exists(fullPath)) {
         logger->error("No texture file found: {}.", fullPath);
@@ -171,6 +195,7 @@ std::vector<std::unique_ptr<Object>> LoadObj(const std::string file, bool ignore
         m->GetTexture(aiTextureType_NORMALS, 0, &path) == AI_SUCCESS) {
       std::string p = std::string(path.C_Str());
       std::string fullPath = parentdir + p;
+      trim(fullPath);
 
       if (!fs::exists(fullPath)) {
         logger->error("No texture file found: {}.", fullPath);
