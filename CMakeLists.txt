@@ -29,8 +29,8 @@ include_directories(
 include_directories()
 file(GLOB GUI_SRC "3rd_party/imgui/*.cpp"
   "3rd_party/ImGuizmo/*.cpp"
-  "3rd_party/imgui/examples/imgui_impl_glfw.cpp"
-  "3rd_party/imgui/examples/imgui_impl_opengl3.cpp" )
+  "3rd_party/imgui/backends/imgui_impl_opengl3.cpp"
+  "3rd_party/imgui/backends/imgui_impl_glfw.cpp")
 
 find_package(glfw3 REQUIRED)
 
