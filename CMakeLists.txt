@@ -11,7 +11,7 @@ include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
-find_package(ASSIMP REQUIRED)
+find_package(assimp REQUIRED)
 find_package(spdlog REQUIRED)
 
 file(GLOB_RECURSE RENDER_SRC "include/*.h" "src/*.cpp")
