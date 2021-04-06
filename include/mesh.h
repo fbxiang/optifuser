@@ -21,6 +21,7 @@ struct Vertex {
 class AbstractMeshBase {
 public:
   virtual void draw() const = 0;
+  virtual ~AbstractMeshBase() = default;
 };
 
 class DynamicMesh : public AbstractMeshBase {
