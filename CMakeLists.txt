@@ -22,9 +22,9 @@ set(USE_PRECOMPILED_PTX FALSE CACHE BOOL "Whether to use pre-built OptiX shader 
 
 add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLEW)
 include_directories(
-    "3rd_party/imgui"
-    "3rd_party/imgui/examples"
-    "3rd_party/ImGuizmo"
+    SYSTEM "3rd_party/imgui"
+    SYSTEM "3rd_party/imgui/examples"
+    SYSTEM "3rd_party/ImGuizmo"
     )
 include_directories()
 file(GLOB GUI_SRC "3rd_party/imgui/*.cpp"
