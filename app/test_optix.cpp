@@ -13,7 +13,7 @@
 
 using std::cout;
 using std::endl;
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 GLFWwindow *window;
 

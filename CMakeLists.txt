@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 project(Optifuser LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS_DEBUG "-o0 -g3 -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-o3 -g0 -Wall")
 
@@ -11,8 +11,8 @@ include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
-find_package(assimp REQUIRED)
 find_package(spdlog REQUIRED)
+find_package(assimp 5.0.1 REQUIRED PACKAGE_FIND_VERSION)
 
 file(GLOB_RECURSE RENDER_SRC "include/*.h" "src/*.cpp")
 
